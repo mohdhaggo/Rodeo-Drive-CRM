@@ -1,0 +1,27 @@
+type Company @model @auth(rules: [{allow: private}])
+{
+  name: String!
+  industry: String
+  status: String
+  createdAt: AWSDateTime
+}
+
+type Contact @model @auth(rules: [{allow: private}])
+{
+  firstName: String!
+  lastName: String!
+  email: AWSEmail!
+  phone: String
+  companyId: ID
+  createdAt: AWSDateTime
+}
+
+type Deal @model @auth(rules: [{allow: private}])
+{
+  dealName: String!
+  amount: Float
+  stage: String
+  companyId: ID
+  ownerId: ID
+  createdAt: AWSDateTime
+}

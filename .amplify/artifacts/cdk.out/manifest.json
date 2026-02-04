@@ -1,0 +1,2626 @@
+{
+  "version": "48.0.0",
+  "artifacts": {
+    "amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d.assets": {
+      "type": "cdk:asset-manifest",
+      "properties": {
+        "file": "amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d.assets.json",
+        "requiresBootstrapStackVersion": 6,
+        "bootstrapStackVersionSsmParameter": "/cdk-bootstrap/hnb659fds/version"
+      }
+    },
+    "amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d": {
+      "type": "aws:cloudformation:stack",
+      "environment": "aws://unknown-account/unknown-region",
+      "properties": {
+        "templateFile": "amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d.template.json",
+        "terminationProtection": false,
+        "tags": {
+          "amplify:deployment-type": "sandbox",
+          "created-by": "amplify"
+        },
+        "validateOnSynth": false,
+        "assumeRoleArn": "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/cdk-hnb659fds-deploy-role-${AWS::AccountId}-${AWS::Region}",
+        "cloudFormationExecutionRoleArn": "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/cdk-hnb659fds-cfn-exec-role-${AWS::AccountId}-${AWS::Region}",
+        "stackTemplateAssetObjectUrl": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/8403112100c8956c708f38c7ed4e33d24eedc3587738c25fe3b5db734e84859b.json",
+        "requiresBootstrapStackVersion": 6,
+        "bootstrapStackVersionSsmParameter": "/cdk-bootstrap/hnb659fds/version",
+        "additionalDependencies": [
+          "amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d.assets"
+        ],
+        "lookupRole": {
+          "arn": "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/cdk-hnb659fds-lookup-role-${AWS::AccountId}-${AWS::Region}",
+          "requiresBootstrapStackVersion": 8,
+          "bootstrapStackVersionSsmParameter": "/cdk-bootstrap/hnb659fds/version"
+        }
+      },
+      "dependencies": [
+        "amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d.assets"
+      ],
+      "metadata": {
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d": [
+          {
+            "type": "aws:cdk:stack-tags",
+            "data": [
+              {
+                "Key": "amplify:deployment-type",
+                "Value": "sandbox"
+              },
+              {
+                "Key": "created-by",
+                "Value": "amplify"
+              }
+            ]
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/deploymentType": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "deploymentType"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/region": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "region"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/auth/amplifyAuth/UserPool/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "amplifyAuthUserPool4BA7F805"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/auth/amplifyAuth/UserPoolAppClient/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "amplifyAuthUserPoolAppClient2626C6F8"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/auth/amplifyAuth/IdentityPool": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "amplifyAuthIdentityPool3FDE84CC"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/auth/amplifyAuth/authenticatedUserRole/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "amplifyAuthauthenticatedUserRoleD8DA3689"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/auth/amplifyAuth/unauthenticatedUserRole/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "amplifyAuthunauthenticatedUserRole2B524D9E"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/auth/amplifyAuth/IdentityPoolRoleAttachment": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "amplifyAuthIdentityPoolRoleAttachment045F17C8"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/auth/CDKMetadata/Default": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "CDKMetadata"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/auth/CDKMetadata/Condition": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "CDKMetadataAvailable"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/auth/amplifyrodeodrivecrmbackendMHaggosandboxbe3aab280dauthamplifyAuthUserPool924F6EA5Ref": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "amplifyrodeodrivecrmbackendMHaggosandboxbe3aab280dauthamplifyAuthUserPool924F6EA5Ref"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/auth/amplifyrodeodrivecrmbackendMHaggosandboxbe3aab280dauthamplifyAuthUserPoolAppClientA0A51218Ref": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "amplifyrodeodrivecrmbackendMHaggosandboxbe3aab280dauthamplifyAuthUserPoolAppClientA0A51218Ref"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/auth/amplifyrodeodrivecrmbackendMHaggosandboxbe3aab280dauthamplifyAuthIdentityPool4CA00EA7Ref": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "amplifyrodeodrivecrmbackendMHaggosandboxbe3aab280dauthamplifyAuthIdentityPool4CA00EA7Ref"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/auth/amplifyrodeodrivecrmbackendMHaggosandboxbe3aab280dauthamplifyAuthauthenticatedUserRole815DEA42Ref": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "amplifyrodeodrivecrmbackendMHaggosandboxbe3aab280dauthamplifyAuthauthenticatedUserRole815DEA42Ref"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/auth/amplifyrodeodrivecrmbackendMHaggosandboxbe3aab280dauthamplifyAuthunauthenticatedUserRole472A33C2Ref": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "amplifyrodeodrivecrmbackendMHaggosandboxbe3aab280dauthamplifyAuthunauthenticatedUserRole472A33C2Ref"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/auth.NestedStack/auth.NestedStackResource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "auth179371D7"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/userPoolId": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "userPoolId"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/webClientId": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "webClientId"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/identityPoolId": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "identityPoolId"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/authRegion": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "authRegion"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/allowUnauthenticatedIdentities": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "allowUnauthenticatedIdentities"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/signupAttributes": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "signupAttributes"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/usernameAttributes": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "usernameAttributes"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/verificationMechanisms": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "verificationMechanisms"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/passwordPolicyMinLength": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "passwordPolicyMinLength"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/passwordPolicyRequirements": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "passwordPolicyRequirements"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/mfaConfiguration": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "mfaConfiguration"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/mfaTypes": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "mfaTypes"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/passwordlessOptions": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "passwordlessOptions"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/socialProviders": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "socialProviders"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/oauthCognitoDomain": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "oauthCognitoDomain"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/oauthScope": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "oauthScope"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/oauthRedirectSignIn": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "oauthRedirectSignIn"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/oauthRedirectSignOut": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "oauthRedirectSignOut"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/oauthResponseType": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "oauthResponseType"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/oauthClientId": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "oauthClientId"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/groups": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "groups"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/GraphQLAPI/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "amplifyDataGraphQLAPI42A6FA33"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/GraphQLAPI/TransformerSchema": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "amplifyDataGraphQLAPITransformerSchemaFF50A789"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/GraphQLAPI/NONE_DS": [
+          {
+            "type": "graphqltransformer:resourceName",
+            "data": "NONE_DS"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/GraphQLAPI/NONE_DS/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "amplifyDataGraphQLAPINONEDS684BF699"
+          },
+          {
+            "type": "graphqltransformer:resourceName",
+            "data": "NONE_DS"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/AmplifyTableManager/AmplifyManagedTableIsCompleteRole/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "AmplifyManagedTableIsCompleteRoleF825222C"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/AmplifyTableManager/AmplifyManagedTableOnEventRole/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "AmplifyManagedTableOnEventRoleB4E71DEA"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/AmplifyTableManager/AmplifyManagedTableOnEventRole/DefaultPolicy/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "AmplifyManagedTableOnEventRoleDefaultPolicyF6DABCB6"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/AmplifyTableManager/TableManagerCustomProvider/framework-onEvent/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "TableManagerCustomProviderframeworkonEvent1DFC2ECC"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/AmplifyTableManager/TableManagerCustomProvider/framework-isComplete/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "TableManagerCustomProviderframeworkisComplete2E51021B"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/AmplifyTableManager/AmplifyTableWaiterStateMachine/Role/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "AmplifyTableWaiterStateMachineRole470BE899"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/AmplifyTableManager/AmplifyTableWaiterStateMachine/Role/DefaultPolicy/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "AmplifyTableWaiterStateMachineRoleDefaultPolicy89F3836A"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/AmplifyTableManager/AmplifyTableWaiterStateMachine/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "AmplifyTableWaiterStateMachine060600BC"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/AmplifyTableManager/CDKMetadata/Default": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "CDKMetadata"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/AmplifyTableManager/CDKMetadata/Condition": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "CDKMetadataAvailable"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/AmplifyTableManager/reference-to-amplifyrodeodrivecrmbackendMHaggosandboxbe3aab280ddataamplifyDataGraphQLAPI6DE5F511ApiId": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "referencetoamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280ddataamplifyDataGraphQLAPI6DE5F511ApiId"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/AmplifyTableManager/amplifyrodeodrivecrmbackendMHaggosandboxbe3aab280ddataamplifyDataAmplifyTableManagerTableManagerCustomProviderframeworkonEvent452A3B4FArn": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "amplifyrodeodrivecrmbackendMHaggosandboxbe3aab280ddataamplifyDataAmplifyTableManagerTableManagerCustomProviderframeworkonEvent452A3B4FArn"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/AmplifyTableManager.NestedStack/AmplifyTableManager.NestedStackResource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "amplifyDataAmplifyTableManagerNestedStackAmplifyTableManagerNestedStackResource86290833"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/Company/DynamoDBModelTableReadIOPS": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "DynamoDBModelTableReadIOPS"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/Company/DynamoDBModelTableWriteIOPS": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "DynamoDBModelTableWriteIOPS"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/Company/DynamoDBBillingMode": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "DynamoDBBillingMode"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/Company/DynamoDBEnablePointInTimeRecovery": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "DynamoDBEnablePointInTimeRecovery"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/Company/DynamoDBEnableServerSideEncryption": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "DynamoDBEnableServerSideEncryption"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/Company/HasEnvironmentParameter": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "HasEnvironmentParameter"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/Company/ShouldUsePayPerRequestBilling": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "ShouldUsePayPerRequestBilling"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/Company/ShouldUsePointInTimeRecovery": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "ShouldUsePointInTimeRecovery"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/Company/CompanyTable": [
+          {
+            "type": "graphqltransformer:resourceName",
+            "data": "Company"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/Company/CompanyTable/Default/Default": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "CompanyTable"
+          },
+          {
+            "type": "graphqltransformer:resourceName",
+            "data": "Company"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/Company/CustomTableCompanyTable": [
+          {
+            "type": "graphqltransformer:resourceName",
+            "data": "Company"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/Company/GetAttCompanyTableStreamArn": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "GetAttCompanyTableStreamArn"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/Company/GetAttCompanyTableName": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "GetAttCompanyTableName"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/Company/CompanyIAMRole": [
+          {
+            "type": "graphqltransformer:resourceName",
+            "data": "CompanyIAMRole"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/Company/CompanyIAMRole/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "CompanyIAMRole0FC36028"
+          },
+          {
+            "type": "graphqltransformer:resourceName",
+            "data": "CompanyIAMRole"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/Company/CompanyDataSource": [
+          {
+            "type": "graphqltransformer:resourceName",
+            "data": "CompanyTable"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/Company/CompanyDataSource/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "CompanyDataSource"
+          },
+          {
+            "type": "graphqltransformer:resourceName",
+            "data": "CompanyTable"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/Company/QuerygetCompanyauth0Function/QuerygetCompanyauth0Function.AppSyncFunction": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "QuerygetCompanyauth0FunctionQuerygetCompanyauth0FunctionAppSyncFunction27097143"
+          },
+          {
+            "type": "graphqltransformer:resourceName",
+            "data": "QuerygetCompanyauth0Function"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/Company/QuerygetCompanypostAuth0Function/QuerygetCompanypostAuth0Function.AppSyncFunction": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "QuerygetCompanypostAuth0FunctionQuerygetCompanypostAuth0FunctionAppSyncFunctionB1305993"
+          },
+          {
+            "type": "graphqltransformer:resourceName",
+            "data": "QuerygetCompanypostAuth0Function"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/Company/QueryGetCompanyDataResolverFn/QueryGetCompanyDataResolverFn.AppSyncFunction": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "QueryGetCompanyDataResolverFnQueryGetCompanyDataResolverFnAppSyncFunctionCDDB4615"
+          },
+          {
+            "type": "graphqltransformer:resourceName",
+            "data": "QueryGetCompanyDataResolverFn"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/Company/queryGetCompanyResolver": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "GetCompanyResolver"
+          },
+          {
+            "type": "graphqltransformer:resourceName",
+            "data": "Query.getCompany"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/Company/QuerylistCompaniesauth0Function/QuerylistCompaniesauth0Function.AppSyncFunction": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "QuerylistCompaniesauth0FunctionQuerylistCompaniesauth0FunctionAppSyncFunctionACDDD1BF"
+          },
+          {
+            "type": "graphqltransformer:resourceName",
+            "data": "QuerylistCompaniesauth0Function"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/Company/QuerylistCompaniespostAuth0Function/QuerylistCompaniespostAuth0Function.AppSyncFunction": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "QuerylistCompaniespostAuth0FunctionQuerylistCompaniespostAuth0FunctionAppSyncFunction0CCDA5E3"
+          },
+          {
+            "type": "graphqltransformer:resourceName",
+            "data": "QuerylistCompaniespostAuth0Function"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/Company/QueryListCompaniesDataResolverFn/QueryListCompaniesDataResolverFn.AppSyncFunction": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "QueryListCompaniesDataResolverFnQueryListCompaniesDataResolverFnAppSyncFunction6602B87E"
+          },
+          {
+            "type": "graphqltransformer:resourceName",
+            "data": "QueryListCompaniesDataResolverFn"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/Company/queryListCompaniesResolver": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "ListCompanyResolver"
+          },
+          {
+            "type": "graphqltransformer:resourceName",
+            "data": "Query.listCompanies"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/Company/MutationcreateCompanyinit0Function/MutationcreateCompanyinit0Function.AppSyncFunction": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "MutationcreateCompanyinit0FunctionMutationcreateCompanyinit0FunctionAppSyncFunction764FE927"
+          },
+          {
+            "type": "graphqltransformer:resourceName",
+            "data": "MutationcreateCompanyinit0Function"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/Company/MutationcreateCompanyauth0Function/MutationcreateCompanyauth0Function.AppSyncFunction": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "MutationcreateCompanyauth0FunctionMutationcreateCompanyauth0FunctionAppSyncFunction8BFFEC04"
+          },
+          {
+            "type": "graphqltransformer:resourceName",
+            "data": "MutationcreateCompanyauth0Function"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/Company/MutationcreateCompanypostAuth0Function/MutationcreateCompanypostAuth0Function.AppSyncFunction": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "MutationcreateCompanypostAuth0FunctionMutationcreateCompanypostAuth0FunctionAppSyncFunction8BF53466"
+          },
+          {
+            "type": "graphqltransformer:resourceName",
+            "data": "MutationcreateCompanypostAuth0Function"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/Company/MutationCreateCompanyDataResolverFn/MutationCreateCompanyDataResolverFn.AppSyncFunction": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "MutationCreateCompanyDataResolverFnMutationCreateCompanyDataResolverFnAppSyncFunction0DF2A3EB"
+          },
+          {
+            "type": "graphqltransformer:resourceName",
+            "data": "MutationCreateCompanyDataResolverFn"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/Company/mutationCreateCompanyResolver": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "CreateCompanyResolver"
+          },
+          {
+            "type": "graphqltransformer:resourceName",
+            "data": "Mutation.createCompany"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/Company/MutationupdateCompanyinit0Function/MutationupdateCompanyinit0Function.AppSyncFunction": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "MutationupdateCompanyinit0FunctionMutationupdateCompanyinit0FunctionAppSyncFunctionB90E4273"
+          },
+          {
+            "type": "graphqltransformer:resourceName",
+            "data": "MutationupdateCompanyinit0Function"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/Company/MutationupdateCompanyauth0Function/MutationupdateCompanyauth0Function.AppSyncFunction": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "MutationupdateCompanyauth0FunctionMutationupdateCompanyauth0FunctionAppSyncFunctionC98C6AEC"
+          },
+          {
+            "type": "graphqltransformer:resourceName",
+            "data": "MutationupdateCompanyauth0Function"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/Company/MutationupdateCompanypostAuth0Function/MutationupdateCompanypostAuth0Function.AppSyncFunction": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "MutationupdateCompanypostAuth0FunctionMutationupdateCompanypostAuth0FunctionAppSyncFunction63E704D9"
+          },
+          {
+            "type": "graphqltransformer:resourceName",
+            "data": "MutationupdateCompanypostAuth0Function"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/Company/MutationUpdateCompanyDataResolverFn/MutationUpdateCompanyDataResolverFn.AppSyncFunction": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "MutationUpdateCompanyDataResolverFnMutationUpdateCompanyDataResolverFnAppSyncFunctionC192E7BB"
+          },
+          {
+            "type": "graphqltransformer:resourceName",
+            "data": "MutationUpdateCompanyDataResolverFn"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/Company/mutationUpdateCompanyResolver": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "UpdateCompanyResolver"
+          },
+          {
+            "type": "graphqltransformer:resourceName",
+            "data": "Mutation.updateCompany"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/Company/MutationdeleteCompanyauth0Function/MutationdeleteCompanyauth0Function.AppSyncFunction": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "MutationdeleteCompanyauth0FunctionMutationdeleteCompanyauth0FunctionAppSyncFunction99B55C59"
+          },
+          {
+            "type": "graphqltransformer:resourceName",
+            "data": "MutationdeleteCompanyauth0Function"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/Company/MutationdeleteCompanypostAuth0Function/MutationdeleteCompanypostAuth0Function.AppSyncFunction": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "MutationdeleteCompanypostAuth0FunctionMutationdeleteCompanypostAuth0FunctionAppSyncFunctionE7DE3331"
+          },
+          {
+            "type": "graphqltransformer:resourceName",
+            "data": "MutationdeleteCompanypostAuth0Function"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/Company/MutationDeleteCompanyDataResolverFn/MutationDeleteCompanyDataResolverFn.AppSyncFunction": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "MutationDeleteCompanyDataResolverFnMutationDeleteCompanyDataResolverFnAppSyncFunction38BD6BC5"
+          },
+          {
+            "type": "graphqltransformer:resourceName",
+            "data": "MutationDeleteCompanyDataResolverFn"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/Company/mutationDeleteCompanyResolver": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "DeleteCompanyResolver"
+          },
+          {
+            "type": "graphqltransformer:resourceName",
+            "data": "Mutation.deleteCompany"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/Company/SubscriptiononCreateCompanyauth0Function/SubscriptiononCreateCompanyauth0Function.AppSyncFunction": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "SubscriptiononCreateCompanyauth0FunctionSubscriptiononCreateCompanyauth0FunctionAppSyncFunctionFCA815D1"
+          },
+          {
+            "type": "graphqltransformer:resourceName",
+            "data": "SubscriptiononCreateCompanyauth0Function"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/Company/SubscriptiononCreateCompanypostAuth0Function/SubscriptiononCreateCompanypostAuth0Function.AppSyncFunction": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "SubscriptiononCreateCompanypostAuth0FunctionSubscriptiononCreateCompanypostAuth0FunctionAppSyncFunctionFB1BC2CA"
+          },
+          {
+            "type": "graphqltransformer:resourceName",
+            "data": "SubscriptiononCreateCompanypostAuth0Function"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/Company/SubscriptionOnCreateCompanyDataResolverFn/SubscriptionOnCreateCompanyDataResolverFn.AppSyncFunction": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "SubscriptionOnCreateCompanyDataResolverFnSubscriptionOnCreateCompanyDataResolverFnAppSyncFunctionB166CA90"
+          },
+          {
+            "type": "graphqltransformer:resourceName",
+            "data": "SubscriptionOnCreateCompanyDataResolverFn"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/Company/subscriptionOnCreateCompanyResolver": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "SubscriptiononCreateCompanyResolver"
+          },
+          {
+            "type": "graphqltransformer:resourceName",
+            "data": "Subscription.onCreateCompany"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/Company/SubscriptiononUpdateCompanyauth0Function/SubscriptiononUpdateCompanyauth0Function.AppSyncFunction": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "SubscriptiononUpdateCompanyauth0FunctionSubscriptiononUpdateCompanyauth0FunctionAppSyncFunctionE266F51B"
+          },
+          {
+            "type": "graphqltransformer:resourceName",
+            "data": "SubscriptiononUpdateCompanyauth0Function"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/Company/SubscriptiononUpdateCompanypostAuth0Function/SubscriptiononUpdateCompanypostAuth0Function.AppSyncFunction": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "SubscriptiononUpdateCompanypostAuth0FunctionSubscriptiononUpdateCompanypostAuth0FunctionAppSyncFunctionD4D34FD8"
+          },
+          {
+            "type": "graphqltransformer:resourceName",
+            "data": "SubscriptiononUpdateCompanypostAuth0Function"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/Company/SubscriptionOnUpdateCompanyDataResolverFn/SubscriptionOnUpdateCompanyDataResolverFn.AppSyncFunction": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "SubscriptionOnUpdateCompanyDataResolverFnSubscriptionOnUpdateCompanyDataResolverFnAppSyncFunctionD4330F29"
+          },
+          {
+            "type": "graphqltransformer:resourceName",
+            "data": "SubscriptionOnUpdateCompanyDataResolverFn"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/Company/subscriptionOnUpdateCompanyResolver": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "SubscriptiononUpdateCompanyResolver"
+          },
+          {
+            "type": "graphqltransformer:resourceName",
+            "data": "Subscription.onUpdateCompany"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/Company/SubscriptiononDeleteCompanyauth0Function/SubscriptiononDeleteCompanyauth0Function.AppSyncFunction": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "SubscriptiononDeleteCompanyauth0FunctionSubscriptiononDeleteCompanyauth0FunctionAppSyncFunction384F06CD"
+          },
+          {
+            "type": "graphqltransformer:resourceName",
+            "data": "SubscriptiononDeleteCompanyauth0Function"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/Company/SubscriptiononDeleteCompanypostAuth0Function/SubscriptiononDeleteCompanypostAuth0Function.AppSyncFunction": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "SubscriptiononDeleteCompanypostAuth0FunctionSubscriptiononDeleteCompanypostAuth0FunctionAppSyncFunction66104FE5"
+          },
+          {
+            "type": "graphqltransformer:resourceName",
+            "data": "SubscriptiononDeleteCompanypostAuth0Function"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/Company/SubscriptionOnDeleteCompanyDataResolverFn/SubscriptionOnDeleteCompanyDataResolverFn.AppSyncFunction": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "SubscriptionOnDeleteCompanyDataResolverFnSubscriptionOnDeleteCompanyDataResolverFnAppSyncFunction443F1B71"
+          },
+          {
+            "type": "graphqltransformer:resourceName",
+            "data": "SubscriptionOnDeleteCompanyDataResolverFn"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/Company/subscriptionOnDeleteCompanyResolver": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "SubscriptiononDeleteCompanyResolver"
+          },
+          {
+            "type": "graphqltransformer:resourceName",
+            "data": "Subscription.onDeleteCompany"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/Company/CDKMetadata/Default": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "CDKMetadata"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/Company/CDKMetadata/Condition": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "CDKMetadataAvailable"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/Company/reference-to-amplifyrodeodrivecrmbackendMHaggosandboxbe3aab280ddataamplifyDataAmplifyTableManagerNestedStackAmplifyTableManagerNestedStackResource033501A2Outputs.amplifyrodeodrivecrmbackendMHaggosandboxbe3aab280ddataamplifyDataAmplifyTableManagerTableManagerCustomProviderframeworkonEvent452A3B4FArn": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "referencetoamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280ddataamplifyDataAmplifyTableManagerNestedStackAmplifyTableManagerNestedStackResource033501A2OutputsamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280ddataamplifyDataAmplifyTableMana2E80881B"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/Company/reference-to-amplifyrodeodrivecrmbackendMHaggosandboxbe3aab280ddataamplifyDataGraphQLAPI6DE5F511ApiId": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "referencetoamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280ddataamplifyDataGraphQLAPI6DE5F511ApiId"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/Company/reference-to-amplifyrodeodrivecrmbackendMHaggosandboxbe3aab280ddataamplifyDataGraphQLAPINONEDSCE5F7ADEName": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "referencetoamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280ddataamplifyDataGraphQLAPINONEDSCE5F7ADEName"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/Company/reference-to-amplifyrodeodrivecrmbackendMHaggosandboxbe3aab280dauthNestedStackauthNestedStackResourceFFA1AE91Outputs.amplifyrodeodrivecrmbackendMHaggosandboxbe3aab280dauthamplifyAuthauthenticatedUserRole815DEA42Ref": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "referencetoamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280dauthNestedStackauthNestedStackResourceFFA1AE91OutputsamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280dauthamplifyAuthauthenticatedUserRole815DEA42Ref"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/Company/reference-to-amplifyrodeodrivecrmbackendMHaggosandboxbe3aab280dauthNestedStackauthNestedStackResourceFFA1AE91Outputs.amplifyrodeodrivecrmbackendMHaggosandboxbe3aab280dauthamplifyAuthunauthenticatedUserRole472A33C2Ref": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "referencetoamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280dauthNestedStackauthNestedStackResourceFFA1AE91OutputsamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280dauthamplifyAuthunauthenticatedUserRole472A33C2Ref"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/Company/reference-to-amplifyrodeodrivecrmbackendMHaggosandboxbe3aab280dauthNestedStackauthNestedStackResourceFFA1AE91Outputs.amplifyrodeodrivecrmbackendMHaggosandboxbe3aab280dauthamplifyAuthIdentityPool4CA00EA7Ref": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "referencetoamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280dauthNestedStackauthNestedStackResourceFFA1AE91OutputsamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280dauthamplifyAuthIdentityPool4CA00EA7Ref"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/Company.NestedStack/Company.NestedStackResource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "amplifyDataCompanyNestedStackCompanyNestedStackResource1A74F86D"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/Contact/DynamoDBModelTableReadIOPS": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "DynamoDBModelTableReadIOPS"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/Contact/DynamoDBModelTableWriteIOPS": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "DynamoDBModelTableWriteIOPS"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/Contact/DynamoDBBillingMode": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "DynamoDBBillingMode"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/Contact/DynamoDBEnablePointInTimeRecovery": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "DynamoDBEnablePointInTimeRecovery"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/Contact/DynamoDBEnableServerSideEncryption": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "DynamoDBEnableServerSideEncryption"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/Contact/HasEnvironmentParameter": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "HasEnvironmentParameter"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/Contact/ShouldUsePayPerRequestBilling": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "ShouldUsePayPerRequestBilling"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/Contact/ShouldUsePointInTimeRecovery": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "ShouldUsePointInTimeRecovery"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/Contact/ContactTable": [
+          {
+            "type": "graphqltransformer:resourceName",
+            "data": "Contact"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/Contact/ContactTable/Default/Default": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "ContactTable"
+          },
+          {
+            "type": "graphqltransformer:resourceName",
+            "data": "Contact"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/Contact/CustomTableContactTable": [
+          {
+            "type": "graphqltransformer:resourceName",
+            "data": "Contact"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/Contact/GetAttContactTableStreamArn": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "GetAttContactTableStreamArn"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/Contact/GetAttContactTableName": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "GetAttContactTableName"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/Contact/ContactIAMRole": [
+          {
+            "type": "graphqltransformer:resourceName",
+            "data": "ContactIAMRole"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/Contact/ContactIAMRole/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "ContactIAMRoleF1B90FDA"
+          },
+          {
+            "type": "graphqltransformer:resourceName",
+            "data": "ContactIAMRole"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/Contact/ContactDataSource": [
+          {
+            "type": "graphqltransformer:resourceName",
+            "data": "ContactTable"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/Contact/ContactDataSource/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "ContactDataSource"
+          },
+          {
+            "type": "graphqltransformer:resourceName",
+            "data": "ContactTable"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/Contact/QuerygetContactauth0Function/QuerygetContactauth0Function.AppSyncFunction": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "QuerygetContactauth0FunctionQuerygetContactauth0FunctionAppSyncFunction8A4B4373"
+          },
+          {
+            "type": "graphqltransformer:resourceName",
+            "data": "QuerygetContactauth0Function"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/Contact/QuerygetContactpostAuth0Function/QuerygetContactpostAuth0Function.AppSyncFunction": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "QuerygetContactpostAuth0FunctionQuerygetContactpostAuth0FunctionAppSyncFunction21F87C9C"
+          },
+          {
+            "type": "graphqltransformer:resourceName",
+            "data": "QuerygetContactpostAuth0Function"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/Contact/QueryGetContactDataResolverFn/QueryGetContactDataResolverFn.AppSyncFunction": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "QueryGetContactDataResolverFnQueryGetContactDataResolverFnAppSyncFunctionB23F2F35"
+          },
+          {
+            "type": "graphqltransformer:resourceName",
+            "data": "QueryGetContactDataResolverFn"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/Contact/queryGetContactResolver": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "GetContactResolver"
+          },
+          {
+            "type": "graphqltransformer:resourceName",
+            "data": "Query.getContact"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/Contact/QuerylistContactsauth0Function/QuerylistContactsauth0Function.AppSyncFunction": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "QuerylistContactsauth0FunctionQuerylistContactsauth0FunctionAppSyncFunction263CA20E"
+          },
+          {
+            "type": "graphqltransformer:resourceName",
+            "data": "QuerylistContactsauth0Function"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/Contact/QuerylistContactspostAuth0Function/QuerylistContactspostAuth0Function.AppSyncFunction": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "QuerylistContactspostAuth0FunctionQuerylistContactspostAuth0FunctionAppSyncFunction903E6079"
+          },
+          {
+            "type": "graphqltransformer:resourceName",
+            "data": "QuerylistContactspostAuth0Function"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/Contact/QueryListContactsDataResolverFn/QueryListContactsDataResolverFn.AppSyncFunction": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "QueryListContactsDataResolverFnQueryListContactsDataResolverFnAppSyncFunctionBA3ABF06"
+          },
+          {
+            "type": "graphqltransformer:resourceName",
+            "data": "QueryListContactsDataResolverFn"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/Contact/queryListContactsResolver": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "ListContactResolver"
+          },
+          {
+            "type": "graphqltransformer:resourceName",
+            "data": "Query.listContacts"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/Contact/MutationcreateContactinit0Function/MutationcreateContactinit0Function.AppSyncFunction": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "MutationcreateContactinit0FunctionMutationcreateContactinit0FunctionAppSyncFunctionC450DD52"
+          },
+          {
+            "type": "graphqltransformer:resourceName",
+            "data": "MutationcreateContactinit0Function"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/Contact/MutationcreateContactauth0Function/MutationcreateContactauth0Function.AppSyncFunction": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "MutationcreateContactauth0FunctionMutationcreateContactauth0FunctionAppSyncFunction56020123"
+          },
+          {
+            "type": "graphqltransformer:resourceName",
+            "data": "MutationcreateContactauth0Function"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/Contact/MutationcreateContactpostAuth0Function/MutationcreateContactpostAuth0Function.AppSyncFunction": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "MutationcreateContactpostAuth0FunctionMutationcreateContactpostAuth0FunctionAppSyncFunction4B81F1CC"
+          },
+          {
+            "type": "graphqltransformer:resourceName",
+            "data": "MutationcreateContactpostAuth0Function"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/Contact/MutationCreateContactDataResolverFn/MutationCreateContactDataResolverFn.AppSyncFunction": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "MutationCreateContactDataResolverFnMutationCreateContactDataResolverFnAppSyncFunctionC2A9BF4F"
+          },
+          {
+            "type": "graphqltransformer:resourceName",
+            "data": "MutationCreateContactDataResolverFn"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/Contact/mutationCreateContactResolver": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "CreateContactResolver"
+          },
+          {
+            "type": "graphqltransformer:resourceName",
+            "data": "Mutation.createContact"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/Contact/MutationupdateContactinit0Function/MutationupdateContactinit0Function.AppSyncFunction": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "MutationupdateContactinit0FunctionMutationupdateContactinit0FunctionAppSyncFunctionAD8EF574"
+          },
+          {
+            "type": "graphqltransformer:resourceName",
+            "data": "MutationupdateContactinit0Function"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/Contact/MutationupdateContactauth0Function/MutationupdateContactauth0Function.AppSyncFunction": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "MutationupdateContactauth0FunctionMutationupdateContactauth0FunctionAppSyncFunctionDC303342"
+          },
+          {
+            "type": "graphqltransformer:resourceName",
+            "data": "MutationupdateContactauth0Function"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/Contact/MutationupdateContactpostAuth0Function/MutationupdateContactpostAuth0Function.AppSyncFunction": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "MutationupdateContactpostAuth0FunctionMutationupdateContactpostAuth0FunctionAppSyncFunction43B83D5D"
+          },
+          {
+            "type": "graphqltransformer:resourceName",
+            "data": "MutationupdateContactpostAuth0Function"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/Contact/MutationUpdateContactDataResolverFn/MutationUpdateContactDataResolverFn.AppSyncFunction": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "MutationUpdateContactDataResolverFnMutationUpdateContactDataResolverFnAppSyncFunctionACB684CE"
+          },
+          {
+            "type": "graphqltransformer:resourceName",
+            "data": "MutationUpdateContactDataResolverFn"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/Contact/mutationUpdateContactResolver": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "UpdateContactResolver"
+          },
+          {
+            "type": "graphqltransformer:resourceName",
+            "data": "Mutation.updateContact"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/Contact/MutationdeleteContactauth0Function/MutationdeleteContactauth0Function.AppSyncFunction": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "MutationdeleteContactauth0FunctionMutationdeleteContactauth0FunctionAppSyncFunction74A031BA"
+          },
+          {
+            "type": "graphqltransformer:resourceName",
+            "data": "MutationdeleteContactauth0Function"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/Contact/MutationdeleteContactpostAuth0Function/MutationdeleteContactpostAuth0Function.AppSyncFunction": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "MutationdeleteContactpostAuth0FunctionMutationdeleteContactpostAuth0FunctionAppSyncFunction7C8D5582"
+          },
+          {
+            "type": "graphqltransformer:resourceName",
+            "data": "MutationdeleteContactpostAuth0Function"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/Contact/MutationDeleteContactDataResolverFn/MutationDeleteContactDataResolverFn.AppSyncFunction": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "MutationDeleteContactDataResolverFnMutationDeleteContactDataResolverFnAppSyncFunction7C1CC527"
+          },
+          {
+            "type": "graphqltransformer:resourceName",
+            "data": "MutationDeleteContactDataResolverFn"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/Contact/mutationDeleteContactResolver": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "DeleteContactResolver"
+          },
+          {
+            "type": "graphqltransformer:resourceName",
+            "data": "Mutation.deleteContact"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/Contact/SubscriptiononCreateContactauth0Function/SubscriptiononCreateContactauth0Function.AppSyncFunction": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "SubscriptiononCreateContactauth0FunctionSubscriptiononCreateContactauth0FunctionAppSyncFunction26F2963D"
+          },
+          {
+            "type": "graphqltransformer:resourceName",
+            "data": "SubscriptiononCreateContactauth0Function"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/Contact/SubscriptiononCreateContactpostAuth0Function/SubscriptiononCreateContactpostAuth0Function.AppSyncFunction": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "SubscriptiononCreateContactpostAuth0FunctionSubscriptiononCreateContactpostAuth0FunctionAppSyncFunction382A825A"
+          },
+          {
+            "type": "graphqltransformer:resourceName",
+            "data": "SubscriptiononCreateContactpostAuth0Function"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/Contact/SubscriptionOnCreateContactDataResolverFn/SubscriptionOnCreateContactDataResolverFn.AppSyncFunction": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "SubscriptionOnCreateContactDataResolverFnSubscriptionOnCreateContactDataResolverFnAppSyncFunction7EE138A2"
+          },
+          {
+            "type": "graphqltransformer:resourceName",
+            "data": "SubscriptionOnCreateContactDataResolverFn"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/Contact/subscriptionOnCreateContactResolver": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "SubscriptiononCreateContactResolver"
+          },
+          {
+            "type": "graphqltransformer:resourceName",
+            "data": "Subscription.onCreateContact"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/Contact/SubscriptiononUpdateContactauth0Function/SubscriptiononUpdateContactauth0Function.AppSyncFunction": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "SubscriptiononUpdateContactauth0FunctionSubscriptiononUpdateContactauth0FunctionAppSyncFunction338B6798"
+          },
+          {
+            "type": "graphqltransformer:resourceName",
+            "data": "SubscriptiononUpdateContactauth0Function"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/Contact/SubscriptiononUpdateContactpostAuth0Function/SubscriptiononUpdateContactpostAuth0Function.AppSyncFunction": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "SubscriptiononUpdateContactpostAuth0FunctionSubscriptiononUpdateContactpostAuth0FunctionAppSyncFunction10D7EF5A"
+          },
+          {
+            "type": "graphqltransformer:resourceName",
+            "data": "SubscriptiononUpdateContactpostAuth0Function"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/Contact/SubscriptionOnUpdateContactDataResolverFn/SubscriptionOnUpdateContactDataResolverFn.AppSyncFunction": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "SubscriptionOnUpdateContactDataResolverFnSubscriptionOnUpdateContactDataResolverFnAppSyncFunctionCAB727EB"
+          },
+          {
+            "type": "graphqltransformer:resourceName",
+            "data": "SubscriptionOnUpdateContactDataResolverFn"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/Contact/subscriptionOnUpdateContactResolver": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "SubscriptiononUpdateContactResolver"
+          },
+          {
+            "type": "graphqltransformer:resourceName",
+            "data": "Subscription.onUpdateContact"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/Contact/SubscriptiononDeleteContactauth0Function/SubscriptiononDeleteContactauth0Function.AppSyncFunction": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "SubscriptiononDeleteContactauth0FunctionSubscriptiononDeleteContactauth0FunctionAppSyncFunctionEF599A44"
+          },
+          {
+            "type": "graphqltransformer:resourceName",
+            "data": "SubscriptiononDeleteContactauth0Function"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/Contact/SubscriptiononDeleteContactpostAuth0Function/SubscriptiononDeleteContactpostAuth0Function.AppSyncFunction": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "SubscriptiononDeleteContactpostAuth0FunctionSubscriptiononDeleteContactpostAuth0FunctionAppSyncFunctionCB9DF072"
+          },
+          {
+            "type": "graphqltransformer:resourceName",
+            "data": "SubscriptiononDeleteContactpostAuth0Function"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/Contact/SubscriptionOnDeleteContactDataResolverFn/SubscriptionOnDeleteContactDataResolverFn.AppSyncFunction": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "SubscriptionOnDeleteContactDataResolverFnSubscriptionOnDeleteContactDataResolverFnAppSyncFunction51E9E23A"
+          },
+          {
+            "type": "graphqltransformer:resourceName",
+            "data": "SubscriptionOnDeleteContactDataResolverFn"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/Contact/subscriptionOnDeleteContactResolver": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "SubscriptiononDeleteContactResolver"
+          },
+          {
+            "type": "graphqltransformer:resourceName",
+            "data": "Subscription.onDeleteContact"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/Contact/CDKMetadata/Default": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "CDKMetadata"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/Contact/CDKMetadata/Condition": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "CDKMetadataAvailable"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/Contact/reference-to-amplifyrodeodrivecrmbackendMHaggosandboxbe3aab280ddataamplifyDataAmplifyTableManagerNestedStackAmplifyTableManagerNestedStackResource033501A2Outputs.amplifyrodeodrivecrmbackendMHaggosandboxbe3aab280ddataamplifyDataAmplifyTableManagerTableManagerCustomProviderframeworkonEvent452A3B4FArn": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "referencetoamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280ddataamplifyDataAmplifyTableManagerNestedStackAmplifyTableManagerNestedStackResource033501A2OutputsamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280ddataamplifyDataAmplifyTableMana2E80881B"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/Contact/reference-to-amplifyrodeodrivecrmbackendMHaggosandboxbe3aab280ddataamplifyDataGraphQLAPI6DE5F511ApiId": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "referencetoamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280ddataamplifyDataGraphQLAPI6DE5F511ApiId"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/Contact/reference-to-amplifyrodeodrivecrmbackendMHaggosandboxbe3aab280ddataamplifyDataGraphQLAPINONEDSCE5F7ADEName": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "referencetoamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280ddataamplifyDataGraphQLAPINONEDSCE5F7ADEName"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/Contact/reference-to-amplifyrodeodrivecrmbackendMHaggosandboxbe3aab280dauthNestedStackauthNestedStackResourceFFA1AE91Outputs.amplifyrodeodrivecrmbackendMHaggosandboxbe3aab280dauthamplifyAuthauthenticatedUserRole815DEA42Ref": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "referencetoamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280dauthNestedStackauthNestedStackResourceFFA1AE91OutputsamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280dauthamplifyAuthauthenticatedUserRole815DEA42Ref"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/Contact/reference-to-amplifyrodeodrivecrmbackendMHaggosandboxbe3aab280dauthNestedStackauthNestedStackResourceFFA1AE91Outputs.amplifyrodeodrivecrmbackendMHaggosandboxbe3aab280dauthamplifyAuthunauthenticatedUserRole472A33C2Ref": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "referencetoamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280dauthNestedStackauthNestedStackResourceFFA1AE91OutputsamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280dauthamplifyAuthunauthenticatedUserRole472A33C2Ref"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/Contact/reference-to-amplifyrodeodrivecrmbackendMHaggosandboxbe3aab280dauthNestedStackauthNestedStackResourceFFA1AE91Outputs.amplifyrodeodrivecrmbackendMHaggosandboxbe3aab280dauthamplifyAuthIdentityPool4CA00EA7Ref": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "referencetoamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280dauthNestedStackauthNestedStackResourceFFA1AE91OutputsamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280dauthamplifyAuthIdentityPool4CA00EA7Ref"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/Contact.NestedStack/Contact.NestedStackResource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "amplifyDataContactNestedStackContactNestedStackResource0434E92B"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/Deal/DynamoDBModelTableReadIOPS": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "DynamoDBModelTableReadIOPS"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/Deal/DynamoDBModelTableWriteIOPS": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "DynamoDBModelTableWriteIOPS"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/Deal/DynamoDBBillingMode": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "DynamoDBBillingMode"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/Deal/DynamoDBEnablePointInTimeRecovery": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "DynamoDBEnablePointInTimeRecovery"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/Deal/DynamoDBEnableServerSideEncryption": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "DynamoDBEnableServerSideEncryption"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/Deal/HasEnvironmentParameter": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "HasEnvironmentParameter"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/Deal/ShouldUsePayPerRequestBilling": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "ShouldUsePayPerRequestBilling"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/Deal/ShouldUsePointInTimeRecovery": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "ShouldUsePointInTimeRecovery"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/Deal/DealTable": [
+          {
+            "type": "graphqltransformer:resourceName",
+            "data": "Deal"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/Deal/DealTable/Default/Default": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "DealTable"
+          },
+          {
+            "type": "graphqltransformer:resourceName",
+            "data": "Deal"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/Deal/CustomTableDealTable": [
+          {
+            "type": "graphqltransformer:resourceName",
+            "data": "Deal"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/Deal/GetAttDealTableStreamArn": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "GetAttDealTableStreamArn"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/Deal/GetAttDealTableName": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "GetAttDealTableName"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/Deal/DealIAMRole": [
+          {
+            "type": "graphqltransformer:resourceName",
+            "data": "DealIAMRole"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/Deal/DealIAMRole/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "DealIAMRole4C7BFD5B"
+          },
+          {
+            "type": "graphqltransformer:resourceName",
+            "data": "DealIAMRole"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/Deal/DealDataSource": [
+          {
+            "type": "graphqltransformer:resourceName",
+            "data": "DealTable"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/Deal/DealDataSource/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "DealDataSource"
+          },
+          {
+            "type": "graphqltransformer:resourceName",
+            "data": "DealTable"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/Deal/QuerygetDealauth0Function/QuerygetDealauth0Function.AppSyncFunction": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "QuerygetDealauth0FunctionQuerygetDealauth0FunctionAppSyncFunction3DCD4D66"
+          },
+          {
+            "type": "graphqltransformer:resourceName",
+            "data": "QuerygetDealauth0Function"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/Deal/QuerygetDealpostAuth0Function/QuerygetDealpostAuth0Function.AppSyncFunction": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "QuerygetDealpostAuth0FunctionQuerygetDealpostAuth0FunctionAppSyncFunctionB1A85A2C"
+          },
+          {
+            "type": "graphqltransformer:resourceName",
+            "data": "QuerygetDealpostAuth0Function"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/Deal/QueryGetDealDataResolverFn/QueryGetDealDataResolverFn.AppSyncFunction": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "QueryGetDealDataResolverFnQueryGetDealDataResolverFnAppSyncFunction4FF4FBCE"
+          },
+          {
+            "type": "graphqltransformer:resourceName",
+            "data": "QueryGetDealDataResolverFn"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/Deal/queryGetDealResolver": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "GetDealResolver"
+          },
+          {
+            "type": "graphqltransformer:resourceName",
+            "data": "Query.getDeal"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/Deal/QuerylistDealsauth0Function/QuerylistDealsauth0Function.AppSyncFunction": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "QuerylistDealsauth0FunctionQuerylistDealsauth0FunctionAppSyncFunction560D9A68"
+          },
+          {
+            "type": "graphqltransformer:resourceName",
+            "data": "QuerylistDealsauth0Function"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/Deal/QuerylistDealspostAuth0Function/QuerylistDealspostAuth0Function.AppSyncFunction": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "QuerylistDealspostAuth0FunctionQuerylistDealspostAuth0FunctionAppSyncFunction382A94B0"
+          },
+          {
+            "type": "graphqltransformer:resourceName",
+            "data": "QuerylistDealspostAuth0Function"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/Deal/QueryListDealsDataResolverFn/QueryListDealsDataResolverFn.AppSyncFunction": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "QueryListDealsDataResolverFnQueryListDealsDataResolverFnAppSyncFunction97480390"
+          },
+          {
+            "type": "graphqltransformer:resourceName",
+            "data": "QueryListDealsDataResolverFn"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/Deal/queryListDealsResolver": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "ListDealResolver"
+          },
+          {
+            "type": "graphqltransformer:resourceName",
+            "data": "Query.listDeals"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/Deal/MutationcreateDealinit0Function/MutationcreateDealinit0Function.AppSyncFunction": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "MutationcreateDealinit0FunctionMutationcreateDealinit0FunctionAppSyncFunction2A00BC9A"
+          },
+          {
+            "type": "graphqltransformer:resourceName",
+            "data": "MutationcreateDealinit0Function"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/Deal/MutationcreateDealauth0Function/MutationcreateDealauth0Function.AppSyncFunction": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "MutationcreateDealauth0FunctionMutationcreateDealauth0FunctionAppSyncFunctionD4226731"
+          },
+          {
+            "type": "graphqltransformer:resourceName",
+            "data": "MutationcreateDealauth0Function"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/Deal/MutationcreateDealpostAuth0Function/MutationcreateDealpostAuth0Function.AppSyncFunction": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "MutationcreateDealpostAuth0FunctionMutationcreateDealpostAuth0FunctionAppSyncFunctionE3ED13B2"
+          },
+          {
+            "type": "graphqltransformer:resourceName",
+            "data": "MutationcreateDealpostAuth0Function"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/Deal/MutationCreateDealDataResolverFn/MutationCreateDealDataResolverFn.AppSyncFunction": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "MutationCreateDealDataResolverFnMutationCreateDealDataResolverFnAppSyncFunctionBF418CAB"
+          },
+          {
+            "type": "graphqltransformer:resourceName",
+            "data": "MutationCreateDealDataResolverFn"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/Deal/mutationCreateDealResolver": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "CreateDealResolver"
+          },
+          {
+            "type": "graphqltransformer:resourceName",
+            "data": "Mutation.createDeal"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/Deal/MutationupdateDealinit0Function/MutationupdateDealinit0Function.AppSyncFunction": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "MutationupdateDealinit0FunctionMutationupdateDealinit0FunctionAppSyncFunction508589EA"
+          },
+          {
+            "type": "graphqltransformer:resourceName",
+            "data": "MutationupdateDealinit0Function"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/Deal/MutationupdateDealauth0Function/MutationupdateDealauth0Function.AppSyncFunction": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "MutationupdateDealauth0FunctionMutationupdateDealauth0FunctionAppSyncFunction8773C6F0"
+          },
+          {
+            "type": "graphqltransformer:resourceName",
+            "data": "MutationupdateDealauth0Function"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/Deal/MutationupdateDealpostAuth0Function/MutationupdateDealpostAuth0Function.AppSyncFunction": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "MutationupdateDealpostAuth0FunctionMutationupdateDealpostAuth0FunctionAppSyncFunction2E9E3359"
+          },
+          {
+            "type": "graphqltransformer:resourceName",
+            "data": "MutationupdateDealpostAuth0Function"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/Deal/MutationUpdateDealDataResolverFn/MutationUpdateDealDataResolverFn.AppSyncFunction": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "MutationUpdateDealDataResolverFnMutationUpdateDealDataResolverFnAppSyncFunction123D880A"
+          },
+          {
+            "type": "graphqltransformer:resourceName",
+            "data": "MutationUpdateDealDataResolverFn"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/Deal/mutationUpdateDealResolver": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "UpdateDealResolver"
+          },
+          {
+            "type": "graphqltransformer:resourceName",
+            "data": "Mutation.updateDeal"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/Deal/MutationdeleteDealauth0Function/MutationdeleteDealauth0Function.AppSyncFunction": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "MutationdeleteDealauth0FunctionMutationdeleteDealauth0FunctionAppSyncFunction209C30F4"
+          },
+          {
+            "type": "graphqltransformer:resourceName",
+            "data": "MutationdeleteDealauth0Function"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/Deal/MutationdeleteDealpostAuth0Function/MutationdeleteDealpostAuth0Function.AppSyncFunction": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "MutationdeleteDealpostAuth0FunctionMutationdeleteDealpostAuth0FunctionAppSyncFunction6958D620"
+          },
+          {
+            "type": "graphqltransformer:resourceName",
+            "data": "MutationdeleteDealpostAuth0Function"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/Deal/MutationDeleteDealDataResolverFn/MutationDeleteDealDataResolverFn.AppSyncFunction": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "MutationDeleteDealDataResolverFnMutationDeleteDealDataResolverFnAppSyncFunction42A877D4"
+          },
+          {
+            "type": "graphqltransformer:resourceName",
+            "data": "MutationDeleteDealDataResolverFn"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/Deal/mutationDeleteDealResolver": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "DeleteDealResolver"
+          },
+          {
+            "type": "graphqltransformer:resourceName",
+            "data": "Mutation.deleteDeal"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/Deal/SubscriptiononCreateDealauth0Function/SubscriptiononCreateDealauth0Function.AppSyncFunction": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "SubscriptiononCreateDealauth0FunctionSubscriptiononCreateDealauth0FunctionAppSyncFunctionB6A8219D"
+          },
+          {
+            "type": "graphqltransformer:resourceName",
+            "data": "SubscriptiononCreateDealauth0Function"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/Deal/SubscriptiononCreateDealpostAuth0Function/SubscriptiononCreateDealpostAuth0Function.AppSyncFunction": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "SubscriptiononCreateDealpostAuth0FunctionSubscriptiononCreateDealpostAuth0FunctionAppSyncFunction7337FE2D"
+          },
+          {
+            "type": "graphqltransformer:resourceName",
+            "data": "SubscriptiononCreateDealpostAuth0Function"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/Deal/SubscriptionOnCreateDealDataResolverFn/SubscriptionOnCreateDealDataResolverFn.AppSyncFunction": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "SubscriptionOnCreateDealDataResolverFnSubscriptionOnCreateDealDataResolverFnAppSyncFunction8428C014"
+          },
+          {
+            "type": "graphqltransformer:resourceName",
+            "data": "SubscriptionOnCreateDealDataResolverFn"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/Deal/subscriptionOnCreateDealResolver": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "SubscriptiononCreateDealResolver"
+          },
+          {
+            "type": "graphqltransformer:resourceName",
+            "data": "Subscription.onCreateDeal"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/Deal/SubscriptiononUpdateDealauth0Function/SubscriptiononUpdateDealauth0Function.AppSyncFunction": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "SubscriptiononUpdateDealauth0FunctionSubscriptiononUpdateDealauth0FunctionAppSyncFunction69ADC2A7"
+          },
+          {
+            "type": "graphqltransformer:resourceName",
+            "data": "SubscriptiononUpdateDealauth0Function"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/Deal/SubscriptiononUpdateDealpostAuth0Function/SubscriptiononUpdateDealpostAuth0Function.AppSyncFunction": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "SubscriptiononUpdateDealpostAuth0FunctionSubscriptiononUpdateDealpostAuth0FunctionAppSyncFunctionA0F39CB2"
+          },
+          {
+            "type": "graphqltransformer:resourceName",
+            "data": "SubscriptiononUpdateDealpostAuth0Function"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/Deal/SubscriptionOnUpdateDealDataResolverFn/SubscriptionOnUpdateDealDataResolverFn.AppSyncFunction": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "SubscriptionOnUpdateDealDataResolverFnSubscriptionOnUpdateDealDataResolverFnAppSyncFunction2DB7B832"
+          },
+          {
+            "type": "graphqltransformer:resourceName",
+            "data": "SubscriptionOnUpdateDealDataResolverFn"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/Deal/subscriptionOnUpdateDealResolver": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "SubscriptiononUpdateDealResolver"
+          },
+          {
+            "type": "graphqltransformer:resourceName",
+            "data": "Subscription.onUpdateDeal"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/Deal/SubscriptiononDeleteDealauth0Function/SubscriptiononDeleteDealauth0Function.AppSyncFunction": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "SubscriptiononDeleteDealauth0FunctionSubscriptiononDeleteDealauth0FunctionAppSyncFunction28EE9BF3"
+          },
+          {
+            "type": "graphqltransformer:resourceName",
+            "data": "SubscriptiononDeleteDealauth0Function"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/Deal/SubscriptiononDeleteDealpostAuth0Function/SubscriptiononDeleteDealpostAuth0Function.AppSyncFunction": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "SubscriptiononDeleteDealpostAuth0FunctionSubscriptiononDeleteDealpostAuth0FunctionAppSyncFunctionB2EB5DF9"
+          },
+          {
+            "type": "graphqltransformer:resourceName",
+            "data": "SubscriptiononDeleteDealpostAuth0Function"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/Deal/SubscriptionOnDeleteDealDataResolverFn/SubscriptionOnDeleteDealDataResolverFn.AppSyncFunction": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "SubscriptionOnDeleteDealDataResolverFnSubscriptionOnDeleteDealDataResolverFnAppSyncFunction6F0B5640"
+          },
+          {
+            "type": "graphqltransformer:resourceName",
+            "data": "SubscriptionOnDeleteDealDataResolverFn"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/Deal/subscriptionOnDeleteDealResolver": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "SubscriptiononDeleteDealResolver"
+          },
+          {
+            "type": "graphqltransformer:resourceName",
+            "data": "Subscription.onDeleteDeal"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/Deal/CDKMetadata/Default": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "CDKMetadata"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/Deal/CDKMetadata/Condition": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "CDKMetadataAvailable"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/Deal/reference-to-amplifyrodeodrivecrmbackendMHaggosandboxbe3aab280ddataamplifyDataAmplifyTableManagerNestedStackAmplifyTableManagerNestedStackResource033501A2Outputs.amplifyrodeodrivecrmbackendMHaggosandboxbe3aab280ddataamplifyDataAmplifyTableManagerTableManagerCustomProviderframeworkonEvent452A3B4FArn": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "referencetoamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280ddataamplifyDataAmplifyTableManagerNestedStackAmplifyTableManagerNestedStackResource033501A2OutputsamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280ddataamplifyDataAmplifyTableMana2E80881B"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/Deal/reference-to-amplifyrodeodrivecrmbackendMHaggosandboxbe3aab280ddataamplifyDataGraphQLAPI6DE5F511ApiId": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "referencetoamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280ddataamplifyDataGraphQLAPI6DE5F511ApiId"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/Deal/reference-to-amplifyrodeodrivecrmbackendMHaggosandboxbe3aab280ddataamplifyDataGraphQLAPINONEDSCE5F7ADEName": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "referencetoamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280ddataamplifyDataGraphQLAPINONEDSCE5F7ADEName"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/Deal/reference-to-amplifyrodeodrivecrmbackendMHaggosandboxbe3aab280dauthNestedStackauthNestedStackResourceFFA1AE91Outputs.amplifyrodeodrivecrmbackendMHaggosandboxbe3aab280dauthamplifyAuthauthenticatedUserRole815DEA42Ref": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "referencetoamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280dauthNestedStackauthNestedStackResourceFFA1AE91OutputsamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280dauthamplifyAuthauthenticatedUserRole815DEA42Ref"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/Deal/reference-to-amplifyrodeodrivecrmbackendMHaggosandboxbe3aab280dauthNestedStackauthNestedStackResourceFFA1AE91Outputs.amplifyrodeodrivecrmbackendMHaggosandboxbe3aab280dauthamplifyAuthunauthenticatedUserRole472A33C2Ref": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "referencetoamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280dauthNestedStackauthNestedStackResourceFFA1AE91OutputsamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280dauthamplifyAuthunauthenticatedUserRole472A33C2Ref"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/Deal/reference-to-amplifyrodeodrivecrmbackendMHaggosandboxbe3aab280dauthNestedStackauthNestedStackResourceFFA1AE91Outputs.amplifyrodeodrivecrmbackendMHaggosandboxbe3aab280dauthamplifyAuthIdentityPool4CA00EA7Ref": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "referencetoamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280dauthNestedStackauthNestedStackResourceFFA1AE91OutputsamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280dauthamplifyAuthIdentityPool4CA00EA7Ref"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/Deal.NestedStack/Deal.NestedStackResource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "amplifyDataDealNestedStackDealNestedStackResource64123BD7"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/AmplifyCodegenAssets/AmplifyCodegenAssetsBucket/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "amplifyDataAmplifyCodegenAssetsAmplifyCodegenAssetsBucket9CCB4ACA"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/AmplifyCodegenAssets/AmplifyCodegenAssetsBucket/Policy/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "amplifyDataAmplifyCodegenAssetsAmplifyCodegenAssetsBucketPolicyF1C1C548"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/AmplifyCodegenAssets/AmplifyCodegenAssetsBucket/AutoDeleteObjectsCustomResource/Default": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "amplifyDataAmplifyCodegenAssetsAmplifyCodegenAssetsBucketAutoDeleteObjectsCustomResource437F26F5"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/AmplifyCodegenAssets/AmplifyCodegenAssetsDeployment/AwsCliLayer/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "amplifyDataAmplifyCodegenAssetsAmplifyCodegenAssetsDeploymentAwsCliLayerE322F905"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/AmplifyCodegenAssets/AmplifyCodegenAssetsDeployment/CustomResource-1536MiB/Default": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "amplifyDataAmplifyCodegenAssetsAmplifyCodegenAssetsDeploymentCustomResource1536MiB21775929"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/DynamoDBModelTableReadIOPS": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "DynamoDBModelTableReadIOPS"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/DynamoDBModelTableWriteIOPS": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "DynamoDBModelTableWriteIOPS"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/DynamoDBBillingMode": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "DynamoDBBillingMode"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/DynamoDBEnablePointInTimeRecovery": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "DynamoDBEnablePointInTimeRecovery"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/DynamoDBEnableServerSideEncryption": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "DynamoDBEnableServerSideEncryption"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/Custom::S3AutoDeleteObjectsCustomResourceProvider": [
+          {
+            "type": "aws:cdk:is-custom-resource-handler-customResourceProvider",
+            "data": true
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/Custom::S3AutoDeleteObjectsCustomResourceProvider/Role": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "CustomS3AutoDeleteObjectsCustomResourceProviderRole3B1BD092"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/Custom::S3AutoDeleteObjectsCustomResourceProvider/Handler": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "CustomS3AutoDeleteObjectsCustomResourceProviderHandler9D90184F"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/Custom::CDKBucketDeployment8693BB64968944B69AAFB0CC9EB8756C1536MiB": [
+          {
+            "type": "aws:cdk:is-custom-resource-handler-singleton",
+            "data": true
+          },
+          {
+            "type": "aws:cdk:is-custom-resource-handler-runtime-family",
+            "data": 2
+          },
+          {
+            "type": "aws:cdk:is-custom-resource-handler-singleton",
+            "data": true
+          },
+          {
+            "type": "aws:cdk:is-custom-resource-handler-runtime-family",
+            "data": 2
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/Custom::CDKBucketDeployment8693BB64968944B69AAFB0CC9EB8756C1536MiB/ServiceRole/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "CustomCDKBucketDeployment8693BB64968944B69AAFB0CC9EB8756C1536MiBServiceRoleA41FC8C2"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/Custom::CDKBucketDeployment8693BB64968944B69AAFB0CC9EB8756C1536MiB/ServiceRole/DefaultPolicy/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "CustomCDKBucketDeployment8693BB64968944B69AAFB0CC9EB8756C1536MiBServiceRoleDefaultPolicyFF1C635B"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/Custom::CDKBucketDeployment8693BB64968944B69AAFB0CC9EB8756C1536MiB/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "CustomCDKBucketDeployment8693BB64968944B69AAFB0CC9EB8756C1536MiBC5D8AB21"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/modelIntrospectionSchemaBucket/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "modelIntrospectionSchemaBucketF566B665"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/modelIntrospectionSchemaBucket/Policy/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "modelIntrospectionSchemaBucketPolicy4DAB0D15"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/modelIntrospectionSchemaBucket/AutoDeleteObjectsCustomResource/Default": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "modelIntrospectionSchemaBucketAutoDeleteObjectsCustomResourceFE57309F"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/modelIntrospectionSchemaBucketDeployment/AwsCliLayer/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "modelIntrospectionSchemaBucketDeploymentAwsCliLayer13C432F7"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/modelIntrospectionSchemaBucketDeployment/CustomResource-1536MiB/Default": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "modelIntrospectionSchemaBucketDeploymentCustomResource1536MiB104B97EC"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/AMPLIFY_DATA_GRAPHQL_ENDPOINTParameter/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "AMPLIFYDATAGRAPHQLENDPOINTParameter1C2CBB16"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/AMPLIFY_DATA_MODEL_INTROSPECTION_SCHEMA_BUCKET_NAMEParameter/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "AMPLIFYDATAMODELINTROSPECTIONSCHEMABUCKETNAMEParameter47BF4F44"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/AMPLIFY_DATA_MODEL_INTROSPECTION_SCHEMA_KEYParameter/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "AMPLIFYDATAMODELINTROSPECTIONSCHEMAKEYParameterB6AEAE8A"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/AMPLIFY_DATA_DEFAULT_NAMEParameter/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "AMPLIFYDATADEFAULTNAMEParameterE7C23CC4"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/CDKMetadata/Default": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "CDKMetadata"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/CDKMetadata/Condition": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "CDKMetadataAvailable"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/reference-to-amplifyrodeodrivecrmbackendMHaggosandboxbe3aab280dauthNestedStackauthNestedStackResourceFFA1AE91Outputs.amplifyrodeodrivecrmbackendMHaggosandboxbe3aab280dauthamplifyAuthUserPool924F6EA5Ref": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "referencetoamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280dauthNestedStackauthNestedStackResourceFFA1AE91OutputsamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280dauthamplifyAuthUserPool924F6EA5Ref"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/reference-to-amplifyrodeodrivecrmbackendMHaggosandboxbe3aab280dauthNestedStackauthNestedStackResourceFFA1AE91Outputs.amplifyrodeodrivecrmbackendMHaggosandboxbe3aab280dauthamplifyAuthauthenticatedUserRole815DEA42Ref": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "referencetoamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280dauthNestedStackauthNestedStackResourceFFA1AE91OutputsamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280dauthamplifyAuthauthenticatedUserRole815DEA42Ref"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/reference-to-amplifyrodeodrivecrmbackendMHaggosandboxbe3aab280dauthNestedStackauthNestedStackResourceFFA1AE91Outputs.amplifyrodeodrivecrmbackendMHaggosandboxbe3aab280dauthamplifyAuthunauthenticatedUserRole472A33C2Ref": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "referencetoamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280dauthNestedStackauthNestedStackResourceFFA1AE91OutputsamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280dauthamplifyAuthunauthenticatedUserRole472A33C2Ref"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/reference-to-amplifyrodeodrivecrmbackendMHaggosandboxbe3aab280dauthNestedStackauthNestedStackResourceFFA1AE91Outputs.amplifyrodeodrivecrmbackendMHaggosandboxbe3aab280dauthamplifyAuthIdentityPool4CA00EA7Ref": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "referencetoamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280dauthNestedStackauthNestedStackResourceFFA1AE91OutputsamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280dauthamplifyAuthIdentityPool4CA00EA7Ref"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyrodeodrivecrmbackendMHaggosandboxbe3aab280ddataamplifyDataGraphQLAPI6DE5F511ApiId": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "amplifyrodeodrivecrmbackendMHaggosandboxbe3aab280ddataamplifyDataGraphQLAPI6DE5F511ApiId"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyrodeodrivecrmbackendMHaggosandboxbe3aab280ddataamplifyDataGraphQLAPI6DE5F511GraphQLUrl": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "amplifyrodeodrivecrmbackendMHaggosandboxbe3aab280ddataamplifyDataGraphQLAPI6DE5F511GraphQLUrl"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyrodeodrivecrmbackendMHaggosandboxbe3aab280ddataamplifyDataAmplifyCodegenAssetsAmplifyCodegenAssetsDeploymentCustomResource1536MiBF3BBFC23DestinationBucketArn": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "amplifyrodeodrivecrmbackendMHaggosandboxbe3aab280ddataamplifyDataAmplifyCodegenAssetsAmplifyCodegenAssetsDeploymentCustomResource1536MiBF3BBFC23DestinationBucketArn"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data.NestedStack/data.NestedStackResource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "data7552DF31"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/awsAppsyncApiId": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "awsAppsyncApiId"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/awsAppsyncApiEndpoint": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "awsAppsyncApiEndpoint"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/awsAppsyncAuthenticationType": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "awsAppsyncAuthenticationType"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/awsAppsyncRegion": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "awsAppsyncRegion"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/amplifyApiModelSchemaS3Uri": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "amplifyApiModelSchemaS3Uri"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/awsAppsyncAdditionalAuthenticationTypes": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "awsAppsyncAdditionalAuthenticationTypes"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/CDKMetadata/Default": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "CDKMetadata"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/CDKMetadata/Condition": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "CDKMetadataAvailable"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/BootstrapVersion": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "BootstrapVersion"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/CheckBootstrapVersion": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "CheckBootstrapVersion"
+          }
+        ]
+      },
+      "displayName": "amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d"
+    },
+    "Tree": {
+      "type": "cdk:tree",
+      "properties": {
+        "file": "tree.json"
+      }
+    },
+    "aws-cdk-lib/feature-flag-report": {
+      "type": "cdk:feature-flag-report",
+      "properties": {
+        "module": "aws-cdk-lib",
+        "flags": {
+          "@aws-cdk/aws-signer:signingProfileNamePassedToCfn": {
+            "recommendedValue": true,
+            "explanation": "Pass signingProfileName to CfnSigningProfile"
+          },
+          "@aws-cdk/core:newStyleStackSynthesis": {
+            "recommendedValue": true,
+            "explanation": "Switch to new stack synthesis method which enables CI/CD",
+            "unconfiguredBehavesLike": {
+              "v2": true
+            }
+          },
+          "@aws-cdk/core:stackRelativeExports": {
+            "recommendedValue": true,
+            "explanation": "Name exports based on the construct paths relative to the stack, rather than the global construct path",
+            "unconfiguredBehavesLike": {
+              "v2": true
+            }
+          },
+          "@aws-cdk/aws-ecs-patterns:secGroupsDisablesImplicitOpenListener": {
+            "recommendedValue": true,
+            "explanation": "Disable implicit openListener when custom security groups are provided"
+          },
+          "@aws-cdk/aws-rds:lowercaseDbIdentifier": {
+            "recommendedValue": true,
+            "explanation": "Force lowercasing of RDS Cluster names in CDK",
+            "unconfiguredBehavesLike": {
+              "v2": true
+            }
+          },
+          "@aws-cdk/aws-apigateway:usagePlanKeyOrderInsensitiveId": {
+            "recommendedValue": true,
+            "explanation": "Allow adding/removing multiple UsagePlanKeys independently",
+            "unconfiguredBehavesLike": {
+              "v2": true
+            }
+          },
+          "@aws-cdk/aws-lambda:recognizeVersionProps": {
+            "recommendedValue": true,
+            "explanation": "Enable this feature flag to opt in to the updated logical id calculation for Lambda Version created using the  `fn.currentVersion`.",
+            "unconfiguredBehavesLike": {
+              "v2": true
+            }
+          },
+          "@aws-cdk/aws-lambda:recognizeLayerVersion": {
+            "recommendedValue": true,
+            "explanation": "Enable this feature flag to opt in to the updated logical id calculation for Lambda Version created using the `fn.currentVersion`."
+          },
+          "@aws-cdk/aws-cloudfront:defaultSecurityPolicyTLSv1.2_2021": {
+            "recommendedValue": true,
+            "explanation": "Enable this feature flag to have cloudfront distributions use the security policy TLSv1.2_2021 by default.",
+            "unconfiguredBehavesLike": {
+              "v2": true
+            }
+          },
+          "@aws-cdk/core:checkSecretUsage": {
+            "recommendedValue": true,
+            "explanation": "Enable this flag to make it impossible to accidentally use SecretValues in unsafe locations"
+          },
+          "@aws-cdk/core:target-partitions": {
+            "recommendedValue": [
+              "aws",
+              "aws-cn"
+            ],
+            "explanation": "What regions to include in lookup tables of environment agnostic stacks"
+          },
+          "@aws-cdk-containers/ecs-service-extensions:enableDefaultLogDriver": {
+            "recommendedValue": true,
+            "explanation": "ECS extensions will automatically add an `awslogs` driver if no logging is specified"
+          },
+          "@aws-cdk/aws-ec2:uniqueImdsv2TemplateName": {
+            "recommendedValue": true,
+            "explanation": "Enable this feature flag to have Launch Templates generated by the `InstanceRequireImdsv2Aspect` use unique names."
+          },
+          "@aws-cdk/aws-ecs:arnFormatIncludesClusterName": {
+            "recommendedValue": true,
+            "explanation": "ARN format used by ECS. In the new ARN format, the cluster name is part of the resource ID."
+          },
+          "@aws-cdk/aws-iam:minimizePolicies": {
+            "recommendedValue": true,
+            "explanation": "Minimize IAM policies by combining Statements"
+          },
+          "@aws-cdk/core:validateSnapshotRemovalPolicy": {
+            "recommendedValue": true,
+            "explanation": "Error on snapshot removal policies on resources that do not support it."
+          },
+          "@aws-cdk/aws-codepipeline:crossAccountKeyAliasStackSafeResourceName": {
+            "recommendedValue": true,
+            "explanation": "Generate key aliases that include the stack name"
+          },
+          "@aws-cdk/aws-s3:createDefaultLoggingPolicy": {
+            "recommendedValue": true,
+            "explanation": "Enable this feature flag to create an S3 bucket policy by default in cases where an AWS service would automatically create the Policy if one does not exist."
+          },
+          "@aws-cdk/aws-sns-subscriptions:restrictSqsDescryption": {
+            "recommendedValue": true,
+            "explanation": "Restrict KMS key policy for encrypted Queues a bit more"
+          },
+          "@aws-cdk/aws-apigateway:disableCloudWatchRole": {
+            "recommendedValue": true,
+            "explanation": "Make default CloudWatch Role behavior safe for multiple API Gateways in one environment"
+          },
+          "@aws-cdk/core:enablePartitionLiterals": {
+            "recommendedValue": true,
+            "explanation": "Make ARNs concrete if AWS partition is known"
+          },
+          "@aws-cdk/aws-events:eventsTargetQueueSameAccount": {
+            "recommendedValue": true,
+            "explanation": "Event Rules may only push to encrypted SQS queues in the same account"
+          },
+          "@aws-cdk/aws-ecs:disableExplicitDeploymentControllerForCircuitBreaker": {
+            "recommendedValue": true,
+            "explanation": "Avoid setting the \"ECS\" deployment controller when adding a circuit breaker"
+          },
+          "@aws-cdk/aws-iam:importedRoleStackSafeDefaultPolicyName": {
+            "recommendedValue": true,
+            "explanation": "Enable this feature to create default policy names for imported roles that depend on the stack the role is in."
+          },
+          "@aws-cdk/aws-s3:serverAccessLogsUseBucketPolicy": {
+            "recommendedValue": true,
+            "explanation": "Use S3 Bucket Policy instead of ACLs for Server Access Logging"
+          },
+          "@aws-cdk/aws-route53-patters:useCertificate": {
+            "recommendedValue": true,
+            "explanation": "Use the official `Certificate` resource instead of `DnsValidatedCertificate`"
+          },
+          "@aws-cdk/customresources:installLatestAwsSdkDefault": {
+            "recommendedValue": false,
+            "explanation": "Whether to install the latest SDK by default in AwsCustomResource"
+          },
+          "@aws-cdk/aws-rds:databaseProxyUniqueResourceName": {
+            "recommendedValue": true,
+            "explanation": "Use unique resource name for Database Proxy"
+          },
+          "@aws-cdk/aws-codedeploy:removeAlarmsFromDeploymentGroup": {
+            "recommendedValue": true,
+            "explanation": "Remove CloudWatch alarms from deployment group"
+          },
+          "@aws-cdk/aws-apigateway:authorizerChangeDeploymentLogicalId": {
+            "recommendedValue": true,
+            "explanation": "Include authorizer configuration in the calculation of the API deployment logical ID."
+          },
+          "@aws-cdk/aws-ec2:launchTemplateDefaultUserData": {
+            "recommendedValue": true,
+            "explanation": "Define user data for a launch template by default when a machine image is provided."
+          },
+          "@aws-cdk/aws-secretsmanager:useAttachedSecretResourcePolicyForSecretTargetAttachments": {
+            "recommendedValue": true,
+            "explanation": "SecretTargetAttachments uses the ResourcePolicy of the attached Secret."
+          },
+          "@aws-cdk/aws-redshift:columnId": {
+            "recommendedValue": true,
+            "explanation": "Whether to use an ID to track Redshift column changes"
+          },
+          "@aws-cdk/aws-stepfunctions-tasks:enableEmrServicePolicyV2": {
+            "recommendedValue": true,
+            "explanation": "Enable AmazonEMRServicePolicy_v2 managed policies"
+          },
+          "@aws-cdk/aws-ec2:restrictDefaultSecurityGroup": {
+            "recommendedValue": true,
+            "explanation": "Restrict access to the VPC default security group"
+          },
+          "@aws-cdk/aws-apigateway:requestValidatorUniqueId": {
+            "recommendedValue": true,
+            "explanation": "Generate a unique id for each RequestValidator added to a method"
+          },
+          "@aws-cdk/aws-kms:aliasNameRef": {
+            "recommendedValue": true,
+            "explanation": "KMS Alias name and keyArn will have implicit reference to KMS Key"
+          },
+          "@aws-cdk/aws-kms:applyImportedAliasPermissionsToPrincipal": {
+            "recommendedValue": true,
+            "explanation": "Enable grant methods on Aliases imported by name to use kms:ResourceAliases condition"
+          },
+          "@aws-cdk/aws-autoscaling:generateLaunchTemplateInsteadOfLaunchConfig": {
+            "recommendedValue": true,
+            "explanation": "Generate a launch template when creating an AutoScalingGroup"
+          },
+          "@aws-cdk/core:includePrefixInUniqueNameGeneration": {
+            "recommendedValue": true,
+            "explanation": "Include the stack prefix in the stack name generation process"
+          },
+          "@aws-cdk/aws-efs:denyAnonymousAccess": {
+            "recommendedValue": true,
+            "explanation": "EFS denies anonymous clients accesses"
+          },
+          "@aws-cdk/aws-opensearchservice:enableOpensearchMultiAzWithStandby": {
+            "recommendedValue": true,
+            "explanation": "Enables support for Multi-AZ with Standby deployment for opensearch domains"
+          },
+          "@aws-cdk/aws-lambda-nodejs:useLatestRuntimeVersion": {
+            "recommendedValue": true,
+            "explanation": "Enables aws-lambda-nodejs.Function to use the latest available NodeJs runtime as the default"
+          },
+          "@aws-cdk/aws-efs:mountTargetOrderInsensitiveLogicalId": {
+            "recommendedValue": true,
+            "explanation": "When enabled, mount targets will have a stable logicalId that is linked to the associated subnet."
+          },
+          "@aws-cdk/aws-rds:auroraClusterChangeScopeOfInstanceParameterGroupWithEachParameters": {
+            "recommendedValue": true,
+            "explanation": "When enabled, a scope of InstanceParameterGroup for AuroraClusterInstance with each parameters will change."
+          },
+          "@aws-cdk/aws-appsync:useArnForSourceApiAssociationIdentifier": {
+            "recommendedValue": true,
+            "explanation": "When enabled, will always use the arn for identifiers for CfnSourceApiAssociation in the GraphqlApi construct rather than id."
+          },
+          "@aws-cdk/aws-rds:preventRenderingDeprecatedCredentials": {
+            "recommendedValue": true,
+            "explanation": "When enabled, creating an RDS database cluster from a snapshot will only render credentials for snapshot credentials."
+          },
+          "@aws-cdk/aws-codepipeline-actions:useNewDefaultBranchForCodeCommitSource": {
+            "recommendedValue": true,
+            "explanation": "When enabled, the CodeCommit source action is using the default branch name 'main'."
+          },
+          "@aws-cdk/aws-cloudwatch-actions:changeLambdaPermissionLogicalIdForLambdaAction": {
+            "recommendedValue": true,
+            "explanation": "When enabled, the logical ID of a Lambda permission for a Lambda action includes an alarm ID."
+          },
+          "@aws-cdk/aws-codepipeline:crossAccountKeysDefaultValueToFalse": {
+            "recommendedValue": true,
+            "explanation": "Enables Pipeline to set the default value for crossAccountKeys to false."
+          },
+          "@aws-cdk/aws-codepipeline:defaultPipelineTypeToV2": {
+            "recommendedValue": true,
+            "explanation": "Enables Pipeline to set the default pipeline type to V2."
+          },
+          "@aws-cdk/aws-kms:reduceCrossAccountRegionPolicyScope": {
+            "recommendedValue": true,
+            "explanation": "When enabled, IAM Policy created from KMS key grant will reduce the resource scope to this key only."
+          },
+          "@aws-cdk/pipelines:reduceAssetRoleTrustScope": {
+            "recommendedValue": true,
+            "explanation": "Remove the root account principal from PipelineAssetsFileRole trust policy",
+            "unconfiguredBehavesLike": {
+              "v2": true
+            }
+          },
+          "@aws-cdk/aws-eks:nodegroupNameAttribute": {
+            "recommendedValue": true,
+            "explanation": "When enabled, nodegroupName attribute of the provisioned EKS NodeGroup will not have the cluster name prefix."
+          },
+          "@aws-cdk/aws-eks:useNativeOidcProvider": {
+            "recommendedValue": true,
+            "explanation": "When enabled, EKS V2 clusters will use the native OIDC provider resource AWS::IAM::OIDCProvider instead of creating the OIDCProvider with a custom resource (iam.OpenIDConnectProvider)."
+          },
+          "@aws-cdk/aws-ec2:ebsDefaultGp3Volume": {
+            "recommendedValue": true,
+            "explanation": "When enabled, the default volume type of the EBS volume will be GP3"
+          },
+          "@aws-cdk/aws-ecs:removeDefaultDeploymentAlarm": {
+            "recommendedValue": true,
+            "explanation": "When enabled, remove default deployment alarm settings"
+          },
+          "@aws-cdk/custom-resources:logApiResponseDataPropertyTrueDefault": {
+            "recommendedValue": false,
+            "explanation": "When enabled, the custom resource used for `AwsCustomResource` will configure the `logApiResponseData` property as true by default"
+          },
+          "@aws-cdk/aws-s3:keepNotificationInImportedBucket": {
+            "recommendedValue": false,
+            "explanation": "When enabled, Adding notifications to a bucket in the current stack will not remove notification from imported stack."
+          },
+          "@aws-cdk/aws-stepfunctions-tasks:useNewS3UriParametersForBedrockInvokeModelTask": {
+            "recommendedValue": true,
+            "explanation": "When enabled, use new props for S3 URI field in task definition of state machine for bedrock invoke model.",
+            "unconfiguredBehavesLike": {
+              "v2": true
+            }
+          },
+          "@aws-cdk/core:explicitStackTags": {
+            "recommendedValue": true,
+            "explanation": "When enabled, stack tags need to be assigned explicitly on a Stack."
+          },
+          "@aws-cdk/aws-ecs:reduceEc2FargateCloudWatchPermissions": {
+            "recommendedValue": true,
+            "explanation": "When enabled, we will only grant the necessary permissions when users specify cloudwatch log group through logConfiguration"
+          },
+          "@aws-cdk/aws-dynamodb:resourcePolicyPerReplica": {
+            "recommendedValue": true,
+            "explanation": "When enabled will allow you to specify a resource policy per replica, and not copy the source table policy to all replicas"
+          },
+          "@aws-cdk/aws-ec2:ec2SumTImeoutEnabled": {
+            "recommendedValue": true,
+            "explanation": "When enabled, initOptions.timeout and resourceSignalTimeout values will be summed together."
+          },
+          "@aws-cdk/aws-appsync:appSyncGraphQLAPIScopeLambdaPermission": {
+            "recommendedValue": true,
+            "explanation": "When enabled, a Lambda authorizer Permission created when using GraphqlApi will be properly scoped with a SourceArn."
+          },
+          "@aws-cdk/aws-rds:setCorrectValueForDatabaseInstanceReadReplicaInstanceResourceId": {
+            "recommendedValue": true,
+            "explanation": "When enabled, the value of property `instanceResourceId` in construct `DatabaseInstanceReadReplica` will be set to the correct value which is `DbiResourceId` instead of currently `DbInstanceArn`"
+          },
+          "@aws-cdk/core:cfnIncludeRejectComplexResourceUpdateCreatePolicyIntrinsics": {
+            "recommendedValue": true,
+            "explanation": "When enabled, CFN templates added with `cfn-include` will error if the template contains Resource Update or Create policies with CFN Intrinsics that include non-primitive values."
+          },
+          "@aws-cdk/aws-lambda-nodejs:sdkV3ExcludeSmithyPackages": {
+            "recommendedValue": true,
+            "explanation": "When enabled, both `@aws-sdk` and `@smithy` packages will be excluded from the Lambda Node.js 18.x runtime to prevent version mismatches in bundled applications."
+          },
+          "@aws-cdk/aws-stepfunctions-tasks:fixRunEcsTaskPolicy": {
+            "recommendedValue": true,
+            "explanation": "When enabled, the resource of IAM Run Ecs policy generated by SFN EcsRunTask will reference the definition, instead of constructing ARN."
+          },
+          "@aws-cdk/aws-ec2:bastionHostUseAmazonLinux2023ByDefault": {
+            "recommendedValue": true,
+            "explanation": "When enabled, the BastionHost construct will use the latest Amazon Linux 2023 AMI, instead of Amazon Linux 2."
+          },
+          "@aws-cdk/core:aspectStabilization": {
+            "recommendedValue": true,
+            "explanation": "When enabled, a stabilization loop will be run when invoking Aspects during synthesis.",
+            "unconfiguredBehavesLike": {
+              "v2": true
+            }
+          },
+          "@aws-cdk/aws-route53-targets:userPoolDomainNameMethodWithoutCustomResource": {
+            "recommendedValue": true,
+            "explanation": "When enabled, use a new method for DNS Name of user pool domain target without creating a custom resource."
+          },
+          "@aws-cdk/aws-elasticloadbalancingV2:albDualstackWithoutPublicIpv4SecurityGroupRulesDefault": {
+            "recommendedValue": true,
+            "explanation": "When enabled, the default security group ingress rules will allow IPv6 ingress from anywhere"
+          },
+          "@aws-cdk/aws-iam:oidcRejectUnauthorizedConnections": {
+            "recommendedValue": true,
+            "explanation": "When enabled, the default behaviour of OIDC provider will reject unauthorized connections"
+          },
+          "@aws-cdk/core:enableAdditionalMetadataCollection": {
+            "recommendedValue": true,
+            "explanation": "When enabled, CDK will expand the scope of usage data collected to better inform CDK development and improve communication for security concerns and emerging issues."
+          },
+          "@aws-cdk/aws-lambda:createNewPoliciesWithAddToRolePolicy": {
+            "recommendedValue": false,
+            "explanation": "[Deprecated] When enabled, Lambda will create new inline policies with AddToRolePolicy instead of adding to the Default Policy Statement"
+          },
+          "@aws-cdk/aws-s3:setUniqueReplicationRoleName": {
+            "recommendedValue": true,
+            "explanation": "When enabled, CDK will automatically generate a unique role name that is used for s3 object replication."
+          },
+          "@aws-cdk/pipelines:reduceStageRoleTrustScope": {
+            "recommendedValue": true,
+            "explanation": "Remove the root account principal from Stage addActions trust policy",
+            "unconfiguredBehavesLike": {
+              "v2": true
+            }
+          },
+          "@aws-cdk/aws-events:requireEventBusPolicySid": {
+            "recommendedValue": true,
+            "explanation": "When enabled, grantPutEventsTo() will use resource policies with Statement IDs for service principals."
+          },
+          "@aws-cdk/core:aspectPrioritiesMutating": {
+            "recommendedValue": true,
+            "explanation": "When set to true, Aspects added by the construct library on your behalf will be given a priority of MUTATING."
+          },
+          "@aws-cdk/aws-dynamodb:retainTableReplica": {
+            "recommendedValue": true,
+            "explanation": "When enabled, table replica will be default to the removal policy of source table unless specified otherwise."
+          },
+          "@aws-cdk/cognito:logUserPoolClientSecretValue": {
+            "recommendedValue": false,
+            "explanation": "When disabled, the value of the user pool client secret will not be logged in the custom resource lambda function logs."
+          },
+          "@aws-cdk/pipelines:reduceCrossAccountActionRoleTrustScope": {
+            "recommendedValue": true,
+            "explanation": "When enabled, scopes down the trust policy for the cross-account action role",
+            "unconfiguredBehavesLike": {
+              "v2": true
+            }
+          },
+          "@aws-cdk/aws-stepfunctions:useDistributedMapResultWriterV2": {
+            "recommendedValue": true,
+            "explanation": "When enabled, the resultWriterV2 property of DistributedMap will be used insted of resultWriter"
+          },
+          "@aws-cdk/s3-notifications:addS3TrustKeyPolicyForSnsSubscriptions": {
+            "recommendedValue": true,
+            "explanation": "Add an S3 trust policy to a KMS key resource policy for SNS subscriptions."
+          },
+          "@aws-cdk/aws-ec2:requirePrivateSubnetsForEgressOnlyInternetGateway": {
+            "recommendedValue": true,
+            "explanation": "When enabled, the EgressOnlyGateway resource is only created if private subnets are defined in the dual-stack VPC."
+          },
+          "@aws-cdk/aws-ec2-alpha:useResourceIdForVpcV2Migration": {
+            "recommendedValue": false,
+            "explanation": "When enabled, use resource IDs for VPC V2 migration"
+          },
+          "@aws-cdk/aws-s3:publicAccessBlockedByDefault": {
+            "recommendedValue": true,
+            "explanation": "When enabled, setting any combination of options for BlockPublicAccess will automatically set true for any options not defined."
+          },
+          "@aws-cdk/aws-lambda:useCdkManagedLogGroup": {
+            "recommendedValue": true,
+            "explanation": "When enabled, CDK creates and manages loggroup for the lambda function"
+          },
+          "@aws-cdk/aws-elasticloadbalancingv2:networkLoadBalancerWithSecurityGroupByDefault": {
+            "recommendedValue": true,
+            "explanation": "When enabled, Network Load Balancer will be created with a security group by default."
+          },
+          "@aws-cdk/aws-stepfunctions-tasks:httpInvokeDynamicJsonPathEndpoint": {
+            "recommendedValue": true,
+            "explanation": "When enabled, allows using a dynamic apiEndpoint with JSONPath format in HttpInvoke tasks.",
+            "unconfiguredBehavesLike": {
+              "v2": true
+            }
+          },
+          "@aws-cdk/aws-ecs-patterns:uniqueTargetGroupId": {
+            "recommendedValue": true,
+            "explanation": "When enabled, ECS patterns will generate unique target group IDs to prevent conflicts during load balancer replacement"
+          },
+          "@aws-cdk/aws-route53-patterns:useDistribution": {
+            "recommendedValue": true,
+            "explanation": "Use the `Distribution` resource instead of `CloudFrontWebDistribution`"
+          }
+        }
+      }
+    }
+  },
+  "minimumCliVersion": "2.1033.0"
+}
