@@ -1,0 +1,1164 @@
+/* Payment & Invoice Management CSS */
+:root {
+  --pim-primary-color: #2c3e50;
+  --pim-secondary-color: #3498db;
+  --pim-success-color: #27ae60;
+  --pim-warning-color: #f39c12;
+  --pim-danger-color: #e74c3c;
+  --pim-light-gray: #f5f5f5;
+  --pim-medium-gray: #ddd;
+  --pim-dark-gray: #7f8c8d;
+  --pim-white: #ffffff;
+  --pim-card-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.pim-container {
+  width: 100%;
+  margin: 0 auto;
+  background-color: var(--pim-white);
+  border-radius: 8px;
+  box-shadow: 0 2px 15px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+}
+
+/* Header */
+.pim-header {
+  padding: 24px 30px;
+  background-color: var(--pim-primary-color);
+  color: white;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.pim-header-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.pim-header h1 {
+  font-size: 24px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 0;
+}
+
+.pim-header h1 i {
+  color: var(--pim-secondary-color);
+}
+
+.pim-user-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--pim-white);
+  font-weight: 500;
+}
+
+.pim-user-info i {
+  color: var(--pim-secondary-color);
+  font-size: 18px;
+}
+
+/* Search Section */
+.pim-search-section {
+  padding: 25px 30px;
+  background-color: #f8fafc;
+  border-bottom: 1px solid var(--pim-light-gray);
+}
+
+.pim-search-container {
+  position: relative;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.pim-search-icon {
+  position: absolute;
+  left: 20px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--pim-secondary-color);
+  font-size: 18px;
+}
+
+.pim-smart-search-input {
+  width: 100%;
+  padding: 0.9rem 4rem;
+  border: 2px solid #e2e8f0;
+  border-radius: 10px;
+  font-size: 16px;
+  transition: all 0.3s;
+  background-color: white;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+
+.pim-smart-search-input:focus {
+  outline: none;
+  border-color: var(--pim-secondary-color);
+  box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.15);
+}
+
+.pim-search-stats {
+  margin-top: 15px;
+  font-size: 14px;
+  color: var(--pim-dark-gray);
+  text-align: center;
+}
+
+/* Results Section */
+.pim-results-section {
+  padding: 0 30px 30px;
+}
+
+.pim-section-header {
+  margin-bottom: 20px;
+  padding-top: 25px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 15px;
+}
+
+.pim-section-header h2 {
+  color: var(--pim-primary-color);
+  font-size: 20px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+}
+
+.pim-pagination-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.pim-pagination-controls label {
+  font-size: 14px;
+  color: var(--pim-dark-gray);
+  white-space: nowrap;
+}
+
+.pim-page-size-select {
+  padding: 8px 12px;
+  border: 1px solid var(--pim-medium-gray);
+  border-radius: 4px;
+  background-color: white;
+  font-size: 14px;
+  color: var(--pim-primary-color);
+  cursor: pointer;
+  transition: border-color 0.3s;
+}
+
+.pim-page-size-select:focus {
+  outline: none;
+  border-color: var(--pim-secondary-color);
+}
+
+/* Table */
+.pim-table-wrapper {
+  width: 100%;
+  border: 1px solid var(--pim-light-gray);
+  border-radius: 8px;
+  overflow: hidden;
+  background-color: white;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  overflow-x: auto;
+}
+
+.pim-job-order-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 1400px;
+}
+
+.pim-job-order-table thead {
+  background-color: #f1f8ff;
+}
+
+.pim-job-order-table th {
+  padding: 18px 16px;
+  text-align: left;
+  color: var(--pim-primary-color);
+  font-weight: 600;
+  border-bottom: 2px solid var(--pim-medium-gray);
+  font-size: 14px;
+}
+
+.pim-job-order-table td {
+  padding: 16px;
+  border-bottom: 1px solid var(--pim-light-gray);
+  vertical-align: middle;
+}
+
+.pim-job-order-table tbody tr:hover {
+  background-color: #f9f9f9;
+}
+
+.pim-date-column {
+  font-size: 13px;
+  color: var(--pim-dark-gray);
+  font-weight: 500;
+}
+
+/* Status Badges */
+.pim-status-badge {
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  display: inline-block;
+  min-width: 80px;
+  text-align: center;
+}
+
+.pim-status-new-request {
+  background-color: #e3f2fd;
+  color: #7b1fa2;
+}
+
+.pim-status-inspection {
+  background-color: #e3f2fd;
+  color: #1565c0;
+}
+
+.pim-status-inprogress {
+  background-color: #fff3e0;
+  color: #ef6c00;
+}
+
+.pim-status-quality-check {
+  background-color: #fff9e6;
+  color: #f57c00;
+}
+
+.pim-status-ready {
+  background-color: #e8f4ff;
+  color: #0066cc;
+}
+
+.pim-status-completed {
+  background-color: #d5f4e6;
+  color: var(--pim-success-color);
+}
+
+.pim-payment-unpaid {
+  background-color: #fdeaea;
+  color: var(--pim-danger-color);
+}
+
+.pim-payment-partial {
+  background-color: #fff3cd;
+  color: #b38b00;
+}
+
+.pim-payment-full {
+  background-color: #d5f4e6;
+  color: var(--pim-success-color);
+}
+
+/* Order Type Badges */
+.pim-order-type-badge {
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  display: inline-block;
+  min-width: 100px;
+  text-align: center;
+}
+
+.pim-order-type-new-job {
+  background-color: #e3f2fd;
+  color: #1565c0;
+}
+
+.pim-order-type-service {
+  background-color: #f3e5f5;
+  color: #7b1fa2;
+}
+
+/* Action Button */
+.pim-btn-view {
+  background-color: var(--pim-secondary-color);
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 500;
+  font-size: 14px;
+  transition: background-color 0.3s;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.pim-btn-view:hover {
+  background-color: #2980b9;
+}
+
+/* Empty State */
+.pim-empty-state {
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--pim-dark-gray);
+}
+
+.pim-empty-icon {
+  font-size: 64px;
+  color: var(--pim-medium-gray);
+  margin-bottom: 20px;
+  opacity: 0.5;
+}
+
+.pim-empty-text {
+  font-size: 18px;
+  margin-bottom: 10px;
+  color: var(--pim-primary-color);
+}
+
+.pim-empty-subtext {
+  font-size: 15px;
+  color: var(--pim-dark-gray);
+  max-width: 400px;
+  margin: 0 auto;
+}
+
+/* Pagination */
+.pim-pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 25px 20px 10px;
+  gap: 10px;
+}
+
+.pim-pagination-btn {
+  background-color: var(--pim-white);
+  border: 1px solid var(--pim-medium-gray);
+  padding: 8px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  color: var(--pim-primary-color);
+  min-width: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pim-pagination-btn.active {
+  background-color: var(--pim-secondary-color);
+  color: white;
+  border-color: var(--pim-secondary-color);
+}
+
+.pim-pagination-btn:hover:not(.active) {
+  background-color: var(--pim-light-gray);
+}
+
+.pim-page-numbers {
+  display: flex;
+  gap: 5px;
+}
+
+.pim-pagination-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Step Status Classes */
+.pim-step-completed .pim-step-icon {
+  border-color: var(--pim-success-color);
+  background-color: var(--pim-success-color);
+}
+
+.pim-step-completed .pim-step-icon i {
+  color: white;
+}
+
+.pim-step-completed .pim-step-name {
+  color: var(--pim-success-color);
+}
+
+.pim-step-active .pim-step-icon {
+  border-color: var(--pim-secondary-color);
+  background-color: var(--pim-secondary-color);
+}
+
+.pim-step-active .pim-step-icon i {
+  color: white;
+}
+
+.pim-step-active .pim-step-name {
+  color: var(--pim-secondary-color);
+}
+
+.pim-step-pending .pim-step-icon {
+  border-color: var(--pim-warning-color);
+  background-color: var(--pim-warning-color);
+}
+
+.pim-step-pending .pim-step-icon i {
+  color: white;
+}
+
+.pim-step-pending .pim-step-name {
+  color: var(--pim-warning-color);
+}
+
+.pim-step-cancelled .pim-step-icon {
+  border-color: var(--pim-danger-color);
+  background-color: var(--pim-danger-color);
+}
+
+.pim-step-cancelled .pim-step-icon i {
+  color: white;
+}
+
+.pim-step-cancelled .pim-step-name {
+  color: var(--pim-danger-color);
+}
+
+.pim-step-upcoming .pim-step-icon {
+  border-color: var(--pim-medium-gray);
+  background-color: white;
+}
+
+.pim-step-upcoming .pim-step-icon i {
+  color: var(--pim-dark-gray);
+}
+
+.pim-step-upcoming .pim-step-name {
+  color: var(--pim-dark-gray);
+}
+
+/* Roadmap Styles */
+.pim-roadmap-container {
+  margin-top: 25px;
+  width: 100%;
+}
+
+.pim-roadmap-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  position: relative;
+  padding-left: 30px;
+}
+
+.pim-roadmap-steps::before {
+  content: '';
+  position: absolute;
+  left: 15px;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background-color: var(--pim-medium-gray);
+  z-index: 1;
+}
+
+.pim-roadmap-step {
+  display: flex;
+  position: relative;
+  padding: 20px 0;
+  gap: 20px;
+}
+
+.pim-roadmap-step:last-child {
+  padding-bottom: 0;
+}
+
+.pim-step-icon {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background-color: var(--pim-white);
+  border: 2px solid var(--pim-medium-gray);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2;
+  position: absolute;
+  left: -32px;
+  top: 20px;
+}
+
+.pim-step-icon i {
+  font-size: 14px;
+  color: var(--pim-dark-gray);
+}
+
+.pim-step-content {
+  flex: 1;
+  padding-left: 10px;
+}
+
+.pim-step-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.pim-step-name {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--pim-primary-color);
+}
+
+.pim-step-details {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 15px;
+  background-color: #f8f9fa;
+  padding: 15px;
+  border-radius: 8px;
+  border: 1px solid var(--pim-light-gray);
+}
+
+.pim-step-detail {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.pim-detail-label {
+  font-size: 12px;
+  color: var(--pim-dark-gray);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.pim-detail-value {
+  font-size: 14px;
+  font-weight: 500;
+  color: #333;
+}
+
+/* Services List */
+.pim-services-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.pim-service-item {
+  padding: 20px;
+  border: 1px solid var(--pim-light-gray);
+  border-radius: 8px;
+  background-color: #f8f9fa;
+}
+
+.pim-service-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 18px;
+  padding-bottom: 15px;
+  border-bottom: 1px dashed var(--pim-medium-gray);
+}
+
+.pim-service-name {
+  font-weight: 600;
+  color: var(--pim-primary-color);
+  font-size: 17px;
+}
+
+.pim-service-timeline {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 15px;
+  margin: 18px 0;
+  padding: 18px;
+  background-color: white;
+  border-radius: 8px;
+  border: 1px solid var(--pim-light-gray);
+}
+
+.pim-timeline-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.pim-timeline-item i {
+  color: var(--pim-secondary-color);
+  width: 18px;
+  text-align: center;
+  font-size: 18px;
+}
+
+.pim-timeline-label {
+  font-size: 14px;
+  color: var(--pim-dark-gray);
+  font-weight: 500;
+  min-width: 80px;
+}
+
+.pim-timeline-value {
+  font-size: 15px;
+  color: #333;
+  font-weight: 500;
+}
+
+.pim-service-notes {
+  margin-top: 18px;
+  padding: 15px;
+  background-color: #fff9e6;
+  border-radius: 6px;
+  border-left: 4px solid var(--pim-warning-color);
+}
+
+.pim-notes-label {
+  font-size: 14px;
+  color: var(--pim-dark-gray);
+  font-weight: 600;
+  margin-right: 8px;
+}
+
+.pim-notes-value {
+  font-size: 15px;
+  color: #333;
+}
+
+/* Additional Services */
+.pim-additional-services {
+  background-color: #fff8e1;
+  border-left: 4px solid var(--pim-warning-color);
+  border-radius: 10px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  overflow: hidden;
+  margin-bottom: 0;
+  transition: all 0.3s ease;
+}
+
+.pim-additional-services.pim-pending {
+  background-color: #fff8e1;
+  border-left-color: var(--pim-warning-color);
+}
+
+.pim-additional-services.pim-pending .pim-additional-header {
+  background-color: var(--pim-warning-color);
+  color: white;
+}
+
+.pim-additional-services.pim-approved {
+  background-color: #e8f5e9;
+  border-left-color: var(--pim-success-color);
+}
+
+.pim-additional-services.pim-approved .pim-additional-header {
+  background-color: var(--pim-success-color);
+  color: white;
+}
+
+.pim-additional-services.pim-declined {
+  background-color: #ffebee;
+  border-left-color: var(--pim-danger-color);
+}
+
+.pim-additional-services.pim-declined .pim-additional-header {
+  background-color: var(--pim-danger-color);
+  color: white;
+}
+
+.pim-additional-header {
+  padding: 15px 20px;
+  font-weight: 600;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.pim-additional-services .pim-card-body {
+  padding: 20px;
+}
+
+.pim-additional-services .pim-info-item {
+  margin-bottom: 15px;
+}
+
+/* Invoice Styles */
+.pim-invoice-item {
+  padding: 22px;
+  border: 1px solid var(--pim-medium-gray);
+  border-radius: 8px;
+  margin-bottom: 18px;
+  background-color: #f8f9fa;
+}
+
+.pim-invoice-item:last-child {
+  margin-bottom: 0;
+}
+
+.pim-invoice-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 18px;
+  padding-bottom: 15px;
+  border-bottom: 1px solid var(--pim-light-gray);
+  gap: 10px;
+}
+
+.pim-invoice-details {
+  margin: 18px 0;
+  padding-bottom: 15px;
+  border-bottom: 1px dashed var(--pim-light-gray);
+}
+
+.pim-detail-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.pim-invoice-services {
+  margin-top: 18px;
+}
+
+.pim-service-in-invoice {
+  padding: 10px 0;
+  font-size: 15px;
+  color: var(--pim-dark-gray);
+  border-bottom: 1px solid #eee;
+}
+
+.pim-service-in-invoice:last-child {
+  border-bottom: none;
+}
+
+.pim-serial-column {
+  width: 60px;
+  text-align: center;
+  font-weight: 600;
+  color: var(--pim-primary-color);
+}
+
+.pim-amount-column {
+  font-weight: 600;
+  color: var(--pim-success-color);
+}
+
+.pim-discount-column {
+  color: var(--pim-warning-color);
+}
+
+.pim-cashier-column {
+  font-weight: 500;
+  color: var(--pim-primary-color);
+}
+
+.pim-status-new {
+  background-color: #e3f2fd;
+  color: #1976d2;
+}
+
+.pim-status-pending {
+  background-color: #fff3cd;
+  color: #b38b00;
+}
+
+.pim-status-paused {
+  background-color: #ffebee;
+  color: #d32f2f;
+}
+
+.pim-status-postponed {
+  background-color: #e2e3e5;
+  color: #6c757d;
+}
+
+.pim-status-pending-approval {
+  background-color: #fff3e0;
+  color: #f57c00;
+}
+
+/* Payment Popup */
+.pim-payment-popup-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 2000;
+}
+
+.pim-payment-popup {
+  background-color: white;
+  border-radius: 10px;
+  width: 90%;
+  max-width: 500px;
+  padding: 30px;
+  box-shadow: 0 5px 30px rgba(0, 0, 0, 0.2);
+}
+
+.pim-payment-popup h3 {
+  color: var(--pim-primary-color);
+  margin-bottom: 25px;
+  padding-bottom: 15px;
+  border-bottom: 1px solid var(--pim-light-gray);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 20px;
+}
+
+.pim-payment-popup h3 i {
+  color: var(--pim-secondary-color);
+}
+
+.pim-payment-form-group {
+  margin-bottom: 20px;
+}
+
+.pim-payment-form-group label {
+  display: block;
+  margin-bottom: 8px;
+  color: var(--pim-primary-color);
+  font-weight: 500;
+}
+
+.pim-payment-form-group input,
+.pim-payment-form-group select {
+  width: 100%;
+  padding: 12px 15px;
+  border: 1px solid var(--pim-medium-gray);
+  border-radius: 6px;
+  font-size: 16px;
+  transition: border-color 0.3s;
+}
+
+.pim-payment-form-group input:focus,
+.pim-payment-form-group select:focus {
+  outline: none;
+  border-color: var(--pim-secondary-color);
+}
+
+.pim-payment-form-group input[readonly] {
+  background-color: #f5f5f5;
+  color: #666;
+  cursor: not-allowed;
+}
+
+.pim-payment-actions {
+  display: flex;
+  gap: 15px;
+  margin-top: 30px;
+}
+
+.pim-btn-save-payment,
+.pim-btn-cancel-payment,
+.pim-btn-payment,
+.pim-btn-download-bill {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 6px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  flex: 1;
+  justify-content: center;
+}
+
+.pim-btn-save-payment,
+.pim-btn-payment {
+  background-color: var(--pim-success-color);
+  color: white;
+}
+
+.pim-btn-save-payment:hover,
+.pim-btn-payment:hover {
+  background-color: #219653;
+}
+
+.pim-btn-download-bill {
+  background-color: #3b82f6;
+  color: white;
+}
+
+.pim-btn-download-bill:hover {
+  background-color: #2563eb;
+}
+
+.pim-btn-cancel-payment {
+  background-color: var(--pim-light-gray);
+  color: var(--pim-primary-color);
+}
+
+.pim-btn-cancel-payment:hover {
+  background-color: var(--pim-medium-gray);
+}
+
+/* Details Screen */
+.pim-details-screen {
+  width: 100%;
+  background-color: white;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.pim-details-header {
+  background-color: var(--pim-primary-color);
+  padding: 22px 30px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+}
+
+.pim-details-title-container {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.pim-details-header h2 {
+  color: white;
+  font-size: 22px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 0;
+}
+
+.pim-btn-close-details {
+  background-color: var(--pim-light-gray);
+  color: var(--pim-primary-color);
+  border: none;
+  padding: 10px 20px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: background-color 0.3s;
+}
+
+.pim-btn-close-details:hover {
+  background-color: var(--pim-medium-gray);
+}
+
+.pim-details-body {
+  padding: 30px;
+  flex: 1;
+}
+
+.pim-details-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+/* Detail Card */
+.pim-detail-card {
+  background-color: white;
+  border-radius: 10px;
+  padding: 30px;
+  box-shadow: var(--pim-card-shadow);
+  border-left: 4px solid var(--pim-secondary-color);
+  width: 100%;
+}
+
+.pim-detail-card h3 {
+  color: var(--pim-primary-color);
+  margin-bottom: 25px;
+  padding-bottom: 15px;
+  border-bottom: 1px solid var(--pim-light-gray);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 20px;
+  margin-top: 0;
+}
+
+.pim-detail-card h3 i {
+  color: var(--pim-secondary-color);
+  width: 28px;
+  text-align: center;
+  font-size: 22px;
+}
+
+.pim-card-content {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 25px;
+}
+
+.pim-info-item {
+  display: flex;
+  flex-direction: column;
+}
+
+.pim-info-label {
+  font-size: 14px;
+  color: var(--pim-dark-gray);
+  margin-bottom: 8px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.pim-info-value {
+  font-size: 16px;
+  font-weight: 500;
+  color: #333;
+  word-break: break-word;
+}
+
+.pim-billing-buttons {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+/* Payment Log Table */
+.pim-payment-log-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+}
+
+.pim-payment-log-table thead {
+  background-color: #f1f8ff;
+}
+
+.pim-payment-log-table th {
+  padding: 15px 12px;
+  text-align: left;
+  color: var(--pim-primary-color);
+  font-weight: 600;
+  border-bottom: 2px solid var(--pim-medium-gray);
+  font-size: 14px;
+}
+
+.pim-payment-log-table td {
+  padding: 14px 12px;
+  border-bottom: 1px solid var(--pim-light-gray);
+  vertical-align: middle;
+  font-size: 14px;
+}
+
+.pim-payment-log-table tbody tr:hover {
+  background-color: #f9f9f9;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .pim-container {
+    margin: 0 10px;
+  }
+
+  .pim-header,
+  .pim-search-section,
+  .pim-results-section {
+    padding: 20px;
+  }
+
+  .pim-job-order-table {
+    min-width: 1300px;
+  }
+}
+
+@media (max-width: 768px) {
+  .pim-header {
+    flex-direction: column;
+    gap: 15px;
+    align-items: flex-start;
+  }
+
+  .pim-header h1 {
+    font-size: 20px;
+  }
+
+  .pim-section-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 15px;
+  }
+
+  .pim-job-order-table th,
+  .pim-job-order-table td {
+    padding: 12px 10px;
+    font-size: 13px;
+  }
+
+  .pim-status-badge,
+  .pim-order-type-badge {
+    padding: 4px 8px;
+    font-size: 11px;
+    min-width: 70px;
+  }
+
+  .pim-btn-view {
+    padding: 6px 12px;
+    font-size: 13px;
+  }
+
+  .pim-details-header {
+    flex-direction: column;
+    gap: 15px;
+    align-items: flex-start;
+  }
+
+  .pim-card-content {
+    grid-template-columns: 1fr;
+  }
+
+  .pim-payment-popup {
+    width: 95%;
+    padding: 20px;
+  }
+
+  .pim-payment-actions {
+    flex-direction: column;
+  }
+
+  .pim-btn-save-payment,
+  .pim-btn-cancel-payment {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .pim-search-section {
+    padding: 20px 15px;
+  }
+
+  .pim-smart-search-input {
+    padding: 14px 20px 14px 50px;
+    font-size: 14px;
+  }
+
+  .pim-job-order-table {
+    min-width: 1200px;
+  }
+
+  .pim-results-section {
+    padding: 0 15px 20px;
+  }
+}

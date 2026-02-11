@@ -1,0 +1,3 @@
+BACKUP - corrupted file, saved on line 243 of original
+The detailsPanel structure has too many or too few closing divs causing Babel parse errors.
+Will be fixed with replace operation.

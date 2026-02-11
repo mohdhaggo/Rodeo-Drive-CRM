@@ -1,0 +1,9 @@
+{
+  "recommendations": [
+    "rjmacarthy.twinny",
+    "warm3snow.vscode-ollama",
+    "10nates.ollama-autocoder",
+    "sourcegraph.cody-ai"
+  ],
+  "unwantedRecommendations": []
+}

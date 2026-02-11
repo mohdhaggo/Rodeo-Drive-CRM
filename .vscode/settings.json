@@ -1,0 +1,41 @@
+{
+  // Ollama Configuration for VS Code Extensions
+  
+  // Twinny - Local AI Code Completion and Chat
+  "twinny.apiHostname": "http://localhost:11434",
+  "twinny.chatModelName": "deepseek-coder:latest",
+  "twinny.fimModelName": "deepseek-coder:latest",
+  "twinny.provider": "ollama",
+  "twinny.numPredictChat": 2000,
+  "twinny.numPredictFim": 1000,
+  "twinny.temperature": 0.7,
+  "twinny.enabled": true,
+  
+  // VSCode Ollama Configuration
+  "vscode-ollama.ollamaUrl": "http://localhost:11434",
+  "vscode-ollama.model": "deepseek-coder:latest",
+  "vscode-ollama.temperature": 0.7,
+  "vscode-ollama.maxTokens": 2000,
+  
+  // Ollama Autocoder Configuration
+  "ollama-autocoder.model": "deepseek-coder:latest",
+  "ollama-autocoder.endpoint": "http://localhost:11434/api/generate",
+  "ollama-autocoder.temperature": 0.7,
+  "ollama-autocoder.maxTokens": 2000,
+  "ollama-autocoder.enableAutoComplete": true,
+  "ollama-autocoder.responsePreview": true,
+  
+  // Cody AI - Configure for Ollama
+  "cody.serverEndpoint": "http://localhost:11434",
+  "cody.autocomplete.enabled": true,
+  "cody.autocomplete.advanced.provider": "ollama",
+  "cody.autocomplete.advanced.model": "deepseek-coder:latest",
+  
+  // Editor settings for better AI integration
+  "editor.inlineSuggest.enabled": true,
+  "editor.quickSuggestions": {
+    "other": true,
+    "comments": false,
+    "strings": true
+  }
+}

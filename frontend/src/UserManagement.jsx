@@ -472,50 +472,83 @@ export default function UserManagement() {
       )}
 
       {detailsUser && (
-        <div className="modal">
-          <div className="modal-content">
-            <div className="modal-header">
-              <h3>User Details</h3>
-              <button className="close-btn" onClick={closeModals}>×</button>
-            </div>
-            <div className="modal-body">
-              <div className="details-grid">
-                <div>
-                  <strong>Employee ID:</strong> {detailsUser.employeeId}
-                </div>
-                <div>
-                  <strong>Name:</strong> {detailsUser.name}
-                </div>
-                <div>
-                  <strong>Email:</strong> {detailsUser.email}
-                </div>
-                <div>
-                  <strong>Mobile:</strong> {detailsUser.mobile}
-                </div>
-                <div>
-                  <strong>Department:</strong> {detailsUser.department}
-                </div>
-                <div>
-                  <strong>Role:</strong> {detailsUser.role}
-                </div>
-                <div>
-                  <strong>Line Manager:</strong> {detailsUser.lineManager}
-                </div>
-                <div>
-                  <strong>Status:</strong> {detailsUser.status}
-                </div>
-                <div>
-                  <strong>Dashboard Access:</strong> {detailsUser.dashboardAccess}
-                </div>
-                <div>
-                  <strong>Created Date:</strong> {detailsUser.createdDate}
-                </div>
+        <div className="details-overlay">
+          <div className="details-modal">
+            <div className="details-header">
+              <div className="details-title-container">
+                <h2>
+                  <i className="fas fa-user-circle"></i> User Details
+                </h2>
+              </div>
+              <div className="details-header-actions">
+                <button className="btn-close-details" onClick={closeModals}>
+                  <i className="fas fa-times"></i> Close
+                </button>
               </div>
             </div>
-            <div className="modal-actions">
-              <button className="btn btn-secondary" onClick={closeModals}>
-                Close
-              </button>
+            <div className="details-body">
+              <div className="details-grid">
+                <div className="detail-card">
+                  <div className="detail-card-header">
+                    <h3>
+                      <i className="fas fa-user-circle"></i> User Information
+                    </h3>
+                  </div>
+                  <div className="card-content">
+                    <div className="info-item">
+                      <span className="info-label">Employee ID</span>
+                      <span className="info-value">{detailsUser.employeeId}</span>
+                    </div>
+                    <div className="info-item">
+                      <span className="info-label">Name</span>
+                      <span className="info-value">{detailsUser.name}</span>
+                    </div>
+                    <div className="info-item">
+                      <span className="info-label">Email</span>
+                      <span className="info-value">{detailsUser.email}</span>
+                    </div>
+                    <div className="info-item">
+                      <span className="info-label">Mobile</span>
+                      <span className="info-value">{detailsUser.mobile}</span>
+                    </div>
+                    <div className="info-item">
+                      <span className="info-label">Department</span>
+                      <span className="info-value">{detailsUser.department}</span>
+                    </div>
+                    <div className="info-item">
+                      <span className="info-label">Role</span>
+                      <span className="info-value">{detailsUser.role}</span>
+                    </div>
+                  </div>
+                </div>
+                <div className="detail-card">
+                  <h3>
+                    <i className="fas fa-cog"></i> Status Information
+                  </h3>
+                  <div className="card-content">
+                    <div className="info-item">
+                      <span className="info-label">Status</span>
+                      <span className="info-value">
+                        <span className={`status-badge status-${detailsUser.status}`}>
+                          {detailsUser.status === 'active' ? '✓ Active' : '✗ Inactive'}
+                        </span>
+                      </span>
+                    </div>
+                    <div className="info-item">
+                      <span className="info-label">Dashboard Access</span>
+                      <span className="info-value">
+                        <span className={`access-badge access-${detailsUser.dashboardAccess === 'allowed' ? 'allowed' : 'blocked'}`}>
+                          {detailsUser.dashboardAccess === 'allowed' ? '✓ Allowed' : '✗ Blocked'}
+                        </span>
+                      </span>
+                    </div>
+                    <div className="info-item">
+                      <span className="info-label">Created Date</span>
+                      <span className="info-value">{detailsUser.createdDate}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
