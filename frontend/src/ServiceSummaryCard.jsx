@@ -3,11 +3,14 @@ import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, us
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy, useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { FaGripVertical, FaUserTie, FaUsers, FaEdit, FaSave, FaCheckDouble, FaPlusCircle, FaClock, FaCheckCircle, FaTimesCircle, FaWrench } from 'react-icons/fa';
+import { useApprovalRequests } from './ApprovalRequestsContext.jsx';
+import PermissionGate from './PermissionGate';
 
 // =====================================================================
 // Sortable Service Item Component
 // =====================================================================
-const SortableServiceItem = ({ service, editMode, onUpdate, onApprovalRequest }) => {
+const SortableServiceItem = ({ service, editMode, onUpdate, onApprovalRequest, availableTechs, availableAssignees, tabPrefix = 'serviceexec_assigned' }) => {
+  const { addRequest } = useApprovalRequests();
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: service.id });
   
   const style = {
@@ -18,15 +21,6 @@ const SortableServiceItem = ({ service, editMode, onUpdate, onApprovalRequest })
 
   const [techDropdownOpen, setTechDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
-
-  // Available technicians list
-  const availableTechs = [
-    { id: '1', name: 'Mike T.' },
-    { id: '2', name: 'Anna P.' },
-    { id: '3', name: 'Omar K.' },
-    { id: '4', name: 'Elena R.' },
-    { id: '5', name: 'Tom B.' },
-  ];
 
   // Handle technician checkbox change
   const handleTechChange = (techName, checked) => {
@@ -49,26 +43,27 @@ const SortableServiceItem = ({ service, editMode, onUpdate, onApprovalRequest })
   // Handle status change
   const handleStatusChange = (e) => {
     const newStatus = e.target.value;
-    
-    // If changing to Postponed or Cancelled, trigger approval request
-    if ((newStatus === 'Postponed' || newStatus === 'Cancelled') && 
-        service.status !== 'Pending Approval' && 
-        service.status !== newStatus) {
-      onApprovalRequest(service.id, newStatus);
+    if ((newStatus === 'Postponed' || newStatus === 'Cancelled') && service.status !== 'Pending Approval' && service.status !== newStatus) {
+      // Add approval request to context
+      addRequest({
+        id: service.id,
+        customer: service.customer,
+        vehicle: service.vehicle,
+        priority: service.priority || 'normal',
+        requestedBy: service.assignedTo || 'Unknown',
+        requestDate: new Date().toLocaleString(),
+        status: 'pending',
+        ...service
+      });
+      onUpdate(service.id, { status: 'Pending Approval', requestedAction: newStatus, approvalModule: true });
     } else {
-      // Direct status update for other statuses
       const updates = { status: newStatus };
-      
-      // Capture start time when moving to Inprogress
       if (newStatus === 'Inprogress' && service.status !== 'Inprogress' && !service.startTime) {
         updates.startTime = new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
       }
-      
-      // Capture end time when moving to Completed
       if (newStatus === 'Completed' && service.status !== 'Completed' && !service.endTime) {
         updates.endTime = new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
       }
-      
       onUpdate(service.id, updates);
     }
   };
@@ -96,48 +91,21 @@ const SortableServiceItem = ({ service, editMode, onUpdate, onApprovalRequest })
     }
   };
 
-  // Approval status card
-  const renderApprovalCard = () => {
-    if (service.status === 'Pending Approval') {
-      return (
-        <div className="approval-status-card">
-          <FaClock style={{ color: '#b38b00' }} />
-          <span>
-            <strong>Approval pending</strong> — {service.requestedAction || 'Postponed/Cancelled'} request sent to manager
-          </span>
-        </div>
-      );
-    }
-    if (service.approvalStatus === 'approved' && (service.status === 'Postponed' || service.status === 'Cancelled')) {
-      return (
-        <div className="approval-status-card approved">
-          <FaCheckCircle style={{ color: '#155724' }} />
-          <span><strong>Approved</strong> — {service.status} request has been approved</span>
-        </div>
-      );
-    }
-    if (service.approvalStatus === 'declined' && service.status === 'Pending') {
-      return (
-        <div className="approval-status-card declined">
-          <FaTimesCircle style={{ color: '#721c24' }} />
-          <span><strong>Declined</strong> — Request was declined, service remains Pending</span>
-        </div>
-      );
-    }
-    return null;
-  };
+
 
   return (
     <div ref={setNodeRef} style={style} className="service-item">
       <div className="service-header">
         <div className="service-name">
-          <span {...attributes} {...listeners} className="drag-handle">
-            <FaGripVertical />
-          </span>
+          <PermissionGate moduleId="serviceexec" optionId={`${tabPrefix}_dragdrop`}>
+            <span {...attributes} {...listeners} className="drag-handle">
+              <FaGripVertical />
+            </span>
+          </PermissionGate>
           {service.name}
         </div>
         <span className={`status-badge ${getStatusClass(service.status)} service-status-badge`}>
-          {service.status}
+          {service.status === 'Pending Approval' ? (service.requestedAction || 'Pending') : service.status}
         </span>
       </div>
 
@@ -153,7 +121,7 @@ const SortableServiceItem = ({ service, editMode, onUpdate, onApprovalRequest })
         </div>
         <div className="meta-item">
           <span className="meta-label">Service work status</span>
-          <span className="meta-value status-display">{service.status}</span>
+          <span className="meta-value status-display">{service.status === 'Pending Approval' ? (service.requestedAction || 'Pending') : service.status}</span>
         </div>
         <div className="meta-item">
           <span className="meta-label">Assigned to</span>
@@ -164,67 +132,72 @@ const SortableServiceItem = ({ service, editMode, onUpdate, onApprovalRequest })
       {/* Edit controls – visible only in edit mode */}
       {editMode && (
         <div className="assign-controls edit-controls">
-          <div className="control-group">
-            <span className="control-label"><FaUserTie /> Assigned to</span>
-            <select 
-              className="assigned-select" 
-              value={service.assignedTo || ''} 
-              onChange={handleAssignedToChange}
-            >
-              <option value="">— assign —</option>
-              <option value="John S.">John S.</option>
-              <option value="Lisa M.">Lisa M.</option>
-              <option value="David C.">David C.</option>
-              <option value="Sarah M.">Sarah M.</option>
-            </select>
-          </div>
-
-          <div className="control-group">
-            <span className="control-label"><FaUsers /> Technicians</span>
-            <div className="tech-dropdown" ref={dropdownRef}>
-              <button 
-                type="button" 
-                className="tech-dropdown-btn"
-                onClick={() => setTechDropdownOpen(!techDropdownOpen)}
+          <PermissionGate moduleId="serviceexec" optionId={`${tabPrefix}_assignedto`}>
+            <div className="control-group">
+              <span className="control-label"><FaUserTie /> Assigned to</span>
+              <select 
+                className="assigned-select" 
+                value={service.assignedTo || ''} 
+                onChange={handleAssignedToChange}
               >
-                <span>
-                  {service.technicians?.length ? service.technicians.join(', ') : 'Select technicians'}
-                </span>
-                <i className="fas fa-chevron-down"></i>
-              </button>
-              {techDropdownOpen && (
-                <div className="tech-dropdown-content show">
-                  {availableTechs.map(tech => (
-                    <div key={tech.id} className="tech-option">
-                      <input
-                        type="checkbox"
-                        id={`tech-${service.id}-${tech.id}`}
-                        value={tech.name}
-                        checked={service.technicians?.includes(tech.name) || false}
-                        onChange={(e) => handleTechChange(tech.name, e.target.checked)}
-                      />
-                      <label htmlFor={`tech-${service.id}-${tech.id}`}>{tech.name}</label>
-                    </div>
-                  ))}
-                </div>
-              )}
+                <option value="">— assign —</option>
+                {availableAssignees.map((assignee, idx) => (
+                  <option key={idx} value={assignee}>{assignee}</option>
+                ))}
+              </select>
             </div>
-          </div>
+          </PermissionGate>
 
-          <div className="control-group">
-            <span className="control-label">Service work status</span>
-            <select 
-              className="work-status-select" 
-              value={service.status} 
-              onChange={handleStatusChange}
-            >
-              <option value="Pending">Pending</option>
-              <option value="Inprogress">In Progress</option>
-              <option value="Postponed">Postponed</option>
-              <option value="Cancelled">Cancelled</option>
-              <option value="Completed">Completed</option>
-            </select>
-          </div>
+          <PermissionGate moduleId="serviceexec" optionId={`${tabPrefix}_assigntech`}>
+            <div className="control-group">
+              <span className="control-label"><FaUsers /> Technicians</span>
+              <div className="tech-dropdown" ref={dropdownRef}>
+                <button 
+                  type="button" 
+                  className="tech-dropdown-btn"
+                  onClick={() => setTechDropdownOpen(!techDropdownOpen)}
+                >
+                  <span>
+                    {service.technicians?.length ? service.technicians.join(', ') : 'Select technicians'}
+                  </span>
+                  <i className="fas fa-chevron-down"></i>
+                </button>
+                {techDropdownOpen && (
+                  <div className="tech-dropdown-content show">
+                    {availableTechs.map((tech, idx) => (
+                      <div key={idx} className="tech-option">
+                        <input
+                          type="checkbox"
+                          id={`tech-${service.id}-${idx}`}
+                          value={tech}
+                          checked={service.technicians?.includes(tech) || false}
+                          onChange={(e) => handleTechChange(tech, e.target.checked)}
+                        />
+                        <label htmlFor={`tech-${service.id}-${idx}`}>{tech}</label>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          </PermissionGate>
+
+          <PermissionGate moduleId="serviceexec" optionId={`${tabPrefix}_workstatus`}>
+            <div className="control-group">
+              <span className="control-label">Service work status</span>
+              <select 
+                className="work-status-select" 
+                value={service.status} 
+                onChange={handleStatusChange}
+              >
+                <option value="Pending">Pending</option>
+                <option value="Inprogress">In Progress</option>
+                <option value="Postponed">Postponed</option>
+                <option value="Cancelled">Cancelled</option>
+                <option value="Completed">Completed</option>
+              </select>
+            </div>
+          </PermissionGate>
         </div>
       )}
 
@@ -251,8 +224,7 @@ const SortableServiceItem = ({ service, editMode, onUpdate, onApprovalRequest })
         </div>
       </div>
 
-      {/* Approval status card */}
-      {renderApprovalCard()}
+
     </div>
   );
 };
@@ -263,6 +235,7 @@ const SortableServiceItem = ({ service, editMode, onUpdate, onApprovalRequest })
 export const ServiceSummaryCard = ({
   jobId,
   services,
+  referenceServices = [],
   onServicesReorder,
   onServiceUpdate,
   onAddService,
@@ -270,29 +243,36 @@ export const ServiceSummaryCard = ({
   allServicesCompleted,
   editMode,
   setEditMode,
+  availableTechs = [],
+  availableAssignees = [],
+  tabPrefix = 'serviceexec_assigned',
 }) => {
-  const [isAddingService, setIsAddingService] = useState(false);
-  const [approvalMessage, setApprovalMessage] = useState(null);
   const [localServices, setLocalServices] = useState([]);
   const [hasChanges, setHasChanges] = useState(false);
 
   // Normalize and sync services when props change
   useEffect(() => {
-    const normalizedServices = (services || []).map((s, idx) => ({
-      ...s,
-      id: s.id || `service-${idx}-${Date.now()}`,
-      name: s.name || `Service ${idx + 1}`,
-      order: s.order || (idx + 1),
-      status: s.status || 'Pending',
-      assignedTo: s.assignedTo || null,
-      technicians: s.technicians || [],
-      startTime: s.startTime || null,
-      endTime: s.endTime || null,
-    }));
+    const mergedServices = referenceServices.length > 0
+      ? [...referenceServices, ...(services || [])]
+      : (services || []);
+    const normalizedServices = mergedServices.map((s, idx) => {
+      const baseService = typeof s === 'string' ? { name: s } : (s || {});
+      return {
+        ...baseService,
+        id: baseService.id || `service-${idx}-${Date.now()}`,
+        name: baseService.name || `Service ${idx + 1}`,
+        order: baseService.order || (idx + 1),
+        status: baseService.status || 'Pending',
+        assignedTo: baseService.assignedTo || null,
+        technicians: baseService.technicians || [],
+        startTime: baseService.startTime || null,
+        endTime: baseService.endTime || null,
+      };
+    });
     
     setLocalServices(normalizedServices);
     setHasChanges(false);
-  }, [services]);
+  }, [services, referenceServices]);
 
   // DnD sensors
   const sensors = useSensors(
@@ -331,30 +311,12 @@ export const ServiceSummaryCard = ({
 
   // Handle approval request for postponed/cancelled
   const handleApprovalRequest = (serviceId, requestedAction) => {
-    // Set status to Pending Approval
+    // Set status to Pending Approval and wait for approval module (no alert/confirm)
     handleServiceUpdate(serviceId, {
       status: 'Pending Approval',
       requestedAction,
       approvalStatus: 'pending',
     });
-
-    // Simulate manager approval after 1.5 seconds
-    setTimeout(() => {
-      const approved = window.confirm(
-        `Manager approval for service to be ${requestedAction}? OK = Approve, Cancel = Decline`
-      );
-      if (approved) {
-        handleServiceUpdate(serviceId, {
-          status: requestedAction,
-          approvalStatus: 'approved',
-        });
-      } else {
-        handleServiceUpdate(serviceId, {
-          status: 'Pending',
-          approvalStatus: 'declined',
-        });
-      }
-    }, 1500);
   };
 
   // Handle service update with local state management
@@ -368,34 +330,9 @@ export const ServiceSummaryCard = ({
   };
 
   // Handle add service button
-  const handleAddService = async () => {
-    if (!editMode) {
-      alert('Please enter Edit mode to add a service.');
-      return;
-    }
-
-    const serviceName = prompt('Enter service name:', 'Wheel Protection');
-    if (!serviceName) return;
-
-    // Mock price - in real app, would come from catalog
-    const price = 600;
-
-    setIsAddingService(true);
-    setApprovalMessage(`📤 Approval request sent for "${serviceName}" ($${price}) - waiting...`);
-
-    try {
-      const approved = await onAddService(serviceName, price);
-      if (approved) {
-        setApprovalMessage(`✅ Approved! Service "${serviceName}" added. Invoice generated.`);
-        setHasChanges(true);
-      } else {
-        setApprovalMessage(`❌ Request declined. Service not added.`);
-      }
-    } catch (error) {
-      setApprovalMessage(`❌ Error adding service.`);
-    } finally {
-      setIsAddingService(false);
-      setTimeout(() => setApprovalMessage(null), 3000);
+  const handleAddService = () => {
+    if (onAddService) {
+      onAddService();
     }
   };
 
@@ -419,26 +356,31 @@ export const ServiceSummaryCard = ({
           <i className="fas fa-concierge-bell"></i> Service Summary
         </span>
         <span style={{ display: 'flex', gap: '10px' }}>
-          <button 
-            className={`btn-edit-save ${editMode ? 'edit-mode' : ''}`} 
-            onClick={toggleEditMode}
-          >
-            {editMode ? <><FaSave /> Save</> : <><FaEdit /> Edit</>}
-          </button>
-          <button 
-            className="btn-finish-work" 
-            onClick={onFinishWork}
-            disabled={!allServicesCompleted}
-          >
-            <FaCheckDouble /> Finish Work
-          </button>
-          <button 
-            className="btn-add-service" 
-            onClick={handleAddService}
-            disabled={isAddingService}
-          >
-            <FaPlusCircle /> Add service
-          </button>
+          <PermissionGate moduleId="serviceexec" optionId={`${tabPrefix}_edit`}>
+            <button 
+              className={`btn-edit-save ${editMode ? 'edit-mode' : ''}`} 
+              onClick={toggleEditMode}
+            >
+              {editMode ? <><FaSave /> Save</> : <><FaEdit /> Edit</>}
+            </button>
+          </PermissionGate>
+          <PermissionGate moduleId="serviceexec" optionId={`${tabPrefix}_finish`}>
+            <button 
+              className="btn-finish-work" 
+              onClick={onFinishWork}
+              disabled={!allServicesCompleted}
+            >
+              <FaCheckDouble /> Finish Work
+            </button>
+          </PermissionGate>
+          <PermissionGate moduleId="serviceexec" optionId={`${tabPrefix}_addservice`}>
+            <button 
+              className="btn-add-service" 
+              onClick={handleAddService}
+            >
+              <FaPlusCircle /> Add service
+            </button>
+          </PermissionGate>
         </span>
       </h3>
 
@@ -461,6 +403,9 @@ export const ServiceSummaryCard = ({
                   editMode={editMode}
                   onUpdate={handleServiceUpdate}
                   onApprovalRequest={handleApprovalRequest}
+                  availableTechs={availableTechs}
+                  availableAssignees={availableAssignees}
+                  tabPrefix={tabPrefix}
                 />
               ))}
             </div>
@@ -476,6 +421,9 @@ export const ServiceSummaryCard = ({
                 editMode={editMode}
                 onUpdate={handleServiceUpdate}
                 onApprovalRequest={handleApprovalRequest}
+                availableTechs={availableTechs}
+                availableAssignees={availableAssignees}
+                tabPrefix={tabPrefix}
               />
             ))
           ) : (
@@ -486,12 +434,6 @@ export const ServiceSummaryCard = ({
         </div>
       )}
 
-      {/* Approval message area */}
-      {approvalMessage && (
-        <div id="approvalMessageArea" className="approval-simulate">
-          {approvalMessage}
-        </div>
-      )}
     </div>
   );
 };

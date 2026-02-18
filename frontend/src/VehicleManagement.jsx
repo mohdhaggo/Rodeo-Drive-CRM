@@ -1,7 +1,8 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { createPortal } from 'react-dom'
 import './VehicleManagement.css'
 import { getVehicles, getStoredJobOrders } from './demoData'
+import PermissionGate from './PermissionGate'
 
 // Demo data generator functions (kept for backward compatibility but not used)
 const generateVIN = () => {
@@ -94,6 +95,77 @@ const generateDemoVehicles = () => {
 }
 
 const VehicleManagement = ({ navigationData, onClearNavigation, onNavigateBack, onNavigate }) => {
+    const buildVehicleRecord = (customer, vehicle) => {
+        const registeredVehiclesCount = customer.registeredVehiclesCount ?? customer.vehicles?.length ?? 1;
+        return {
+            vehicleId: vehicle.vehicleId,
+            ownedBy: customer.name || vehicle.ownedBy || 'Unknown',
+            customerId: customer.id,
+            make: vehicle.make || vehicle.factory || 'N/A',
+            model: vehicle.model || 'N/A',
+            year: vehicle.year || 'N/A',
+            color: vehicle.color || 'N/A',
+            plateNumber: vehicle.plateNumber || vehicle.plate || 'N/A',
+            completedServices: vehicle.completedServices || 0,
+            customerDetails: {
+                customerId: customer.id,
+                name: customer.name || 'Unknown',
+                email: customer.email || '',
+                mobile: customer.mobile || '',
+                address: customer.address || null,
+                registeredVehiclesCount: registeredVehiclesCount,
+                registeredVehicles: `${registeredVehiclesCount} vehicle${registeredVehiclesCount === 1 ? '' : 's'}`,
+                completedServicesCount: customer.completedServicesCount || 0,
+                customerSince: customer.customerSince || null
+            },
+            vehicleDetails: {
+                vehicleId: vehicle.vehicleId,
+                ownedBy: customer.name || vehicle.ownedBy || 'Unknown',
+                make: vehicle.make || vehicle.factory || 'N/A',
+                model: vehicle.model || 'N/A',
+                year: vehicle.year || 'N/A',
+                color: vehicle.color || 'N/A',
+                plateNumber: vehicle.plateNumber || vehicle.plate || 'N/A',
+                vin: vehicle.vin || '',
+                registrationDate: vehicle.registrationDate || null,
+                type: vehicle.vehicleType || vehicle.type || 'N/A',
+                lastServiceDate: null
+            },
+            services: []
+        };
+    };
+
+    const syncVehiclesFromCustomers = useCallback(() => {
+        const savedVehicles = JSON.parse(localStorage.getItem('vehicleManagementVehicles') || '[]');
+        const savedIds = new Set(savedVehicles.map(v => v.vehicleId));
+        const savedCustomers = JSON.parse(localStorage.getItem('jobOrderCustomers') || '[]');
+
+        const derivedVehicles = [];
+        savedCustomers.forEach((customer) => {
+            (customer.vehicles || []).forEach((vehicle) => {
+                if (!vehicle.vehicleId || savedIds.has(vehicle.vehicleId)) return;
+                derivedVehicles.push(buildVehicleRecord(customer, vehicle));
+                savedIds.add(vehicle.vehicleId);
+            });
+        });
+
+        const mergedSaved = derivedVehicles.length > 0
+            ? [...savedVehicles, ...derivedVehicles]
+            : savedVehicles;
+
+        if (derivedVehicles.length > 0) {
+            localStorage.setItem('vehicleManagementVehicles', JSON.stringify(mergedSaved));
+        }
+
+        const demoVehicles = getVehicles();
+        const allVehicles = [...demoVehicles];
+        mergedSaved.forEach(saved => {
+            if (!allVehicles.some(v => v.vehicleId === saved.vehicleId)) {
+                allVehicles.push(saved);
+            }
+        });
+        setVehicles(allVehicles);
+    }, []);
     // Load vehicles from demo data and localStorage
     const [vehicles, setVehicles] = useState(() => {
         const demoVehicles = getVehicles();
@@ -107,7 +179,7 @@ const VehicleManagement = ({ navigationData, onClearNavigation, onNavigateBack, 
         });
         return allVehicles;
     });
-    const [jobOrders] = useState(() => getStoredJobOrders())
+    const [jobOrders, setJobOrders] = useState(() => getStoredJobOrders())
     const [searchQuery, setSearchQuery] = useState('')
     const [searchResults, setSearchResults] = useState([])
     const [currentPage, setCurrentPage] = useState(1)
@@ -136,9 +208,9 @@ const VehicleManagement = ({ navigationData, onClearNavigation, onNavigateBack, 
         }
 
         if (activeDropdown) {
-            document.addEventListener('mousedown', handleClickOutside)
+            document.addEventListener('click', handleClickOutside)
             return () => {
-                document.removeEventListener('mousedown', handleClickOutside)
+                document.removeEventListener('click', handleClickOutside)
             }
         }
     }, [activeDropdown])
@@ -194,6 +266,20 @@ const VehicleManagement = ({ navigationData, onClearNavigation, onNavigateBack, 
             return idB - idA
         }))
     }, [vehicles])
+
+    useEffect(() => {
+        syncVehiclesFromCustomers();
+    }, [syncVehiclesFromCustomers]);
+
+    useEffect(() => {
+        const handleCompletedServicesUpdate = () => {
+            syncVehiclesFromCustomers();
+            setJobOrders(getStoredJobOrders());
+        };
+
+        window.addEventListener('completed-services-updated', handleCompletedServicesUpdate);
+        return () => window.removeEventListener('completed-services-updated', handleCompletedServicesUpdate);
+    }, [syncVehiclesFromCustomers]);
 
     useEffect(() => {
         if (!searchQuery.trim()) {
@@ -328,6 +414,34 @@ const VehicleManagement = ({ navigationData, onClearNavigation, onNavigateBack, 
                 const dateB = new Date(b.createDate)
                 return dateB - dateA
             })
+    }
+
+    const getCustomerCompletedCount = (customerId, customerName, customerMobile) => {
+        if (!jobOrders) return 0
+
+        const nameKey = (customerName || '').trim().toLowerCase()
+        const mobileKey = (customerMobile || '').trim().toLowerCase()
+
+        return jobOrders.filter(order => {
+            if (order.workStatus !== 'Completed') return false
+
+            const orderCustomerId = order.customerDetails?.customerId
+                || order.customerDetails?.id
+                || order.customerId
+                || order.customer?.id
+                || order.customer?.customerId
+
+            if (customerId && orderCustomerId === customerId) return true
+
+            const orderName = (order.customerDetails?.name || order.customerName || '').trim().toLowerCase()
+            const orderMobile = (order.customerDetails?.mobile || order.mobile || '').trim().toLowerCase()
+
+            if (nameKey && mobileKey) {
+                return orderName === nameKey && orderMobile === mobileKey
+            }
+
+            return false
+        }).length
     }
 
     // Navigate to Job Order History with details view
@@ -503,21 +617,35 @@ const VehicleManagement = ({ navigationData, onClearNavigation, onNavigateBack, 
     }
 
     const handleConfirmDelete = () => {
-        // Remove from state
-        const updatedVehicles = vehicles.filter(v => v.vehicleId !== deleteVehicle.vehicleId);
-        setVehicles(updatedVehicles);
-        
-        // Remove from localStorage if it was a saved vehicle
-        const savedVehicles = JSON.parse(localStorage.getItem('vehicleManagementVehicles') || '[]');
-        const filteredSaved = savedVehicles.filter(v => v.vehicleId !== deleteVehicle.vehicleId);
-        if (savedVehicles.length !== filteredSaved.length) {
-            localStorage.setItem('vehicleManagementVehicles', JSON.stringify(filteredSaved));
-        }
-        
-        alert(`Vehicle ${deleteVehicle.vehicleId} has been deleted successfully.`)
-        setDeleteVehicle(null)
-        if (detailsVehicle?.vehicleId === deleteVehicle?.vehicleId) {
-            setDetailsVehicle(null)
+        try {
+            if (!deleteVehicle) return;
+            
+            const vehicleToDelete = deleteVehicle;
+            
+            // Remove from state
+            const updatedVehicles = vehicles.filter(v => v.vehicleId !== vehicleToDelete.vehicleId);
+            setVehicles(updatedVehicles);
+            
+            // Remove from localStorage if it was a saved vehicle
+            const savedVehicles = JSON.parse(localStorage.getItem('vehicleManagementVehicles') || '[]');
+            const filteredSaved = savedVehicles.filter(v => v.vehicleId !== vehicleToDelete.vehicleId);
+            if (savedVehicles.length !== filteredSaved.length) {
+                localStorage.setItem('vehicleManagementVehicles', JSON.stringify(filteredSaved));
+            }
+            
+            // Close modal
+            setDeleteVehicle(null);
+            
+            // Show success message
+            if (detailsVehicle?.vehicleId === vehicleToDelete?.vehicleId) {
+                setDetailsVehicle(null);
+            }
+            
+            alert(`Vehicle ${vehicleToDelete.vehicleId} has been deleted successfully.`);
+        } catch (error) {
+            console.error('Error deleting vehicle:', error);
+            alert('Failed to delete vehicle. Please try again.');
+            setDeleteVehicle(null);
         }
     }
 
@@ -613,33 +741,35 @@ const VehicleManagement = ({ navigationData, onClearNavigation, onNavigateBack, 
                                                     <td>{highlightSearchMatches(vehicle.year, searchQuery)}</td>
                                                     <td>{highlightSearchMatches(vehicle.color, searchQuery)}</td>
                                                     <td>{highlightSearchMatches(vehicle.plateNumber, searchQuery)}</td>
-                                                    <td>{vehicle.completedServices}</td>
+                                                    <td>{getVehicleCompletedServices(vehicle.vehicleId).length}</td>
                                                     <td>
-                                                        <div className="action-dropdown-container">
-                                                            <button 
-                                                                className={`btn-action-dropdown ${activeDropdown === vehicle.vehicleId ? 'active' : ''}`}
-                                                                onClick={(e) => {
-                                                                    const isActive = activeDropdown === vehicle.vehicleId
-                                                                    if (isActive) {
-                                                                        setActiveDropdown(null)
-                                                                        return
-                                                                    }
-                                                                    const rect = e.currentTarget.getBoundingClientRect()
-                                                                    const menuHeight = 180
-                                                                    const menuWidth = 200
-                                                                    const spaceBelow = window.innerHeight - rect.bottom
-                                                                    const top = spaceBelow < menuHeight ? rect.top - menuHeight - 6 : rect.bottom + 6
-                                                                    const left = Math.max(8, Math.min(rect.right - menuWidth, window.innerWidth - menuWidth - 8))
-                                                                    setDropdownPosition({
-                                                                        top,
-                                                                        left
-                                                                    })
-                                                                    setActiveDropdown(vehicle.vehicleId)
-                                                                }}
-                                                            >
-                                                                <i className="fas fa-cogs"></i> Actions <i className="fas fa-chevron-down"></i>
-                                                            </button>
-                                                        </div>
+                                                        <PermissionGate moduleId="vehicle" optionId="vehicle_actions">
+                                                            <div className="action-dropdown-container">
+                                                                <button 
+                                                                    className={`btn-action-dropdown ${activeDropdown === vehicle.vehicleId ? 'active' : ''}`}
+                                                                    onClick={(e) => {
+                                                                        const isActive = activeDropdown === vehicle.vehicleId
+                                                                        if (isActive) {
+                                                                            setActiveDropdown(null)
+                                                                            return
+                                                                        }
+                                                                        const rect = e.currentTarget.getBoundingClientRect()
+                                                                        const menuHeight = 180
+                                                                        const menuWidth = 200
+                                                                        const spaceBelow = window.innerHeight - rect.bottom
+                                                                        const top = spaceBelow < menuHeight ? rect.top - menuHeight - 6 : rect.bottom + 6
+                                                                        const left = Math.max(8, Math.min(rect.right - menuWidth, window.innerWidth - menuWidth - 8))
+                                                                        setDropdownPosition({
+                                                                            top,
+                                                                            left
+                                                                        })
+                                                                        setActiveDropdown(vehicle.vehicleId)
+                                                                    }}
+                                                                >
+                                                                    <i className="fas fa-cogs"></i> Actions <i className="fas fa-chevron-down"></i>
+                                                                </button>
+                                                            </div>
+                                                        </PermissionGate>
                                                     </td>
                                                 </tr>
                                             ))}
@@ -650,6 +780,8 @@ const VehicleManagement = ({ navigationData, onClearNavigation, onNavigateBack, 
                                 {activeDropdown && typeof document !== 'undefined' && createPortal(
                                     <div
                                         className="action-dropdown-menu show action-dropdown-menu-fixed"
+                                        onMouseDown={(e) => e.stopPropagation()}
+                                        onClick={(e) => e.stopPropagation()}
                                         style={{
                                             top: `${dropdownPosition.top}px`,
                                             left: `${dropdownPosition.left}px`
@@ -675,9 +807,13 @@ const VehicleManagement = ({ navigationData, onClearNavigation, onNavigateBack, 
                                             <i className="fas fa-edit"></i> Edit Vehicle
                                         </button>
                                         <div className="dropdown-divider"></div>
-                                        <button className="dropdown-item delete" onClick={() => {
+                                        <button className="dropdown-item delete" onClick={(e) => {
+                                            e.stopPropagation();
+                                            console.log('Delete vehicle button clicked, activeDropdown:', activeDropdown);
                                             const vehicle = vehicles.find(v => v.vehicleId === activeDropdown)
+                                            console.log('Found vehicle:', vehicle);
                                             if (vehicle) {
+                                                console.log('Setting deleteVehicle state:', vehicle);
                                                 setDeleteVehicle(vehicle)
                                             }
                                             setActiveDropdown(null)
@@ -797,7 +933,7 @@ const VehicleManagement = ({ navigationData, onClearNavigation, onNavigateBack, 
                                                     <div className="pim-info-item">
                                                         <span className="pim-info-label">Completed Services</span>
                                                         <span className="pim-info-value">
-                                                            <span className="count-badge">{detailsVehicle.customerDetails.completedServicesCount} services</span>
+                                                            <span className="count-badge">{getCustomerCompletedCount(detailsVehicle.customerDetails.customerId, detailsVehicle.customerDetails.name, detailsVehicle.customerDetails.mobile)} services</span>
                                                         </span>
                                                     </div>
                                                     <div className="pim-info-item">
@@ -851,7 +987,7 @@ const VehicleManagement = ({ navigationData, onClearNavigation, onNavigateBack, 
                                                     </div>
                                                     <div className="pim-info-item">
                                                         <span className="pim-info-label">Completed Services</span>
-                                                        <span className="pim-info-value">{detailsVehicle.completedServices}</span>
+                                                        <span className="pim-info-value">{getVehicleCompletedServices(detailsVehicle.vehicleId).length}</span>
                                                     </div>
                                                 </div>
                                             </div>
@@ -1201,7 +1337,7 @@ const VehicleManagement = ({ navigationData, onClearNavigation, onNavigateBack, 
             )}
             
             {/* Delete Modal */}
-            {deleteVehicle && (
+            {deleteVehicle && typeof document !== 'undefined' && createPortal(
                 <div className="delete-modal-overlay" onClick={() => setDeleteVehicle(null)}>
                     <div className="delete-modal" onClick={(e) => e.stopPropagation()}>
                         <div className="delete-modal-header">
@@ -1226,7 +1362,8 @@ const VehicleManagement = ({ navigationData, onClearNavigation, onNavigateBack, 
                             </div>
                         </div>
                     </div>
-                </div>
+                </div>,
+                document.body
             )}
         </>
     )

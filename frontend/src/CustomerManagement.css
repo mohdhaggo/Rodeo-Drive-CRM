@@ -42,7 +42,7 @@ body {
 /* Header */
 .app-header {
   padding: 24px 30px;
-  background-color: var(--primary-color);
+  background: linear-gradient(135deg, #3498db, #2c3e50);
   color: white;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   display: flex;
@@ -65,7 +65,7 @@ body {
 }
 
 .app-header h1 i {
-  color: var(--secondary-color);
+  color: white;
 }
 
 /* Buttons */
@@ -746,21 +746,21 @@ select.form-control {
 /* Payment & Invoice style details (shared look) */
 .pim-details-screen {
   width: 100%;
+  height: 100%;
   background-color: white;
-  overflow-y: auto;
   display: flex;
   flex-direction: column;
-  min-height: 100vh;
 }
 
 .pim-details-header {
   background-color: var(--primary-color);
-  padding: 22px 30px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  color: var(--white);
+  padding: 24px 30px;
+  border-bottom: 3px solid var(--secondary-color);
   display: flex;
   justify-content: space-between;
   align-items: center;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  flex-shrink: 0;
 }
 
 .pim-details-title-container {
@@ -770,35 +770,44 @@ select.form-control {
 }
 
 .pim-details-header h2 {
-  color: white;
-  font-size: 22px;
+  color: var(--white);
+  font-size: 24px;
+  font-weight: 600;
   display: flex;
   align-items: center;
   gap: 12px;
   margin: 0;
 }
 
+.pim-details-header h2 span {
+  color: var(--secondary-color);
+}
+
 .pim-btn-close-details {
-  background-color: var(--light-gray);
-  color: var(--primary-color);
+  background-color: var(--danger-color);
+  color: var(--white);
   border: none;
   padding: 10px 20px;
   border-radius: 6px;
   cursor: pointer;
+  font-size: 14px;
   font-weight: 500;
   display: flex;
   align-items: center;
   gap: 8px;
-  transition: background-color 0.3s;
+  transition: all 0.3s ease;
+  flex-shrink: 0;
 }
 
 .pim-btn-close-details:hover {
-  background-color: var(--medium-gray);
+  background-color: #c0392b;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(231, 76, 60, 0.3);
 }
 
 .pim-details-body {
   padding: 30px;
-  flex: 1;
+  overflow: hidden;
 }
 
 .pim-details-grid {
@@ -807,6 +816,7 @@ select.form-control {
   gap: 24px;
   width: 100%;
   margin: 0 auto;
+  overflow: hidden;
 }
 
 .pim-detail-card {
@@ -865,16 +875,17 @@ select.form-control {
 }
 
 .details-header {
-  background-color: var(--white);
-  padding: 22px 30px;
-  border-bottom: 1px solid var(--light-gray);
+  background-color: var(--primary-color);
+  color: var(--white);
+  padding: 24px 30px;
+  border-bottom: 3px solid var(--secondary-color);
   display: flex;
   justify-content: space-between;
   align-items: center;
   position: sticky;
   top: 0;
   z-index: 10;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  flex-shrink: 0;
 }
 
 .details-title-container {
@@ -884,11 +895,17 @@ select.form-control {
 }
 
 .details-header h2 {
-  color: var(--primary-color);
-  font-size: 22px;
+  color: var(--white);
+  font-size: 24px;
+  font-weight: 600;
   display: flex;
   align-items: center;
   gap: 12px;
+  margin: 0;
+}
+
+.details-header h2 span {
+  color: var(--secondary-color);
 }
 
 .details-header-actions {
@@ -898,21 +915,25 @@ select.form-control {
 }
 
 .btn-close-details {
-  background-color: var(--light-gray);
-  color: var(--primary-color);
+  background-color: var(--danger-color);
+  color: var(--white);
   border: none;
   padding: 10px 20px;
   border-radius: 6px;
   cursor: pointer;
+  font-size: 14px;
   font-weight: 500;
   display: flex;
   align-items: center;
   gap: 8px;
-  transition: background-color 0.3s;
+  transition: all 0.3s ease;
+  flex-shrink: 0;
 }
 
 .btn-close-details:hover {
-  background-color: var(--medium-gray);
+  background-color: #c0392b;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(231, 76, 60, 0.3);
 }
 
 .details-body {
@@ -1301,7 +1322,7 @@ mark.search-highlight {
   right: 0;
   bottom: 0;
   background-color: rgba(0, 0, 0, 0.7);
-  z-index: 2000;
+  z-index: 8000;
   display: flex;
   align-items: center;
   justify-content: center;

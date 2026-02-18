@@ -1,0 +1,421 @@
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap');
+
+.rac-page {
+  min-height: 100%;
+  padding: 0;
+  background: transparent;
+  font-family: 'IBM Plex Sans', sans-serif;
+  color: #0f172a;
+}
+
+.rac-container {
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  background: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 2px 15px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+  border: none;
+}
+
+.rac-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 2rem 2.5rem;
+  background: linear-gradient(135deg, #0f172a 0%, #0f766e 100%);
+  color: #f8fafc;
+  gap: 2rem;
+}
+
+.rac-header h1 {
+  margin: 0 0 0.4rem;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 2rem;
+}
+
+.rac-header p {
+  margin: 0;
+  opacity: 0.85;
+  font-size: 0.95rem;
+}
+
+.rac-header-badge {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  background: rgba(255, 255, 255, 0.18);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 0.6rem 1rem;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  letter-spacing: 0.5px;
+}
+
+.rac-role-section {
+  padding: 1.8rem 2.5rem 1.2rem;
+  background: #f8fafc;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.rac-role-selector {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.rac-role-selector label {
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.rac-role-selector select {
+  min-width: 220px;
+  padding: 0.6rem 0.9rem;
+  border-radius: 10px;
+  border: 1px solid #cbd5f5;
+  background: #fff;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.rac-role-selector select:focus {
+  border-color: #0f766e;
+  box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.2);
+  outline: none;
+}
+
+.rac-current-role {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.9rem;
+  background: #e0f2fe;
+  border-radius: 10px;
+  font-size: 0.85rem;
+  color: #0369a1;
+}
+
+.rac-search-box {
+  margin: 1.6rem 2.5rem 1.4rem;
+  padding: 0.9rem 1rem;
+  background: #ffffff;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 8px 18px rgba(15, 23, 42, 0.06);
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.rac-search-box input {
+  border: none;
+  flex: 1;
+  font-size: 0.95rem;
+  outline: none;
+  font-family: inherit;
+  color: #0f172a;
+}
+
+.rac-tabs {
+  display: flex;
+  gap: 0.8rem;
+  flex-wrap: wrap;
+  padding: 0 2.5rem 1rem;
+}
+
+.rac-tab {
+  border: none;
+  padding: 0.55rem 1.1rem;
+  border-radius: 999px;
+  background: #e2e8f0;
+  color: #0f172a;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.rac-tab.active {
+  background: #0f766e;
+  color: #ffffff;
+  box-shadow: 0 8px 18px rgba(15, 118, 110, 0.3);
+}
+
+.rac-modules {
+  padding: 0.5rem 2.5rem 2rem;
+}
+
+.rac-module-card {
+  border-radius: 14px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 12px 25px rgba(15, 23, 42, 0.08);
+  margin-bottom: 1.3rem;
+  overflow: hidden;
+  background: #ffffff;
+  animation: racFadeUp 0.35s ease both;
+}
+
+.rac-module-disabled {
+  opacity: 0.7;
+  background: #f8fafc;
+}
+
+.rac-module-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.1rem 1.4rem;
+  background: #f1f5f9;
+  cursor: pointer;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.rac-module-title {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-weight: 600;
+  font-size: 1.05rem;
+  color: #0f172a;
+}
+
+.rac-module-toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 0.85rem;
+  color: #475569;
+}
+
+.rac-toggle-label {
+  font-weight: 600;
+}
+
+.rac-toggle {
+  position: relative;
+  display: inline-block;
+  width: 48px;
+  height: 26px;
+}
+
+.rac-toggle input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.rac-slider {
+  position: absolute;
+  cursor: pointer;
+  inset: 0;
+  background-color: #cbd5f5;
+  transition: 0.3s;
+  border-radius: 999px;
+}
+
+.rac-slider:before {
+  position: absolute;
+  content: '';
+  height: 18px;
+  width: 18px;
+  left: 4px;
+  bottom: 4px;
+  background-color: #ffffff;
+  transition: 0.3s;
+  border-radius: 50%;
+}
+
+.rac-toggle input:checked + .rac-slider {
+  background-color: #0f766e;
+}
+
+.rac-toggle input:checked + .rac-slider:before {
+  transform: translateX(22px);
+}
+
+.rac-expand-icon {
+  transition: transform 0.3s ease;
+}
+
+.rac-module-header.expanded .rac-expand-icon {
+  transform: rotate(180deg);
+}
+
+.rac-status-indicator {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.rac-status-indicator.enabled {
+  background: #22c55e;
+}
+
+.rac-status-indicator.disabled {
+  background: #ef4444;
+}
+
+.rac-module-content {
+  max-height: 0;
+  overflow: hidden;
+  padding: 0;
+  transition: max-height 0.5s ease, padding 0.5s ease;
+  background: #ffffff;
+}
+
+.rac-module-content.expanded {
+  padding: 1.2rem 1.4rem;
+  max-height: 20000px;
+}
+
+.rac-option {
+  margin-bottom: 0.9rem;
+}
+
+.rac-option-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.75rem 1rem;
+  border-radius: 10px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+}
+
+.rac-option-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 500;
+}
+
+.rac-option-prefix {
+  color: #0f766e;
+  font-weight: 700;
+  min-width: 20px;
+}
+
+.rac-option.rac-disabled .rac-option-row {
+  opacity: 0.6;
+}
+
+.rac-children {
+  margin-top: 0.6rem;
+  padding-left: 1.5rem;
+  border-left: 2px dashed #e2e8f0;
+}
+
+.rac-percent-field {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.9rem;
+}
+
+.rac-percent-field input {
+  width: 80px;
+  padding: 0.3rem 0.5rem;
+  border-radius: 6px;
+  border: 1px solid #cbd5f5;
+  font-family: inherit;
+}
+
+.rac-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  padding: 1.4rem 2.5rem 2rem;
+  background: #f8fafc;
+  border-top: 1px solid #e2e8f0;
+}
+
+.rac-btn {
+  border: none;
+  padding: 0.75rem 1.4rem;
+  border-radius: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.rac-btn-ghost {
+  background: #e2e8f0;
+  color: #0f172a;
+}
+
+.rac-btn-primary {
+  background: #0f766e;
+  color: #ffffff;
+  box-shadow: 0 12px 25px rgba(15, 118, 110, 0.3);
+}
+
+.rac-btn:hover {
+  transform: translateY(-1px);
+}
+
+@keyframes racFadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 900px) {
+  .rac-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .rac-role-selector {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .rac-role-selector select {
+    width: 100%;
+  }
+
+  .rac-module-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.8rem;
+  }
+
+  .rac-module-toggle {
+    width: 100%;
+    justify-content: space-between;
+  }
+}
+
+@media (max-width: 600px) {
+  .rac-page {
+    padding: 1rem;
+  }
+
+  .rac-header,
+  .rac-role-section,
+  .rac-search-box,
+  .rac-tabs,
+  .rac-modules,
+  .rac-actions {
+    padding-left: 1.2rem;
+    padding-right: 1.2rem;
+  }
+
+  .rac-option-row {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}

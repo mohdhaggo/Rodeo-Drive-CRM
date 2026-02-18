@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { signIn } from 'aws-amplify/auth';
+import { validateCredentials, setCurrentUser, initializeUsers } from './userService';
 import './Login.css';
 
 export default function Login({ onLoginSuccess }) {
@@ -9,15 +9,29 @@ export default function Login({ onLoginSuccess }) {
   const [error, setError] = useState('');
   const [showPassword, setShowPassword] = useState(false);
 
+  // Initialize users on component mount
+  React.useEffect(() => {
+    initializeUsers();
+  }, []);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
     setLoading(true);
 
     try {
-      const user = await signIn({ username: email, password });
-      if (onLoginSuccess) {
-        onLoginSuccess(user);
+      // Validate credentials against system user management
+      const result = validateCredentials(email, password);
+      
+      if (result.success) {
+        // Store the logged-in user
+        setCurrentUser(result.user);
+        
+        if (onLoginSuccess) {
+          onLoginSuccess(result.user);
+        }
+      } else {
+        setError(result.error || 'Authentication failed');
       }
     } catch (err) {
       setError(err.message || 'Authentication failed');

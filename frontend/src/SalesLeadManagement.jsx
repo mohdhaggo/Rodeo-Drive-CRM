@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import './SalesLeadManagement.css';
+import PermissionGate from './PermissionGate';
 
 const SalesLeadManagement = () => {
   const [showDetailsPage, setShowDetailsPage] = useState(false);
@@ -164,7 +165,7 @@ const SalesLeadManagement = () => {
   // Save comment
   const saveComment = () => {
     if (!commentText.trim()) {
-      alert("Please enter a comment");
+      // Removed alert for missing comment
       return;
     }
 
@@ -326,9 +327,11 @@ const SalesLeadManagement = () => {
 
       <div className="slm-content-area">
         <div className="slm-toolbar">
-          <button className="slm-btn-primary" onClick={() => openModal('addLead')}>
-            <i className="fas fa-plus-circle"></i> Add New Lead
-          </button>
+          <PermissionGate moduleId="saleslead" optionId="saleslead_add">
+            <button className="slm-btn-primary" onClick={() => openModal('addLead')}>
+              <i className="fas fa-plus-circle"></i> Add New Lead
+            </button>
+          </PermissionGate>
           
           <div className="slm-search-filter">
             <input 
@@ -409,41 +412,43 @@ const SalesLeadManagement = () => {
                     </td>
                     <td>{lead.created}</td>
                     <td>
-                      <div className="slm-action-dropdown">
-                        <button 
-                          className="slm-action-btn"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setOpenDropdown(openDropdown === lead.id ? null : lead.id);
-                          }}
-                        >
-                          More
-                        </button>
-                        {openDropdown === lead.id && (
-                          <div className="slm-action-menu">
-                            <a href="#" onClick={(e) => {
-                              e.preventDefault();
-                              viewLeadDetails(lead.id);
-                            }}>
-                              <i className="fas fa-eye"></i> View Details
-                            </a>
-                            <a href="#" onClick={(e) => {
-                              e.preventDefault();
-                              setCurrentLeadId(lead.id);
-                              openModal('reassign');
-                            }}>
-                              <i className="fas fa-user-friends"></i> Reassign
-                            </a>
-                            <a href="#" onClick={(e) => {
-                              e.preventDefault();
-                              setCurrentLeadId(lead.id);
-                              openModal('status');
-                            }}>
-                              <i className="fas fa-sync-alt"></i> Update Status
-                            </a>
-                          </div>
-                        )}
-                      </div>
+                      <PermissionGate moduleId="saleslead" optionId="saleslead_actions">
+                        <div className="slm-action-dropdown">
+                          <button 
+                            className="slm-action-btn"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setOpenDropdown(openDropdown === lead.id ? null : lead.id);
+                            }}
+                          >
+                            More
+                          </button>
+                          {openDropdown === lead.id && (
+                            <div className="slm-action-menu">
+                              <a href="#" onClick={(e) => {
+                                e.preventDefault();
+                                viewLeadDetails(lead.id);
+                              }}>
+                                <i className="fas fa-eye"></i> View Details
+                              </a>
+                              <a href="#" onClick={(e) => {
+                                e.preventDefault();
+                                setCurrentLeadId(lead.id);
+                                openModal('reassign');
+                              }}>
+                                <i className="fas fa-user-friends"></i> Reassign
+                              </a>
+                              <a href="#" onClick={(e) => {
+                                e.preventDefault();
+                                setCurrentLeadId(lead.id);
+                                openModal('status');
+                              }}>
+                                <i className="fas fa-sync-alt"></i> Update Status
+                              </a>
+                            </div>
+                          )}
+                        </div>
+                      </PermissionGate>
                     </td>
                   </tr>
                 ))

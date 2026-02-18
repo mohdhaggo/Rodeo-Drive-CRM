@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import './SalesLeadHistory.css';
+import PermissionGate from './PermissionGate';
 
 const SalesLeadHistory = () => {
   const [showHistoryDetails, setShowHistoryDetails] = useState(false);
@@ -317,12 +318,14 @@ const SalesLeadHistory = () => {
                       </span>
                     </td>
                     <td>
-                      <button 
-                        className="slh-action-btn"
-                        onClick={() => viewHistoryDetails(lead.id)}
-                      >
-                        View Details
-                      </button>
+                      <PermissionGate moduleId="salesleadhistory" optionId="salesleadhistory_view">
+                        <button 
+                          className="slh-action-btn"
+                          onClick={() => viewHistoryDetails(lead.id)}
+                        >
+                          View Details
+                        </button>
+                      </PermissionGate>
                     </td>
                   </tr>
                 ))}

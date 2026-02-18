@@ -1,6 +1,7 @@
 ﻿import React, { useState, useEffect, useCallback } from 'react';
 import './JobOrderHistory.css';
 import { getStoredJobOrders } from './demoData';
+import PermissionGate from './PermissionGate';
 
 // Demo data generator - exported for use in other modules
 export const generateDemoJobOrders = () => {
@@ -185,7 +186,7 @@ export const generateDemoJobOrders = () => {
       mobile: '+971 55 987 6543',
       vehiclePlate: 'SHJ-AB789',
       workStatus: 'Cancelled',
-      paymentStatus: 'Unpaid',
+      paymentStatus: 'Fully Refunded',
       createDate: '14 Oct 2023',
       
       jobOrderSummary: {
@@ -406,7 +407,7 @@ export const generateDemoJobOrders = () => {
   );
 };
 
-const JobOrderHistory = ({ navigationData, onClearNavigation, onNavigateBack }) => {
+const JobOrderHistory = ({ currentUser, navigationData, onClearNavigation, onNavigateBack }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [jobOrders, setJobOrders] = useState([]);
   const [filteredOrders, setFilteredOrders] = useState([]);
@@ -554,6 +555,18 @@ const JobOrderHistory = ({ navigationData, onClearNavigation, onNavigateBack }) 
         order={selectedOrder} 
         onClose={() => {
           setSelectedOrder(null);
+          // Reload data from localStorage to get latest updates
+          const refreshedOrders = getStoredJobOrders().filter(order =>
+            ['Completed', 'Cancelled'].includes(order.workStatus)
+          );
+          refreshedOrders.sort((a, b) => {
+            const dateA = parseDateString(a.createDate);
+            const dateB = parseDateString(b.createDate);
+            return dateB - dateA;
+          });
+          setJobOrders(refreshedOrders);
+          setFilteredOrders(refreshedOrders);
+          
           if (navigationSource && onNavigateBack) {
             const vehicleId = returnToVehicleId;
             setNavigationSource(null);
@@ -618,12 +631,14 @@ const JobOrderHistory = ({ navigationData, onClearNavigation, onNavigateBack }) 
                   <option value="100">100</option>
                 </select>
               </div>
-              <button 
-                className="btn-export"
-                onClick={() => setShowExportModal(true)}
-              >
-                <i className="fas fa-file-export"></i> Export Data
-              </button>
+              <PermissionGate moduleId="joborderhistory" optionId="joborderhistory_export">
+                <button 
+                  className="btn-export"
+                  onClick={() => setShowExportModal(true)}
+                >
+                  <i className="fas fa-file-export"></i> Export Data
+                </button>
+              </PermissionGate>
             </div>
           </div>
 
@@ -664,12 +679,19 @@ const JobOrderHistory = ({ navigationData, onClearNavigation, onNavigateBack }) 
                         <td><span className={`status-badge ${getStatusClass(order.workStatus)}`}>{order.workStatus}</span></td>
                         <td><span className={`status-badge ${getPaymentStatusClass(order.paymentStatus)}`}>{order.paymentStatus}</span></td>
                         <td>
-                          <button 
-                            className="btn-view"
-                            onClick={() => setSelectedOrder(order)}
-                          >
-                            <i className="fas fa-eye"></i> View Details
-                          </button>
+                          <PermissionGate moduleId="joborderhistory" optionId="joborderhistory_viewdetails">
+                            <button 
+                              className="btn-view"
+                              onClick={() => {
+                                // Reload from localStorage to get the latest data
+                                const freshOrders = getStoredJobOrders();
+                                const freshOrder = freshOrders.find(o => o.id === order.id) || order;
+                                setSelectedOrder(freshOrder);
+                              }}
+                            >
+                              <i className="fas fa-eye"></i> View Details
+                            </button>
+                          </PermissionGate>
                         </td>
                       </tr>
                     ))}
@@ -761,6 +783,10 @@ const JobOrderHistory = ({ navigationData, onClearNavigation, onNavigateBack }) 
 
 // Details View Component
 const JobOrderDetailsView = ({ order, onClose }) => {
+  const combinedServices = order.orderType === 'Service Order'
+    ? [...(order.serviceOrderReference?.services || []), ...(order.services || [])]
+    : (order.services || []);
+
   return (
     <div className="pim-details-screen">
       <div className="pim-details-header">
@@ -775,6 +801,7 @@ const JobOrderDetailsView = ({ order, onClose }) => {
       <div className="pim-details-body">
         <div className="pim-details-grid">
           {/* Job Order Summary */}
+          <PermissionGate moduleId="joborderhistory" optionId="joborderhistory_summary">
           <div className="pim-detail-card">
             <h3><i className="fas fa-info-circle"></i> Job Order Summary</h3>
             <div className="pim-card-content">
@@ -812,14 +839,18 @@ const JobOrderDetailsView = ({ order, onClose }) => {
               </div>
             </div>
           </div>
+          </PermissionGate>
 
           {/* Roadmap */}
           {order.roadmap && order.roadmap.length > 0 && (
-            <RoadmapCard roadmap={order.roadmap} />
+          <PermissionGate moduleId="joborderhistory" optionId="joborderhistory_roadmap">
+            <RoadmapCard order={order} />
+          </PermissionGate>
           )}
 
           {/* Customer Details */}
           {order.customerDetails && (
+          <PermissionGate moduleId="joborderhistory" optionId="joborderhistory_customer">
             <div className="pim-detail-card">
               <h3><i className="fas fa-user"></i> Customer Information</h3>
               <div className="pim-card-content">
@@ -861,91 +892,49 @@ const JobOrderDetailsView = ({ order, onClose }) => {
                 </div>
               </div>
             </div>
+          </PermissionGate>
           )}
 
           {/* Vehicle Details */}
-          {order.vehicleDetails && (
-            <div className="pim-detail-card">
-              <h3><i className="fas fa-car"></i> Vehicle Information</h3>
-              <div className="pim-card-content">
-                <div className="pim-info-item">
-                  <span className="pim-info-label">Vehicle ID</span>
-                  <span className="pim-info-value">{order.vehicleDetails.vehicleId}</span>
-                </div>
-                <div className="pim-info-item">
-                  <span className="pim-info-label">Owned By</span>
-                  <span className="pim-info-value">{order.vehicleDetails.ownedBy}</span>
-                </div>
-                <div className="pim-info-item">
-                  <span className="pim-info-label">Make</span>
-                  <span className="pim-info-value">{order.vehicleDetails.make}</span>
-                </div>
-                <div className="pim-info-item">
-                  <span className="pim-info-label">Model</span>
-                  <span className="pim-info-value">{order.vehicleDetails.model}</span>
-                </div>
-                <div className="pim-info-item">
-                  <span className="pim-info-label">Year</span>
-                  <span className="pim-info-value">{order.vehicleDetails.year}</span>
-                </div>
-                <div className="pim-info-item">
-                  <span className="pim-info-label">Color</span>
-                  <span className="pim-info-value">{order.vehicleDetails.color}</span>
-                </div>
-                <div className="pim-info-item">
-                  <span className="pim-info-label">Plate Number</span>
-                  <span className="pim-info-value">{order.vehicleDetails.plateNumber}</span>
-                </div>
-                <div className="pim-info-item">
-                  <span className="pim-info-label">VIN</span>
-                  <span className="pim-info-value">{order.vehicleDetails.vin}</span>
-                </div>
-                <div className="pim-info-item">
-                  <span className="pim-info-label">Vehicle Type</span>
-                  <span className="pim-info-value">{order.vehicleDetails.type}</span>
-                </div>
-                <div className="pim-info-item">
-                  <span className="pim-info-label">Completed Services</span>
-                  <span className="pim-info-value">{order.vehicleDetails.completedServices}</span>
-                </div>
-              </div>
-            </div>
-          )}
+          <PermissionGate moduleId="joborderhistory" optionId="joborderhistory_vehicle">
+            <VehicleDetailsCard order={order} />
+          </PermissionGate>
 
           {/* Services */}
-          {order.services && order.services.length > 0 && (
+          {combinedServices.length > 0 && (
+          <PermissionGate moduleId="joborderhistory" optionId="joborderhistory_services">
             <div className="pim-detail-card">
               <h3><i className="fas fa-tasks"></i> Services Summary</h3>
               <div className="services-list">
-                {order.services.map((service, idx) => (
+                {combinedServices.map((service, idx) => (
                   <div key={idx} className="service-item">
                     <div className="service-header">
-                      <span className="service-name">{service.name}</span>
-                      <span className={`status-badge ${service.status === 'Completed' ? 'status-completed' : 'status-cancelled'}`}>{service.status}</span>
+                      <span className="service-name">{typeof service === 'string' ? service : service.name}</span>
+                      <span className={`status-badge ${typeof service === 'string' ? 'status-cancelled' : (service.status === 'Completed' ? 'status-completed' : 'status-cancelled')}`}>{typeof service === 'string' ? 'New' : service.status}</span>
                     </div>
                     <div className="service-timeline">
                       <div className="timeline-item">
                         <i className="fas fa-play-circle"></i>
                         <span className="timeline-label">Started:</span>
-                        <span className="timeline-value">{service.started}</span>
+                        <span className="timeline-value">{typeof service === 'string' ? 'Not started' : service.started}</span>
                       </div>
                       <div className="timeline-item">
                         <i className="fas fa-flag-checkered"></i>
                         <span className="timeline-label">Ended:</span>
-                        <span className="timeline-value">{service.ended || 'Not completed'}</span>
+                        <span className="timeline-value">{typeof service === 'string' ? 'Not completed' : (service.ended || 'Not completed')}</span>
                       </div>
                       <div className="timeline-item">
                         <i className="fas fa-clock"></i>
                         <span className="timeline-label">Duration:</span>
-                        <span className="timeline-value">{service.duration}</span>
+                        <span className="timeline-value">{typeof service === 'string' ? 'N/A' : service.duration}</span>
                       </div>
                       <div className="timeline-item">
                         <i className="fas fa-user-cog"></i>
                         <span className="timeline-label">Technician:</span>
-                        <span className="timeline-value">{service.technician}</span>
+                        <span className="timeline-value">{typeof service === 'string' ? 'Not assigned' : service.technician}</span>
                       </div>
                     </div>
-                    {service.notes && (
+                    {typeof service !== 'string' && service.notes && (
                       <div className="service-notes">
                         <span className="notes-label">Notes:</span>
                         <span className="notes-value">{service.notes}</span>
@@ -955,10 +944,12 @@ const JobOrderDetailsView = ({ order, onClose }) => {
                 ))}
               </div>
             </div>
+          </PermissionGate>
           )}
 
           {/* Customer Notes */}
           {order.customerNotes && (
+          <PermissionGate moduleId="joborderhistory" optionId="joborderhistory_notes">
             <div className="pim-detail-card">
               <h3><i className="fas fa-sticky-note"></i> Customer Notes / Comments</h3>
               <div className="pim-card-content">
@@ -979,48 +970,29 @@ const JobOrderDetailsView = ({ order, onClose }) => {
                 </div>
               </div>
             </div>
+          </PermissionGate>
           )}
 
+          {/* Quality Check List */}
+          <PermissionGate moduleId="joborderhistory" optionId="joborderhistory_quality">
+            <QualityCheckListCard order={order} />
+          </PermissionGate>
+
           {/* Billing */}
-          {order.billing && (
-            <div className="pim-detail-card">
-              <h3><i className="fas fa-receipt"></i> Billing & Invoices</h3>
-              <div className="pim-card-content">
-                <div className="pim-info-item">
-                  <span className="pim-info-label">Bill ID</span>
-                  <span className="pim-info-value">{order.billing.billId}</span>
-                </div>
-                <div className="pim-info-item">
-                  <span className="pim-info-label">Total Amount</span>
-                  <span className="pim-info-value">{order.billing.totalAmount}</span>
-                </div>
-                <div className="pim-info-item">
-                  <span className="pim-info-label">Discount</span>
-                  <span className="pim-info-value">{order.billing.discount}</span>
-                </div>
-                <div className="pim-info-item">
-                  <span className="pim-info-label">Net Amount</span>
-                  <span className="pim-info-value">{order.billing.netAmount}</span>
-                </div>
-                <div className="pim-info-item">
-                  <span className="pim-info-label">Amount Paid</span>
-                  <span className="pim-info-value">{order.billing.amountPaid}</span>
-                </div>
-                <div className="pim-info-item">
-                  <span className="pim-info-label">Balance Due</span>
-                  <span className="pim-info-value">{order.billing.balanceDue}</span>
-                </div>
-              </div>
-            </div>
-          )}
+          <PermissionGate moduleId="joborderhistory" optionId="joborderhistory_billing">
+            <BillingCard order={order} />
+          </PermissionGate>
 
           {/* Payment Activity Log */}
           {order.paymentActivityLog && order.paymentActivityLog.length > 0 && (
+          <PermissionGate moduleId="joborderhistory" optionId="joborderhistory_paymentlog">
             <PaymentActivityLogCard payments={order.paymentActivityLog} />
+          </PermissionGate>
           )}
 
           {/* Exit Permit */}
           {order.exitPermit && (
+          <PermissionGate moduleId="joborderhistory" optionId="joborderhistory_exitpermit">
             <div className="pim-detail-card">
               <h3><i className="fas fa-id-card"></i> Exit Permit Details</h3>
               <div className="pim-card-content">
@@ -1050,62 +1022,469 @@ const JobOrderDetailsView = ({ order, onClose }) => {
                 </div>
               </div>
             </div>
+          </PermissionGate>
           )}
+
+          {/* Documents */}
+          <PermissionGate moduleId="joborderhistory" optionId="joborderhistory_documents">
+            <DocumentsCard order={order} />
+          </PermissionGate>
         </div>
       </div>
     </div>
   );
 };
 
-// Roadmap Component
-const RoadmapCard = ({ roadmap }) => {
-  const getStepStatusClass = (status) => {
-    switch(status.toLowerCase()) {
-      case 'completed': return 'step-completed';
-      case 'cancelled': return 'step-cancelled';
-      default: return 'step-pending';
+// Roadmap Component - Exact copy from Job Order Management
+const RoadmapCard = ({ order }) => {
+  if (!order || !order.roadmap || order.roadmap.length === 0) return null;
+
+  const formatStepStatus = (status) => {
+    switch (status) {
+      case 'New': return 'pim-status-new';
+      case 'Completed': return 'pim-status-completed';
+      case 'InProgress': return 'pim-status-inprogress';
+      case 'Pending': return 'pim-status-pending';
+      case 'Upcoming': return 'pim-status-pending';
+      default: return 'pim-status-pending';
     }
   };
 
-  const getStepIcon = (status) => {
-    switch(status.toLowerCase()) {
-      case 'completed': return 'fas fa-check-circle';
-      case 'cancelled': return 'fas fa-times-circle';
-      default: return 'fas fa-clock';
+  const getStepStatusClass = (stepStatus) => {
+    switch (stepStatus) {
+      case 'Completed': return 'pim-step-completed';
+      case 'Active': return 'pim-step-active';
+      case 'InProgress': return 'pim-step-active';
+      case 'Pending': return 'pim-step-pending';
+      case 'Cancelled': return 'pim-step-cancelled';
+      case 'Upcoming': return 'pim-step-upcoming';
+      default: return 'pim-step-upcoming';
+    }
+  };
+
+  const getStepIcon = (stepStatus) => {
+    switch (stepStatus) {
+      case 'Completed': return 'fas fa-check-circle';
+      case 'Active': return 'fas fa-play-circle';
+      case 'InProgress': return 'fas fa-play-circle';
+      case 'Pending': return 'fas fa-clock';
+      case 'Cancelled': return 'fas fa-times-circle';
+      case 'Upcoming': return 'fas fa-circle';
+      default: return 'fas fa-circle';
     }
   };
 
   return (
-    <div className="roadmap-container">
-      <div className="roadmap-title">
-        <i className="fas fa-road"></i> Job Order Progress Timeline
+    <div className="pim-detail-card">
+      <h3><i className="fas fa-map-signs"></i> Job Order Roadmap</h3>
+      <div className="pim-roadmap-container">
+        <div className="pim-roadmap-steps">
+          {order.roadmap.map((step, idx) => (
+            <div key={idx} className={`pim-roadmap-step ${getStepStatusClass(step.stepStatus)}`}>
+              <div className="pim-step-icon">
+                <i className={getStepIcon(step.stepStatus)}></i>
+              </div>
+              <div className="pim-step-content">
+                <div className="pim-step-header">
+                  <div className="pim-step-name">{step.step}</div>
+                  <span className={`pim-status-badge ${formatStepStatus(step.status)}`}>{step.status}</span>
+                </div>
+                <div className="pim-step-details">
+                  <div className="pim-step-detail">
+                    <span className="pim-detail-label">Started</span>
+                    <span className="pim-detail-value">{step.startTimestamp || 'Not started'}</span>
+                  </div>
+                  <div className="pim-step-detail">
+                    <span className="pim-detail-label">Ended</span>
+                    <span className="pim-detail-value">{step.endTimestamp || 'Not completed'}</span>
+                  </div>
+                  <div className="pim-step-detail">
+                    <span className="pim-detail-label">Action By</span>
+                    <span className="pim-detail-value">{step.actionBy || 'Not assigned'}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
-      <div className="roadmap-steps">
-        {roadmap.map((step, idx) => (
-          <div key={idx} className={`roadmap-step ${getStepStatusClass(step.stepStatus)}`}>
-            <div className="step-icon">
-              <i className={getStepIcon(step.stepStatus)}></i>
-            </div>
-            <div className="step-content">
-              <div className="step-header">
-                <div className="step-name">{step.step}</div>
-                <span className={`status-badge-roadmap status-${step.status.toLowerCase()}`}>{step.status}</span>
+    </div>
+  );
+};
+
+// Vehicle Details Component - Exact copy from Job Order Management
+const VehicleDetailsCard = ({ order }) => {
+  return (
+    <div className="pim-detail-card">
+      <h3><i className="fas fa-car"></i> Vehicle Information</h3>
+      <div className="pim-card-content">
+        <div className="pim-info-item">
+          <span className="pim-info-label">Vehicle Unique ID</span>
+          <span className="pim-info-value">{order.vehicleDetails?.vehicleId || 'N/A'}</span>
+        </div>
+        <div className="pim-info-item">
+          <span className="pim-info-label">Owned By</span>
+          <span className="pim-info-value">{order.vehicleDetails?.ownedBy || 'N/A'}</span>
+        </div>
+        <div className="pim-info-item">
+          <span className="pim-info-label">Make</span>
+          <span className="pim-info-value">{order.vehicleDetails?.make || 'N/A'}</span>
+        </div>
+        <div className="pim-info-item">
+          <span className="pim-info-label">Model</span>
+          <span className="pim-info-value">{order.vehicleDetails?.model || 'N/A'}</span>
+        </div>
+        <div className="pim-info-item">
+          <span className="pim-info-label">Year</span>
+          <span className="pim-info-value">{order.vehicleDetails?.year || 'N/A'}</span>
+        </div>
+        <div className="pim-info-item">
+          <span className="pim-info-label">Vehicle Type</span>
+          <span className="pim-info-value">{order.vehicleDetails?.type || 'N/A'}</span>
+        </div>
+        <div className="pim-info-item">
+          <span className="pim-info-label">Color</span>
+          <span className="pim-info-value">{order.vehicleDetails?.color || 'N/A'}</span>
+        </div>
+        <div className="pim-info-item">
+          <span className="pim-info-label">Plate Number</span>
+          <span className="pim-info-value">{order.vehicleDetails?.plateNumber || order.vehiclePlate || 'N/A'}</span>
+        </div>
+        <div className="pim-info-item">
+          <span className="pim-info-label">VIN</span>
+          <span className="pim-info-value">{order.vehicleDetails?.vin || 'N/A'}</span>
+        </div>
+        <div className="pim-info-item">
+          <span className="pim-info-label">Registration Date</span>
+          <span className="pim-info-value">{order.vehicleDetails?.registrationDate || 'N/A'}</span>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Quality Check List Component - Exact copy from Job Order Management
+const QualityCheckListCard = ({ order }) => {
+  const services = order.orderType === 'Service Order'
+    ? [...(order.serviceOrderReference?.services || []), ...(Array.isArray(order.services) ? order.services : [])]
+    : (Array.isArray(order.services) ? order.services : []);
+
+  const getStoredResult = (serviceName, index) => {
+    const storedResults = order.qualityCheckResults;
+    if (!storedResults) return null;
+    if (Array.isArray(storedResults)) {
+      return storedResults[index] || null;
+    }
+    if (typeof storedResults === 'object') {
+      return storedResults[serviceName] || storedResults[index] || null;
+    }
+    return null;
+  };
+
+  const getQualityCheckResult = (service, index) => {
+    if (service && typeof service === 'object') {
+      return service.qualityCheckResult || service.qcResult || service.qcStatus || service.qualityStatus || null;
+    }
+    const serviceName = typeof service === 'string' ? service : 'Service';
+    return getStoredResult(serviceName, index);
+  };
+
+  return (
+    <div className="pim-detail-card" style={{ backgroundColor: '#e8f4f1', borderLeft: '4px solid #16a085' }}>
+      <h3><i className="fas fa-clipboard-check"></i> Quality Check List</h3>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+        {services.length > 0 ? (
+          services.map((service, idx) => {
+            const serviceName = typeof service === 'string' ? service : service.name;
+            const result = getQualityCheckResult(service, idx) || 'Not Evaluated';
+            const isPass = result === 'Pass';
+            const isFailed = result === 'Failed';
+            const isAcceptable = result === 'Acceptable';
+
+            return (
+              <div
+                key={`${serviceName}-${idx}`}
+                style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  padding: '10px 12px',
+                  backgroundColor: 'white',
+                  borderRadius: '6px',
+                  border: '1px solid #e5e7eb',
+                  gap: '12px'
+                }}
+              >
+                <span style={{ fontSize: '14px', fontWeight: '500', color: '#1f2937', flex: 1 }}>
+                  {serviceName}
+                </span>
+                <span
+                  style={{
+                    padding: '4px 8px',
+                    borderRadius: '4px',
+                    fontSize: '12px',
+                    fontWeight: '600',
+                    whiteSpace: 'nowrap',
+                    ...(isPass && { backgroundColor: '#d1fae5', color: '#065f46' }),
+                    ...(isFailed && { backgroundColor: '#fee2e2', color: '#991b1b' }),
+                    ...(isAcceptable && { backgroundColor: '#fef3c7', color: '#92400e' }),
+                    ...(!isPass && !isFailed && !isAcceptable && { backgroundColor: '#e5e7eb', color: '#374151' })
+                  }}
+                >
+                  {result}
+                </span>
               </div>
-              <div className="step-details">
-                <div className="step-detail">
-                  <span className="detail-label">Started</span>
-                  <span className="detail-value">{step.startTimestamp}</span>
+            );
+          })
+        ) : (
+          <div style={{ padding: '12px', textAlign: 'center', color: '#6b7280' }}>
+            No services to evaluate
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+// Billing Card Component - Exact copy from Job Order Management
+const BillingCard = ({ order }) => {
+  const getPaymentMethodClass = (method) => {
+    if (!method) return '';
+    const normalized = method.toLowerCase();
+    if (normalized.includes('cash')) return 'epm-payment-method-cash';
+    if (normalized.includes('card')) return 'epm-payment-method-card';
+    if (normalized.includes('transfer')) return 'epm-payment-method-transfer';
+    return 'epm-payment-method-card';
+  };
+
+  return (
+    <div className="epm-detail-card">
+      <h3><i className="fas fa-receipt"></i> Billing & Invoices</h3>
+      
+      {/* Master Billing Information */}
+      <div className="epm-billing-master-section" style={{ 
+        backgroundColor: '#f0f9ff', 
+        padding: '20px', 
+        borderRadius: '8px', 
+        marginBottom: '25px',
+        border: '1px solid #bae6fd'
+      }}>
+        <div className="epm-card-content">
+          <div className="epm-info-item">
+            <span className="epm-info-label"><i className="fas fa-barcode"></i> Master Bill ID</span>
+            <span className="epm-info-value" style={{ color: '#0369a1', fontWeight: '600', fontSize: '17px' }}>
+              {order.billing?.billId || 'N/A'}
+            </span>
+          </div>
+          <div className="epm-info-item">
+            <span className="epm-info-label"><i className="fas fa-calculator"></i> Total Bill Amount</span>
+            <span className="epm-info-value" style={{ fontSize: '17px' }}>{order.billing?.totalAmount || 'N/A'}</span>
+          </div>
+          <div className="epm-info-item">
+            <span className="epm-info-label"><i className="fas fa-tag"></i> Total Discount</span>
+            <span className="epm-info-value" style={{ color: '#27ae60', fontSize: '17px' }}>{order.billing?.discount || 'N/A'}</span>
+          </div>
+          <div className="epm-info-item">
+            <span className="epm-info-label"><i className="fas fa-money-bill-wave"></i> Net Amount</span>
+            <span className="epm-info-value" style={{ fontSize: '18px', fontWeight: '700', color: '#1e40af' }}>
+              {order.billing?.netAmount || 'N/A'}
+            </span>
+          </div>
+          <div className="epm-info-item">
+            <span className="epm-info-label"><i className="fas fa-check-circle"></i> Amount Paid</span>
+            <span className="epm-info-value" style={{ color: '#27ae60', fontSize: '17px' }}>{order.billing?.amountPaid || 'N/A'}</span>
+          </div>
+          <div className="epm-info-item">
+            <span className="epm-info-label"><i className="fas fa-exclamation-circle"></i> Balance Due</span>
+            <span className="epm-info-value" style={{ color: '#dc2626', fontSize: '17px', fontWeight: '600' }}>
+              {order.billing?.balanceDue || 'N/A'}
+            </span>
+          </div>
+        </div>
+        {order.billing?.paymentMethod && (
+          <div style={{ marginTop: '20px', paddingTop: '15px', borderTop: '1px solid #bae6fd' }}>
+            <div className="epm-info-item">
+              <span className="epm-info-label">Payment Method</span>
+              <span className="epm-info-value">
+                <span className={`epm-payment-method-badge ${getPaymentMethodClass(order.billing.paymentMethod)}`}>
+                  {order.billing.paymentMethod}
+                </span>
+              </span>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Invoices Section */}
+      {order.billing?.invoices && order.billing.invoices.length > 0 && (
+        <div>
+          <div style={{ 
+            fontSize: '16px', 
+            fontWeight: '600', 
+            color: '#334155', 
+            marginBottom: '18px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '10px'
+          }}>
+            <i className="fas fa-file-invoice" style={{ color: '#3b82f6' }}></i>
+            Invoice Details ({order.billing.invoices.length})
+          </div>
+          {order.billing.invoices.map((invoice, idx) => (
+            <div key={idx} className="epm-invoice-item" style={{ 
+              background: 'linear-gradient(to right, #ffffff, #fafbfc)',
+              border: '1px solid #e2e8f0',
+              borderLeft: '4px solid #3b82f6'
+            }}>
+              <div className="epm-invoice-header" style={{ 
+                background: 'white', 
+                padding: '15px', 
+                borderRadius: '6px',
+                marginBottom: '15px'
+              }}>
+                <span className="epm-info-value" style={{ 
+                  fontSize: '16px', 
+                  fontWeight: '700', 
+                  color: '#1e40af',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px'
+                }}>
+                  <i className="fas fa-hashtag"></i> {invoice.number}
+                </span>
+                <span className="epm-info-value" style={{ fontSize: '16px', fontWeight: '600' }}>
+                  <i className="fas fa-coins" style={{ color: '#f59e0b', marginRight: '6px' }}></i>
+                  Amount: {invoice.amount}
+                </span>
+              </div>
+              <div className="epm-invoice-details">
+                <div className="epm-detail-row">
+                  <span className="epm-detail-label"><i className="fas fa-tag"></i> Discount:</span>
+                  <span className="epm-detail-value" style={{ color: '#27ae60', fontWeight: '600' }}>{invoice.discount}</span>
                 </div>
-                <div className="step-detail">
-                  <span className="detail-label">Ended</span>
-                  <span className="detail-value">{step.endTimestamp || 'Not completed'}</span>
+                {invoice.paymentMethod && (
+                  <div className="epm-detail-row">
+                    <span className="epm-detail-label"><i className="fas fa-credit-card"></i> Payment Method:</span>
+                    <span className="epm-detail-value">
+                      <span className={`epm-payment-method-badge ${getPaymentMethodClass(invoice.paymentMethod)}`}>
+                        {invoice.paymentMethod}
+                      </span>
+                    </span>
+                  </div>
+                )}
+              </div>
+              <div className="epm-invoice-services" style={{ 
+                background: 'white', 
+                padding: '15px', 
+                borderRadius: '6px',
+                marginTop: '15px'
+              }}>
+                <div style={{ 
+                  fontSize: '14px', 
+                  fontWeight: '600', 
+                  color: '#64748b', 
+                  marginBottom: '10px',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.5px'
+                }}>
+                  <i className="fas fa-list-ul"></i> Services Included:
                 </div>
-                <div className="step-detail">
-                  <span className="detail-label">Action By</span>
-                  <span className="detail-value">{step.actionBy}</span>
-                </div>
+                {invoice.services?.map((service, sidx) => (
+                  <div key={sidx} className="epm-service-in-invoice" style={{ 
+                    padding: '8px 0 8px 15px',
+                    fontSize: '14px',
+                    color: '#475569',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px'
+                  }}>
+                    <i className="fas fa-check-circle" style={{ color: '#22c55e', fontSize: '12px' }}></i> 
+                    {service}
+                  </div>
+                ))}
               </div>
             </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
+// Documents Card Component - Exact copy from Job Order Management
+const DocumentsCard = ({ order }) => {
+  const documents = Array.isArray(order.documents) ? order.documents : []
+
+  if (documents.length === 0) return null;
+
+  return (
+    <div className="pim-detail-card">
+      <h3><i className="fas fa-folder-open"></i> Documents</h3>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+        {documents.map((doc, idx) => (
+          <div key={idx} style={{
+            padding: '15px',
+            border: '1px solid #e5e7eb',
+            borderRadius: '8px',
+            backgroundColor: '#f9fafb',
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center'
+          }}>
+            <div style={{ flex: 1 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px' }}>
+                <i className="fas fa-file-alt" style={{ color: '#3b82f6', fontSize: '20px' }}></i>
+                <div>
+                  <div style={{ fontWeight: '600', color: '#1f2937', fontSize: '14px' }}>
+                    {doc.name}
+                  </div>
+                  <div style={{ fontSize: '12px', color: '#6b7280', marginTop: '2px' }}>
+                    {doc.type} {doc.category ? `• ${doc.category}` : ''}
+                    {doc.paymentReference ? ` • ${doc.paymentReference}` : ''}
+                  </div>
+                </div>
+              </div>
+              <div style={{ display: 'flex', gap: '15px', fontSize: '12px', color: '#6b7280', marginLeft: '30px' }}>
+                {doc.uploadDate && (
+                  <span>
+                    <i className="fas fa-calendar-alt" style={{ marginRight: '5px' }}></i>
+                    {doc.uploadDate}
+                  </span>
+                )}
+                {doc.uploadedBy && (
+                  <span>
+                    <i className="fas fa-user" style={{ marginRight: '5px' }}></i>
+                    {doc.uploadedBy}
+                  </span>
+                )}
+              </div>
+            </div>
+            <button
+              onClick={() => {
+                if (doc.url || doc.fileData) {
+                  const link = document.createElement('a');
+                  link.href = doc.fileData || doc.url;
+                  link.download = doc.name || 'document';
+                  link.click();
+                }
+              }}
+              style={{
+                padding: '8px 16px',
+                backgroundColor: '#3b82f6',
+                color: 'white',
+                border: 'none',
+                borderRadius: '6px',
+                cursor: 'pointer',
+                fontSize: '13px',
+                fontWeight: '500',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px'
+              }}
+            >
+              <i className="fas fa-download"></i>
+              Download
+            </button>
           </div>
         ))}
       </div>

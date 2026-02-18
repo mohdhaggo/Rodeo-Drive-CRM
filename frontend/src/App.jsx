@@ -1,10 +1,9 @@
 import { useState, useEffect } from 'react'
 import { Amplify } from 'aws-amplify'
-import { getCurrentUser, signOut } from 'aws-amplify/auth'
 import amplifyOutputs from '../../amplify_outputs.json'
+import { getCurrentUser as getSystemUser, clearCurrentUser } from './userService'
+import { getRolePermissionsForUser, hasModuleAccess, hasOptionAccess } from './roleAccess'
 import Login from './Login'
-import DepartmentRoles from './DepartmentRoles'
-import UserManagement from './UserManagement'
 import JobOrderManagement from './JobOrderManagement'
 import PaymentInvoiceManagement from './PaymentInvoiceManagement'
 import ExitPermitManagement from './ExitPermitManagement'
@@ -17,6 +16,10 @@ import SalesLeadHistory from './SalesLeadHistory'
 import SalesApprovals from './SalesApprovals'
 import ServiceApprovalHistory from './ServiceApprovalHistory'
 import ServiceExecutionModule from './ServiceExecutionModule'
+import QualityCheckModule from './QualityCheckModule'
+import SystemUserManagement from './SystemUserManagement'
+import DepartmentRoleManagement from './DepartmentRoleManagement'
+import RoleAccessControl from './RoleAccessControl'
 import './App.css'
 
 // Configure Amplify using generated outputs
@@ -32,14 +35,25 @@ function App() {
   const [activeSection, setActiveSection] = useState('Overview')
   const [navigationData, setNavigationData] = useState(null)
   const [returnToCustomerId, setReturnToCustomerId] = useState(null)
+  const [rolePermissions, setRolePermissions] = useState(null)
 
   useEffect(() => {
     checkUser()
   }, [])
 
+  useEffect(() => {
+    if (!user) {
+      setRolePermissions(null)
+      return
+    }
+
+    setRolePermissions(getRolePermissionsForUser(user))
+  }, [user, activeSection])
+
   const checkUser = async () => {
     try {
-      const currentUser = await getCurrentUser()
+      // Check if user is logged in via our user service
+      const currentUser = getSystemUser()
       setUser(currentUser)
     } catch (err) {
       console.log('User not logged in')
@@ -49,9 +63,13 @@ function App() {
     }
   }
 
+  const handleLoginSuccess = (loggedInUser) => {
+    setUser(loggedInUser)
+  }
+
   const handleLogout = async () => {
     try {
-      await signOut()
+      clearCurrentUser()
       setUser(null)
     } catch (err) {
       console.error('Logout failed:', err)
@@ -84,48 +102,85 @@ function App() {
     setNavigationData(null)
   }
 
+  const dashboardItems = [
+    { label: 'Overview', moduleId: 'overview', optionId: 'overview_access' },
+    { label: 'Job Order Management', moduleId: 'joborder' },
+    { label: 'Payment & Invoice', moduleId: 'payment' },
+    { label: 'Exit Permit', moduleId: 'exitpermit' },
+    { label: 'Inspection', moduleId: 'inspection' },
+    { label: 'Service Execution', moduleId: 'serviceexec' },
+    { label: 'Delivery Quality Check', moduleId: 'deliveryqc' },
+    { label: 'Job Order History', moduleId: 'joborderhistory' },
+    { label: 'Services Approvals', moduleId: 'system', optionId: 'system_serviceapproval' },
+    { label: 'Customers Management', moduleId: 'customer' },
+    { label: 'Vehicles Management', moduleId: 'vehicle' },
+    { label: 'Sales Lead Management', moduleId: 'system', optionId: 'system_saleslead' },
+    { label: 'Sales Lead History', moduleId: 'system', optionId: 'system_salesleadhistory' },
+    { label: 'Purchases', moduleId: 'system', optionId: 'system_purchases' },
+    { label: 'Inventory', moduleId: 'system', optionId: 'system_inventory' },
+    { label: 'Reports', moduleId: 'system', optionId: 'system_reports' },
+    { label: 'Human Resource', moduleId: 'system', optionId: 'system_hr' },
+    { label: 'My Request', moduleId: 'system', optionId: 'system_myrequest' },
+    { label: 'Accountant', moduleId: 'system', optionId: 'system_accountant' },
+    { label: 'Service Creation', moduleId: 'system', optionId: 'system_servicecreation' },
+    { label: 'User Role Access', moduleId: 'system', optionId: 'system_userrole' },
+    { label: 'Department and Role Management', moduleId: 'system', optionId: 'system_departmentrole' },
+    { label: 'System User Management', moduleId: 'system', optionId: 'system_systemuser' },
+    { label: 'User Profile Management', moduleId: 'system', optionId: 'system_userprofile' },
+    { label: 'Inspection List', moduleId: 'system', optionId: 'system_inspectionlist' },
+    { label: 'Quality Check List', moduleId: 'deliveryqc' },
+    { label: 'Service Approval History', moduleId: 'system', optionId: 'system_serviceapprovalhistory' },
+  ]
+
+  const visibleDashboardItems = dashboardItems.filter((item) =>
+    item.optionId
+      ? hasOptionAccess(rolePermissions, item.moduleId, item.optionId)
+      : hasModuleAccess(rolePermissions, item.moduleId)
+  )
+
+  useEffect(() => {
+    if (visibleDashboardItems.length === 0) {
+      return
+    }
+
+    const hasActive = visibleDashboardItems.some((item) => item.label === activeSection)
+    if (!hasActive) {
+      setActiveSection(visibleDashboardItems[0].label)
+    }
+  }, [activeSection, visibleDashboardItems])
+
   if (loading) {
     return <div className="loading">Loading...</div>
   }
 
   if (!user) {
-    return <Login onLoginSuccess={checkUser} />
+    return <Login onLoginSuccess={handleLoginSuccess} />
   }
 
-  const dashboardItems = [
-    'Overview',
-    'Job Order Management',
-    'Payment & Invoice',
-    'Exit Permit',
-    'Inspection',
-    'Service Execution',
-    'Delivery Quality Check',
-    'Job Order History',
-    'Services Approvals',
-    'Customers Management',
-    'Vehicles Management',
-    'Sales Lead Management',
-    'Sales Lead History',
-    'Purchases',
-    'Inventory',
-    'Reports',
-    'Human Resource',
-    'My Request',
-    'Accountant',
-    'Service Creation',
-    'Department & Roles',
-    'User Role Access',
-    'Dashboard User Management',
-    'User Profile Management',
-    'Inspection List',
-    'Quality Check List',
-    'Service Approval History',
-  ]
-
   const renderContent = () => {
+    const isAllowed = (moduleId, optionId) =>
+      optionId
+        ? hasOptionAccess(rolePermissions, moduleId, optionId)
+        : hasModuleAccess(rolePermissions, moduleId)
+
+    const renderDenied = () => (
+      <section className="dashboard-section">
+        <h2>Access Restricted</h2>
+        <p>Your role does not have permission to view this module.</p>
+      </section>
+    )
+
+    if (!visibleDashboardItems.some((item) => item.label === activeSection)) {
+      return renderDenied()
+    }
+
     if (activeSection === 'Job Order Management') {
+      if (!isAllowed('joborder')) {
+        return renderDenied()
+      }
       return (
         <JobOrderManagement
+          currentUser={user}
           navigationData={navigationData}
           onClearNavigation={handleClearNavigation}
           onNavigateBack={handleNavigateBack}
@@ -134,24 +189,47 @@ function App() {
     }
 
     if (activeSection === 'Payment & Invoice') {
-      return <PaymentInvoiceManagement />
+      if (!isAllowed('payment')) {
+        return renderDenied()
+      }
+      return <PaymentInvoiceManagement currentUser={user} />
     }
 
     if (activeSection === 'Exit Permit') {
-      return <ExitPermitManagement />
+      if (!isAllowed('exitpermit')) {
+        return renderDenied()
+      }
+      return <ExitPermitManagement currentUser={user} />
     }
 
     if (activeSection === 'Inspection') {
-      return <InspectionModule />
+      if (!isAllowed('inspection')) {
+        return renderDenied()
+      }
+      return <InspectionModule currentUser={user} />
     }
 
     if (activeSection === 'Service Execution') {
-      return <ServiceExecutionModule />
+      if (!isAllowed('serviceexec')) {
+        return renderDenied()
+      }
+      return <ServiceExecutionModule currentUser={user} />
+    }
+
+    if (activeSection === 'Delivery Quality Check' || activeSection === 'Quality Check List') {
+      if (!isAllowed('deliveryqc')) {
+        return renderDenied()
+      }
+      return <QualityCheckModule currentUser={user} />
     }
 
     if (activeSection === 'Job Order History') {
+      if (!isAllowed('joborderhistory')) {
+        return renderDenied()
+      }
       return (
         <JobOrderHistory
+          currentUser={user}
           navigationData={navigationData}
           onClearNavigation={handleClearNavigation}
           onNavigateBack={handleNavigateBack}
@@ -160,14 +238,23 @@ function App() {
     }
 
     if (activeSection === 'Services Approvals') {
+      if (!isAllowed('system', 'system_serviceapproval')) {
+        return renderDenied()
+      }
       return <SalesApprovals />
     }
 
     if (activeSection === 'Service Approval History') {
+      if (!isAllowed('system', 'system_serviceapprovalhistory')) {
+        return renderDenied()
+      }
       return <ServiceApprovalHistory />
     }
 
     if (activeSection === 'Customers Management') {
+      if (!isAllowed('customer')) {
+        return renderDenied()
+      }
       return (
         <CustomerManagement
           onNavigate={handleNavigate}
@@ -177,6 +264,9 @@ function App() {
     }
 
     if (activeSection === 'Vehicles Management') {
+      if (!isAllowed('vehicle')) {
+        return renderDenied()
+      }
       return (
         <VehicleManagement
           navigationData={navigationData}
@@ -188,19 +278,38 @@ function App() {
     }
 
     if (activeSection === 'Sales Lead Management') {
+      if (!isAllowed('system', 'system_saleslead')) {
+        return renderDenied()
+      }
       return <SalesLeadManagement />
     }
 
     if (activeSection === 'Sales Lead History') {
+      if (!isAllowed('system', 'system_salesleadhistory')) {
+        return renderDenied()
+      }
       return <SalesLeadHistory />
     }
 
-    if (activeSection === 'Department & Roles') {
-      return <DepartmentRoles />
+    if (activeSection === 'System User Management') {
+      if (!isAllowed('system', 'system_systemuser')) {
+        return renderDenied()
+      }
+      return <SystemUserManagement />
     }
 
-    if (activeSection === 'Dashboard User Management') {
-      return <UserManagement />
+    if (activeSection === 'Department and Role Management') {
+      if (!isAllowed('system', 'system_departmentrole')) {
+        return renderDenied()
+      }
+      return <DepartmentRoleManagement />
+    }
+
+    if (activeSection === 'User Role Access') {
+      if (!isAllowed('system', 'system_userrole')) {
+        return renderDenied()
+      }
+      return <RoleAccessControl />
     }
 
     return (
@@ -216,7 +325,8 @@ function App() {
       <header className="dashboard-header">
         <h1>Rodeo Drive CRM</h1>
         <div className="user-info">
-          <span>Welcome, {user.username}</span>
+          <span>Welcome, {user.name || user.username}</span>
+          <span className="user-role">{user.role}</span>
           <button onClick={handleLogout} className="logout-btn">Logout</button>
         </div>
       </header>
@@ -224,19 +334,19 @@ function App() {
         <aside className="sidebar">
           <h2 className="sidebar-title">Dashboard</h2>
           <nav className="sidebar-nav">
-            {dashboardItems.map((item) => (
+            {visibleDashboardItems.map((item) => (
               <button
-                key={item}
-                className={`nav-item ${activeSection === item ? 'active' : ''}`}
+                key={item.label}
+                className={`nav-item ${activeSection === item.label ? 'active' : ''}`}
                 onClick={() => {
-                  setActiveSection(item)
+                  setActiveSection(item.label)
                   setNavigationData(null)
-                  if (item !== 'Customers Management') {
+                  if (item.label !== 'Customers Management') {
                     setReturnToCustomerId(null)
                   }
                 }}
               >
-                {item}
+                {item.label}
               </button>
             ))}
           </nav>

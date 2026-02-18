@@ -1,7 +1,46 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import './CustomerManagement.css';
-import { getCustomers } from './demoData';
+import { getCustomers, getStoredJobOrders } from './demoData';
+import PermissionGate from './PermissionGate';
+
+const buildCompletedServiceCounts = (orders, customers) => {
+  const customerCounts = {};
+  const vehicleCounts = {};
+  const customerByNameMobile = {};
+
+  (customers || []).forEach((customer) => {
+    const nameKey = (customer.name || '').trim().toLowerCase();
+    const mobileKey = (customer.mobile || '').trim().toLowerCase();
+    if (!nameKey || !mobileKey) return;
+    customerByNameMobile[`${nameKey}|${mobileKey}`] = customer.id;
+  });
+
+  orders.forEach((order) => {
+    const workStatus = (order.workStatus || '').toLowerCase();
+    if (workStatus !== 'completed') return;
+
+    const orderName = (order.customerDetails?.name || order.customerName || '').trim().toLowerCase();
+    const orderMobile = (order.customerDetails?.mobile || order.mobile || '').trim().toLowerCase();
+    const customerId = order.customerDetails?.customerId
+      || order.customerDetails?.id
+      || order.customerId
+      || order.customer?.id
+      || order.customer?.customerId
+      || customerByNameMobile[`${orderName}|${orderMobile}`];
+    const vehicleId = order.vehicleDetails?.vehicleId || order.vehicleDetails?.id;
+
+    if (customerId) {
+      customerCounts[customerId] = (customerCounts[customerId] || 0) + 1;
+    }
+
+    if (vehicleId) {
+      vehicleCounts[vehicleId] = (vehicleCounts[vehicleId] || 0) + 1;
+    }
+  });
+
+  return { customerCounts, vehicleCounts };
+};
 
 // Alert Popup Component
 const AlertPopup = ({ isOpen, title, message, type, onClose, showCancel, onConfirm }) => {
@@ -124,51 +163,26 @@ const FormField = ({ label, id, type = 'text', value, onChange, error, placehold
 // Table Component
 const CustomersTable = ({ data, onViewDetails, onEdit, onDelete, currentPage, pageSize, searchQuery }) => {
   const [activeDropdown, setActiveDropdown] = useState(null);
+  const [activeDropdownCustomer, setActiveDropdownCustomer] = useState(null);
   const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0 });
 
-  // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
       const isDropdownButton = event.target.closest('.btn-action-dropdown');
       const isDropdownMenu = event.target.closest('.action-dropdown-menu');
-      
       if (!isDropdownButton && !isDropdownMenu) {
         setActiveDropdown(null);
+        setActiveDropdownCustomer(null);
       }
     };
 
     if (activeDropdown) {
-      document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener('click', handleClickOutside);
       return () => {
-        document.removeEventListener('mousedown', handleClickOutside);
+        document.removeEventListener('click', handleClickOutside);
       };
     }
   }, [activeDropdown]);
-
-  const highlightSearchMatches = (text, query) => {
-    if (!query || query.startsWith('!') || query.includes(':')) {
-      return text;
-    }
-
-    const terms = query.toLowerCase().split(' ')
-      .filter(term => !term.startsWith('!') && !term.includes(':'));
-
-    if (terms.length === 0) {
-      return text;
-    }
-
-    let result = text.toString();
-    const textLower = result.toLowerCase();
-
-    terms.forEach(term => {
-      if (term && textLower.includes(term)) {
-        const regex = new RegExp(`(${term})`, 'gi');
-        result = result.replace(regex, (match) => `<mark class="search-highlight">${match}</mark>`);
-      }
-    });
-
-    return result;
-  };
 
   if (data.length === 0) {
     return (
@@ -196,7 +210,7 @@ const CustomersTable = ({ data, onViewDetails, onEdit, onDelete, currentPage, pa
           </tr>
         </thead>
         <tbody>
-          {data.map((customer, index) => (
+          {data.map((customer) => (
             <tr key={customer.id}>
               <td>{customer.id}</td>
               <td>{customer.name}</td>
@@ -204,56 +218,59 @@ const CustomersTable = ({ data, onViewDetails, onEdit, onDelete, currentPage, pa
               <td><span className="count-badge">{customer.registeredVehiclesCount} vehicles</span></td>
               <td><span className="count-badge">{customer.completedServicesCount} services</span></td>
               <td>
-                <div className="action-dropdown-container">
-                  <button
-                    className={`btn-action-dropdown ${activeDropdown === customer.id ? 'active' : ''}`}
-                    onClick={(e) => {
-                      const isActive = activeDropdown === customer.id;
-                      if (isActive) {
-                        setActiveDropdown(null);
-                        return;
-                      }
-                      const rect = e.currentTarget.getBoundingClientRect();
-                      const menuHeight = 160;
-                      const menuWidth = 200;
-                      const spaceBelow = window.innerHeight - rect.bottom;
-                      const top = spaceBelow < menuHeight ? rect.top - menuHeight - 6 : rect.bottom + 6;
-                      const left = Math.max(8, Math.min(rect.right - menuWidth, window.innerWidth - menuWidth - 8));
-                      setDropdownPosition({
-                        top,
-                        left
-                      });
-                      setActiveDropdown(customer.id);
-                    }}
-                  >
-                    <i className="fas fa-cogs"></i> Actions <i className="fas fa-chevron-down"></i>
-                  </button>
-                </div>
+                <PermissionGate moduleId="customer" optionId="customer_actions">
+                  <div className="action-dropdown-container">
+                    <button
+                      type="button"
+                      className={`btn-action-dropdown ${activeDropdown === customer.id ? 'active' : ''}`}
+                      onClick={(e) => {
+                        const isActive = activeDropdown === customer.id;
+                        if (isActive) {
+                          setActiveDropdown(null);
+                          setActiveDropdownCustomer(null);
+                          return;
+                        }
+                        const rect = e.currentTarget.getBoundingClientRect();
+                        const menuHeight = 160;
+                        const menuWidth = 200;
+                        const spaceBelow = window.innerHeight - rect.bottom;
+                        const top = spaceBelow < menuHeight ? rect.top - menuHeight - 6 : rect.bottom + 6;
+                        const left = Math.max(8, Math.min(rect.right - menuWidth, window.innerWidth - menuWidth - 8));
+                        setDropdownPosition({ top, left });
+                        setActiveDropdown(customer.id);
+                        setActiveDropdownCustomer(customer);
+                      }}
+                    >
+                      <i className="fas fa-cogs"></i> Actions <i className="fas fa-chevron-down"></i>
+                    </button>
+                  </div>
+                </PermissionGate>
               </td>
             </tr>
           ))}
         </tbody>
       </table>
       {activeDropdown && typeof document !== 'undefined' && createPortal(
-        <div
-          className="action-dropdown-menu show action-dropdown-menu-fixed"
-          style={{
-            top: `${dropdownPosition.top}px`,
-            left: `${dropdownPosition.left}px`
-          }}
-        >
-          <button className="dropdown-item view" onClick={() => { onViewDetails(activeDropdown); setActiveDropdown(null); }}>
-            <i className="fas fa-eye"></i> View Details
-          </button>
-          <div className="dropdown-divider"></div>
-          <button className="dropdown-item edit" onClick={() => { onEdit(activeDropdown); setActiveDropdown(null); }}>
-            <i className="fas fa-edit"></i> Edit Customer
-          </button>
-          <div className="dropdown-divider"></div>
-          <button className="dropdown-item delete" onClick={() => { onDelete(activeDropdown); setActiveDropdown(null); }}>
-            <i className="fas fa-trash"></i> Delete Customer
-          </button>
-        </div>,
+        <PermissionGate moduleId="customer" optionId="customer_actions">
+          <div
+            className="action-dropdown-menu show action-dropdown-menu-fixed"
+            onMouseDown={(e) => e.stopPropagation()}
+            onClick={(e) => e.stopPropagation()}
+            style={{ top: `${dropdownPosition.top}px`, left: `${dropdownPosition.left}px` }}
+          >
+            <button type="button" className="dropdown-item view" onClick={() => { onViewDetails(activeDropdown); setActiveDropdown(null); setActiveDropdownCustomer(null); }}>
+              <i className="fas fa-eye"></i> View Details
+            </button>
+            <div className="dropdown-divider"></div>
+            <button type="button" className="dropdown-item edit" onClick={() => { onEdit(activeDropdown); setActiveDropdown(null); setActiveDropdownCustomer(null); }}>
+              <i className="fas fa-edit"></i> Edit Customer
+            </button>
+            <div className="dropdown-divider"></div>
+            <button type="button" className="dropdown-item delete" onClick={(e) => { e.stopPropagation(); const cust = activeDropdownCustomer || data.find(c => c.id === activeDropdown); onDelete(cust || activeDropdown); setActiveDropdown(null); setActiveDropdownCustomer(null); }}>
+              <i className="fas fa-trash"></i> Delete Customer
+            </button>
+          </div>
+        </PermissionGate>,
         document.body
       )}
     </div>
@@ -261,7 +278,7 @@ const CustomersTable = ({ data, onViewDetails, onEdit, onDelete, currentPage, pa
 };
 
 // Details View Component
-const DetailsView = ({ customer, onClose, onEdit, onAddVehicle, onDeleteVehicle, onViewVehicleDetails }) => {
+const DetailsView = ({ customer, onClose, onEdit, onAddVehicle, onDeleteVehicle, onViewVehicleDetails, getVehicleCompletedCount }) => {
   const [activeVehicleDropdown, setActiveVehicleDropdown] = useState(null);
   const [vehicleDropdownPosition, setVehicleDropdownPosition] = useState({ top: 0, left: 0, width: 0 });
   const [deleteVehicle, setDeleteVehicle] = useState(null);
@@ -278,9 +295,9 @@ const DetailsView = ({ customer, onClose, onEdit, onAddVehicle, onDeleteVehicle,
     };
 
     if (activeVehicleDropdown) {
-      document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener('click', handleClickOutside);
       return () => {
-        document.removeEventListener('mousedown', handleClickOutside);
+        document.removeEventListener('click', handleClickOutside);
       };
     }
   }, [activeVehicleDropdown]);
@@ -386,7 +403,7 @@ const DetailsView = ({ customer, onClose, onEdit, onAddVehicle, onDeleteVehicle,
                         <td>{vehicle.color}</td>
                         <td>{vehicle.plateNumber}</td>
                         <td>{vehicle.vin || 'N/A'}</td>
-                        <td><span className="service-count-badge">{vehicle.completedServices} services</span></td>
+                        <td><span className="service-count-badge">{getVehicleCompletedCount(vehicle.vehicleId)} services</span></td>
                         <td>
                           <div className="action-dropdown-container">
                             <button
@@ -435,6 +452,8 @@ const DetailsView = ({ customer, onClose, onEdit, onAddVehicle, onDeleteVehicle,
         createPortal(
           <div
             className="action-dropdown-menu show action-dropdown-menu-fixed"
+            onMouseDown={(e) => e.stopPropagation()}
+            onClick={(e) => e.stopPropagation()}
             style={{
               top: `${vehicleDropdownPosition.top}px`,
               left: `${vehicleDropdownPosition.left}px`
@@ -455,7 +474,8 @@ const DetailsView = ({ customer, onClose, onEdit, onAddVehicle, onDeleteVehicle,
             <div className="dropdown-divider"></div>
             <button
               className="dropdown-item delete"
-              onClick={() => {
+              onClick={(e) => {
+                e.stopPropagation();
                 const vehicle = customer.vehicles?.find(v => v.vehicleId === activeVehicleDropdown);
                 if (vehicle) {
                   setDeleteVehicle(vehicle);
@@ -525,6 +545,9 @@ export default function CustomerManagement({ onNavigate, returnToCustomer }) {
   const [pageSize, setPageSize] = useState(20);
   const [selectedCustomer, setSelectedCustomer] = useState(null);
   const [viewMode, setViewMode] = useState('list'); // 'list' or 'details'
+  const [jobOrders, setJobOrders] = useState(() => getStoredJobOrders());
+  const [handledReturnToCustomer, setHandledReturnToCustomer] = useState(false);
+  const customersRef = useRef(customers);
 
   // Modal states
   const [showAddCustomerModal, setShowAddCustomerModal] = useState(false);
@@ -549,16 +572,105 @@ export default function CustomerManagement({ onNavigate, returnToCustomer }) {
   });
   const [formErrors, setFormErrors] = useState({});
 
+  const handleCancelDelete = () => {
+    setDeleteCustomer(null);
+  };
+
   // Handle return from vehicle details
   useEffect(() => {
-    if (returnToCustomer) {
+    if (returnToCustomer && !handledReturnToCustomer) {
       const customer = customers.find(c => c.id === returnToCustomer);
       if (customer) {
         setSelectedCustomer(customer);
         setViewMode('details');
+        setHandledReturnToCustomer(true);
       }
     }
-  }, [returnToCustomer, customers]);
+  }, [returnToCustomer, customers, handledReturnToCustomer]);
+
+  useEffect(() => {
+    if (returnToCustomer) {
+      setHandledReturnToCustomer(false);
+    }
+  }, [returnToCustomer]);
+
+  useEffect(() => {
+    customersRef.current = customers;
+  }, [customers]);
+
+  const refreshCompletedServiceCounts = useCallback(() => {
+    const jobOrders = getStoredJobOrders();
+    const currentCustomers = customersRef.current || [];
+    const { customerCounts, vehicleCounts } = buildCompletedServiceCounts(jobOrders, currentCustomers);
+
+    const updatedCustomers = currentCustomers.map((customer) => {
+      const updatedVehicles = (customer.vehicles || []).map((vehicle) => {
+        const updatedCount = vehicleCounts[vehicle.vehicleId];
+        if (updatedCount === undefined) return vehicle;
+        return { ...vehicle, completedServices: updatedCount };
+      });
+
+      const completedServicesCount = customerCounts[customer.id];
+
+      return {
+        ...customer,
+        vehicles: updatedVehicles,
+        registeredVehiclesCount: updatedVehicles.length || customer.registeredVehiclesCount || 0,
+        completedServicesCount: completedServicesCount !== undefined
+          ? completedServicesCount
+          : customer.completedServicesCount || 0
+      };
+    });
+
+    setCustomers(updatedCustomers);
+
+    if (typeof localStorage === 'undefined') return;
+    const savedCustomers = JSON.parse(localStorage.getItem('jobOrderCustomers') || '[]');
+    if (savedCustomers.length === 0) return;
+
+    const updatedSaved = savedCustomers.map((customer) => {
+      const updatedVehicles = (customer.vehicles || []).map((vehicle) => {
+        const updatedCount = vehicleCounts[vehicle.vehicleId];
+        if (updatedCount === undefined) return vehicle;
+        return { ...vehicle, completedServices: updatedCount };
+      });
+
+      const completedServicesCount = customerCounts[customer.id];
+
+      return {
+        ...customer,
+        vehicles: updatedVehicles,
+        registeredVehiclesCount: updatedVehicles.length || customer.registeredVehiclesCount || 0,
+        completedServicesCount: completedServicesCount !== undefined
+          ? completedServicesCount
+          : customer.completedServicesCount || 0
+      };
+    });
+
+    localStorage.setItem('jobOrderCustomers', JSON.stringify(updatedSaved));
+  }, []);
+
+  useEffect(() => {
+    refreshCompletedServiceCounts();
+  }, [refreshCompletedServiceCounts]);
+
+  useEffect(() => {
+    const handleCompletedServicesUpdate = () => {
+      refreshCompletedServiceCounts();
+      setJobOrders(getStoredJobOrders());
+    };
+
+    window.addEventListener('completed-services-updated', handleCompletedServicesUpdate);
+    return () => window.removeEventListener('completed-services-updated', handleCompletedServicesUpdate);
+  }, [refreshCompletedServiceCounts]);
+
+  const getVehicleCompletedCount = useCallback((vehicleId) => {
+    if (!vehicleId) return 0;
+    return jobOrders.filter(order =>
+      order.vehicleDetails?.vehicleId === vehicleId &&
+      order.workStatus === 'Completed'
+    ).length;
+  }, [jobOrders]);
 
   // Search function
   const performSmartSearch = useCallback((query) => {
@@ -580,6 +692,18 @@ export default function CustomerManagement({ onNavigate, returnToCustomer }) {
 
     return results;
   }, [customers]);
+
+  useEffect(() => {
+    setSearchResults(performSmartSearch(searchQuery));
+  }, [customers, searchQuery, performSmartSearch]);
+
+  useEffect(() => {
+    if (!selectedCustomer) return;
+    const updatedCustomer = customers.find(c => c.id === selectedCustomer.id);
+    if (updatedCustomer && updatedCustomer !== selectedCustomer) {
+      setSelectedCustomer(updatedCustomer);
+    }
+  }, [customers, selectedCustomer]);
 
   // Handle search input
   const handleSearch = (e) => {
@@ -748,31 +872,58 @@ export default function CustomerManagement({ onNavigate, returnToCustomer }) {
     await showAlert('Success', 'Customer updated successfully!', 'success');
   };
 
-  const handleDeleteCustomer = async (customerId) => {
-    const customer = customers.find(c => c.id === customerId);
-    setDeleteCustomer(customer);
+  const handleDeleteCustomer = async (customerOrId) => {
+    console.log('handleDeleteCustomer called with:', customerOrId);
+    const customer = typeof customerOrId === 'object'
+      ? customerOrId
+      : customers.find(c => c.id === customerOrId);
+
+    console.log('Customer found:', customer);
+    if (customer) {
+      console.log('Setting deleteCustomer state to:', customer);
+      setDeleteCustomer(customer);
+    }
   };
 
   const handleConfirmDelete = async () => {
-    if (deleteCustomer) {
+    if (!deleteCustomer) return;
+    
+    try {
+      const customerToDelete = deleteCustomer;
+      
       // Remove from component state
-      setCustomers(prev => prev.filter(c => c.id !== deleteCustomer.id));
-      setSearchResults(prev => prev.filter(c => c.id !== deleteCustomer.id));
+      setCustomers(prev => prev.filter(c => c.id !== customerToDelete.id));
+      setSearchResults(prev => prev.filter(c => c.id !== customerToDelete.id));
       
       // Remove from localStorage if it was a saved customer (not a demo customer)
       const savedCustomers = JSON.parse(localStorage.getItem('jobOrderCustomers') || '[]');
-      const updatedSaved = savedCustomers.filter(c => c.id !== deleteCustomer.id);
+      const updatedSaved = savedCustomers.filter(c => c.id !== customerToDelete.id);
       if (savedCustomers.length !== updatedSaved.length) {
         // Customer was in localStorage, save the updated list
         localStorage.setItem('jobOrderCustomers', JSON.stringify(updatedSaved));
       }
+
+      // Remove any vehicles owned by this customer from Vehicle Management storage
+      const vehicleManagementVehicles = JSON.parse(localStorage.getItem('vehicleManagementVehicles') || '[]');
+      const updatedVehicles = vehicleManagementVehicles.filter(v => v.customerId !== customerToDelete.id);
+      if (vehicleManagementVehicles.length !== updatedVehicles.length) {
+        localStorage.setItem('vehicleManagementVehicles', JSON.stringify(updatedVehicles));
+      }
       
-      if (selectedCustomer?.id === deleteCustomer.id) {
+      if (selectedCustomer?.id === customerToDelete.id) {
         setViewMode('list');
         setSelectedCustomer(null);
       }
+      
+      // Close modal before showing alert
+      handleCancelDelete();
+      
+      // Show success message
       await showAlert('Success', 'Customer deleted successfully!', 'success');
-      setDeleteCustomer(null);
+    } catch (error) {
+      console.error('Error deleting customer:', error);
+      await showAlert('Error', 'Failed to delete customer. Please try again.', 'error');
+      handleCancelDelete();
     }
   };
 
@@ -959,6 +1110,7 @@ export default function CustomerManagement({ onNavigate, returnToCustomer }) {
   const closeDetailsView = () => {
     setViewMode('list');
     setSelectedCustomer(null);
+    setHandledReturnToCustomer(true);
   };
 
   console.log('CustomerManagement render - viewMode:', viewMode, 'selectedCustomer:', selectedCustomer);
@@ -970,6 +1122,7 @@ export default function CustomerManagement({ onNavigate, returnToCustomer }) {
           customer={selectedCustomer}
           onClose={closeDetailsView}
           onEdit={handleEditCustomer}
+          getVehicleCompletedCount={getVehicleCompletedCount}
           onAddVehicle={(customerId) => {
             setAddVehicleCustomerId(customerId);
             setShowAddVehicleModal(true);
@@ -1149,6 +1302,8 @@ export default function CustomerManagement({ onNavigate, returnToCustomer }) {
             <i className="fas fa-search search-icon"></i>
             <input
               type="text"
+              id="customerSearch"
+              name="customerSearch"
               className="smart-search-input"
               placeholder="Search by any customer details"
               value={searchQuery}
@@ -1439,8 +1594,8 @@ export default function CustomerManagement({ onNavigate, returnToCustomer }) {
       />
 
       {/* Delete Confirmation Modal */}
-      {deleteCustomer && (
-        <div className="delete-modal-overlay" onClick={() => setDeleteCustomer(null)}>
+      {deleteCustomer && typeof document !== 'undefined' && createPortal(
+        <div className="delete-modal-overlay" onClick={handleCancelDelete}>
           <div className="delete-modal" onClick={(e) => e.stopPropagation()}>
             <div className="delete-modal-header">
               <h3><i className="fas fa-exclamation-triangle"></i> Confirm Deletion</h3>
@@ -1458,13 +1613,14 @@ export default function CustomerManagement({ onNavigate, returnToCustomer }) {
                 <button className="btn-confirm-delete" onClick={handleConfirmDelete}>
                   <i className="fas fa-trash"></i> Delete Customer
                 </button>
-                <button className="btn-cancel" onClick={() => setDeleteCustomer(null)}>
+                <button className="btn-cancel" onClick={handleCancelDelete}>
                   <i className="fas fa-times"></i> Cancel
                 </button>
               </div>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* Duplicate Customer Warning Dialog */}

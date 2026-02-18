@@ -24,7 +24,7 @@
 /* Header */
 .pim-header {
   padding: 24px 30px;
-  background-color: var(--pim-primary-color);
+  background: linear-gradient(135deg, #3498db, #2c3e50);
   color: white;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   display: flex;
@@ -48,7 +48,7 @@
 }
 
 .pim-header h1 i {
-  color: var(--pim-secondary-color);
+  color: white;
 }
 
 .pim-user-info {
@@ -203,6 +203,10 @@
   background-color: #f9f9f9;
 }
 
+.pim-job-order-table tbody tr:hover {
+  background-color: #f9f9f9;
+}
+
 .pim-date-column {
   font-size: 13px;
   color: var(--pim-dark-gray);
@@ -220,8 +224,9 @@
   text-align: center;
 }
 
+/* Job Order Status Colors - Inherited from Job Order Management */
 .pim-status-new-request {
-  background-color: #e3f2fd;
+  background-color: #f3e5f5;
   color: #7b1fa2;
 }
 
@@ -250,6 +255,37 @@
   color: var(--pim-success-color);
 }
 
+.pim-status-cancelled {
+  background-color: #fdeaea;
+  color: var(--pim-danger-color);
+}
+
+.pim-status-pending {
+  background-color: #fff3cd;
+  color: #b38b00;
+}
+
+.pim-status-pending-approval {
+  background-color: #fff3e0;
+  color: #f57c00;
+}
+
+.pim-status-paused {
+  background-color: #f3e5f5;
+  color: #7b1fa2;
+}
+
+.pim-status-new {
+  background-color: #e3f2fd;
+  color: #1565c0;
+}
+
+.pim-status-postponed {
+  background-color: #fff3cd;
+  color: #b38b00;
+}
+
+/* Payment Status Colors */
 .pim-payment-unpaid {
   background-color: #fdeaea;
   color: var(--pim-danger-color);
@@ -812,7 +848,6 @@
   margin-bottom: 25px;
   padding-bottom: 15px;
   border-bottom: 1px solid var(--pim-light-gray);
-  display: flex;
   align-items: center;
   gap: 12px;
   font-size: 20px;
@@ -875,7 +910,6 @@
   align-items: center;
   gap: 6px;
   font-size: 14px;
-  flex: 1;
   justify-content: center;
 }
 
@@ -908,11 +942,26 @@
   background-color: var(--pim-medium-gray);
 }
 
-/* Details Screen */
+/* Additional Service Request Status */
+.pim-pending {
+  background-color: #fff3cd;
+  color: #b38b00;
+}
+
+.pim-approved {
+  background-color: #d5f4e6;
+  color: var(--pim-success-color);
+}
+
+.pim-declined {
+  background-color: #fdeaea;
+  color: var(--pim-danger-color);
+}
+
+/* Details Screen Header */
 .pim-details-screen {
   width: 100%;
   background-color: white;
-  overflow-y: auto;
   display: flex;
   flex-direction: column;
   min-height: 100vh;
@@ -920,12 +969,13 @@
 
 .pim-details-header {
   background-color: var(--pim-primary-color);
-  padding: 22px 30px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  color: var(--pim-white);
+  padding: 24px 30px;
+  border-bottom: 3px solid var(--pim-secondary-color);
   display: flex;
   justify-content: space-between;
   align-items: center;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  flex-shrink: 0;
 }
 
 .pim-details-title-container {
@@ -935,30 +985,39 @@
 }
 
 .pim-details-header h2 {
-  color: white;
-  font-size: 22px;
+  color: var(--pim-white);
+  font-size: 24px;
+  font-weight: 600;
   display: flex;
   align-items: center;
   gap: 12px;
   margin: 0;
 }
 
+.pim-details-header h2 span {
+  color: var(--pim-secondary-color);
+}
+
 .pim-btn-close-details {
-  background-color: var(--pim-light-gray);
-  color: var(--pim-primary-color);
+  background-color: var(--pim-danger-color);
+  color: var(--pim-white);
   border: none;
   padding: 10px 20px;
   border-radius: 6px;
   cursor: pointer;
+  font-size: 14px;
   font-weight: 500;
   display: flex;
   align-items: center;
   gap: 8px;
-  transition: background-color 0.3s;
+  transition: all 0.3s ease;
+  flex-shrink: 0;
 }
 
 .pim-btn-close-details:hover {
-  background-color: var(--pim-medium-gray);
+  background-color: #c0392b;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(231, 76, 60, 0.3);
 }
 
 .pim-details-body {
@@ -1028,6 +1087,215 @@
   font-weight: 500;
   color: #333;
   word-break: break-word;
+}
+
+
+
+/* Count Badge */
+.count-badge {
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 600;
+  background-color: #e3f2fd;
+  color: #1565c0;
+  display: inline-block;
+}
+
+/* Exit Permit-style Cards (Enhanced Detail Cards) */
+.epm-detail-card {
+  background-color: white;
+  border-radius: 10px;
+  padding: 30px;
+  box-shadow: var(--pim-card-shadow);
+  border-left: 4px solid var(--pim-secondary-color);
+  width: 100%;
+}
+
+.epm-detail-card h3 {
+  color: var(--pim-primary-color);
+  margin-bottom: 25px;
+  padding-bottom: 15px;
+  border-bottom: 1px solid var(--pim-light-gray);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 20px;
+  margin-top: 0;
+}
+
+.epm-detail-card h3 i {
+  color: var(--pim-secondary-color);
+  width: 28px;
+  text-align: center;
+  font-size: 22px;
+}
+
+.epm-card-content {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 25px;
+}
+
+.epm-info-item {
+  display: flex;
+  flex-direction: column;
+}
+
+.epm-info-label {
+  font-size: 14px;
+  color: var(--pim-dark-gray);
+  margin-bottom: 8px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.epm-info-value {
+  font-size: 16px;
+  font-weight: 500;
+  color: #333;
+  word-break: break-word;
+}
+
+.epm-status-badge {
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  display: inline-block;
+  min-width: 80px;
+  text-align: center;
+}
+
+.epm-payment-full {
+  background-color: #d5f4e6;
+  color: var(--pim-success-color);
+}
+
+.epm-payment-partial {
+  background-color: #fff3cd;
+  color: #b38b00;
+}
+
+.epm-payment-unpaid {
+  background-color: #fdeaea;
+  color: var(--pim-danger-color);
+}
+
+.epm-payment-method-badge {
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  display: inline-block;
+  min-width: 80px;
+  text-align: center;
+}
+
+.epm-payment-method-cash {
+  background-color: #e8f5e9;
+  color: var(--pim-success-color);
+}
+
+.epm-payment-method-card {
+  background-color: #e3f2fd;
+  color: #1565c0;
+}
+
+.epm-payment-method-transfer {
+  background-color: #f3e5f5;
+  color: #7b1fa2;
+}
+
+.epm-invoice-item {
+  padding: 22px;
+  border: 1px solid var(--pim-medium-gray);
+  border-radius: 8px;
+  margin-bottom: 18px;
+  background-color: #f8f9fa;
+}
+
+.epm-invoice-item:last-child {
+  margin-bottom: 0;
+}
+
+.epm-invoice-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 18px;
+  padding-bottom: 15px;
+  border-bottom: 1px solid var(--pim-light-gray);
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.epm-invoice-details {
+  margin: 18px 0;
+  padding-bottom: 15px;
+  border-bottom: 1px dashed var(--pim-light-gray);
+}
+
+.epm-detail-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.epm-detail-label {
+  font-size: 15px;
+  color: var(--pim-dark-gray);
+}
+
+.epm-detail-value {
+  font-size: 15px;
+  font-weight: 500;
+}
+
+.epm-invoice-services {
+  margin-top: 18px;
+}
+
+.epm-service-in-invoice {
+  padding: 10px 0;
+  font-size: 14px;
+  color: #333;
+  border-bottom: 1px dashed var(--pim-light-gray);
+}
+
+.epm-service-in-invoice:last-child {
+  border-bottom: none;
+}
+
+.epm-order-type-badge {
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  display: inline-block;
+  min-width: 100px;
+  text-align: center;
+}
+
+.epm-order-type-new-job {
+  background-color: #e3f2fd;
+  color: #1565c0;
+}
+
+.epm-order-type-service {
+  background-color: #f3e5f5;
+  color: #7b1fa2;
+}
+
+.epm-permit-created {
+  background-color: #d5f4e6;
+  color: var(--pim-success-color);
+}
+
+.epm-permit-not-created {
+  background-color: #fff3cd;
+  color: #b38b00;
 }
 
 .pim-billing-buttons {
@@ -1161,4 +1429,122 @@
   .pim-results-section {
     padding: 0 15px 20px;
   }
+}
+
+/* Cancel Order Modal Styles */
+.cancel-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+  z-index: 3000;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.cancel-modal-overlay.active {
+  display: flex;
+}
+
+.cancel-modal {
+  background-color: white;
+  border-radius: 10px;
+  width: 100%;
+  max-width: 500px;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+.cancel-modal-header {
+  padding: 25px 30px;
+  border-bottom: 1px solid #e0e0e0;
+  background-color: #ffebee;
+}
+
+.cancel-modal-header h3 {
+  color: #e74c3c;
+  font-size: 22px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 0;
+}
+
+.cancel-modal-body {
+  padding: 30px;
+}
+
+.cancel-warning {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  margin-bottom: 20px;
+  padding: 15px;
+  background-color: #fff3cd;
+  border-radius: 8px;
+  border-left: 4px solid #f39c12;
+}
+
+.cancel-warning-text {
+  flex: 1;
+}
+
+.cancel-warning-text p {
+  margin: 8px 0;
+  color: #333;
+}
+
+.cancel-warning-text p:first-child {
+  margin-top: 0;
+  font-weight: 500;
+}
+
+.cancel-warning i {
+  font-size: 24px;
+  color: #f39c12;
+  flex-shrink: 0;
+}
+
+.btn-confirm-cancel {
+  background-color: #e74c3c;
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+  font-size: 15px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.3s;
+}
+
+.btn-confirm-cancel:hover {
+  background-color: #c0392b;
+}
+
+.cancel-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 15px;
+}
+
+/* Footer */
+.pim-footer {
+  padding: 20px 30px;
+  background-color: #f8fafc;
+  border-top: 1px solid var(--pim-medium-gray);
+  text-align: center;
+  color: var(--pim-dark-gray);
+  font-size: 14px;
+  margin-top: 40px;
+}
+
+.pim-footer p {
+  margin: 0;
 }

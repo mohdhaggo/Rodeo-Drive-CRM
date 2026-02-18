@@ -7,7 +7,15 @@ const ConfirmationPopup = ({
   onCancel,
   message = "Are you sure?",
   confirmText = "Yes",
-  cancelText = "No"
+  cancelText = "No",
+  confirmButtonStyle = null,
+  cancelButtonStyle = null,
+  confirmButtonClass = null,
+  cancelButtonClass = null,
+  secondaryAction = null,
+  secondaryActionText = null,
+  secondaryActionStyle = null,
+  secondaryActionClass = null
 }) => {
   // Close popup on Escape key press
   useEffect(() => {
@@ -58,12 +66,48 @@ const ConfirmationPopup = ({
           <p>{message}</p>
         </div>
         <div className="confirmation-footer">
-          <button className="confirmation-btn confirm" onClick={onConfirm}>
-            {confirmText}
-          </button>
-          <button className="confirmation-btn cancel" onClick={onCancel}>
-            {cancelText}
-          </button>
+          {secondaryAction && secondaryActionText ? (
+            <>
+              <button 
+                className={`confirmation-btn confirm ${confirmButtonClass || ''}`}
+                style={confirmButtonStyle}
+                onClick={onConfirm}
+              >
+                {confirmText}
+              </button>
+              <button 
+                className={`confirmation-btn secondary ${secondaryActionClass || ''}`}
+                style={secondaryActionStyle}
+                onClick={secondaryAction}
+              >
+                {secondaryActionText}
+              </button>
+              <button 
+                className={`confirmation-btn cancel ${cancelButtonClass || ''}`}
+                style={cancelButtonStyle}
+                onClick={onCancel}
+              >
+                {cancelText}
+              </button>
+            </>
+          ) : (
+            <>
+              <button 
+                className={`confirmation-btn confirm ${confirmButtonClass || ''}`}
+                style={confirmButtonStyle}
+                onClick={onConfirm}
+              >
+                {confirmText}
+              </button>
+              <button 
+                className={`confirmation-btn cancel ${cancelButtonClass || ''}`}
+                style={cancelButtonStyle}
+                onClick={onCancel}
+              >
+                {cancelText}
+              </button>
+            </>
+          )}
         </div>
       </div>
     </div>

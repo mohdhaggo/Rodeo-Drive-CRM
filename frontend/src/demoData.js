@@ -1,6 +1,35 @@
 // Shared demo data for Customer and Vehicle Management
 // This ensures consistency across modules
 
+// Map role names to actual user names from the system
+const getUserNameByRole = (role) => {
+    const roleToUserMap = {
+        'Sales Agent': 'test number 03',
+        'Sales Manager': 'test number 02',
+        'Inspector': 'test number 11',
+        'Inspection': 'test number 11',
+        'Technician': 'test number 16',
+        'Quality Inspector': 'test number 21',
+        'Supervisor': 'test number 08',
+        'General manger': 'test number 08',
+        'Receiptioant': 'test number 04',
+        'Receptionist': 'test number 04'
+    };
+    
+    // If the role is in our map, return the mapped user name
+    if (roleToUserMap[role]) {
+        return roleToUserMap[role];
+    }
+    
+    // If it's already a user name (starts with 'test number' or has specific pattern), return as is
+    if (role && (role.startsWith('test number') || role.startsWith('EP'))) {
+        return role;
+    }
+    
+    // Default: if we can't find a mapping, return a generic admin user
+    return 'test number 99';
+};
+
 const generateVIN = () => {
     const chars = '0123456789ABCDEFGHJKLMNPRSTUVWXYZ';
     let vin = '';
@@ -168,7 +197,7 @@ export const generateDemoJobOrders = () => {
             if (i % 18 === 0) workStatus = 'Cancelled';
 
             const paymentStatus = workStatus === 'Cancelled'
-                ? 'Unpaid'
+                ? 'Cancelled'
                 : workStatus === 'Completed'
                     ? 'Fully Paid'
                     : (Math.random() > 0.2 ? 'Fully Paid' : 'Partially Paid');
@@ -183,14 +212,14 @@ export const generateDemoJobOrders = () => {
             for (let j = 0; j < serviceCount; j++) {
                 const service = services[Math.floor(Math.random() * services.length)];
                 if (!selectedServices.find(s => s.name === service)) {
-                    let serviceStatus = 'New';
+                    let serviceStatus = 'Pending';
                     let serviceStarted = null;
                     let serviceEnded = null;
                     let serviceDuration = 'Not started';
                     let serviceTechnician = 'Not assigned';
                     
                     if (['Inprogress', 'Quality Check', 'Ready', 'Completed'].includes(workStatus)) {
-                        serviceStatus = workStatus === 'Completed' ? 'Completed' : 'In Progress';
+                        serviceStatus = workStatus === 'Completed' ? 'Completed' : 'Inprogress';
                         const startHour = 10 + Math.floor(Math.random() * 4);
                         serviceStarted = `${dateString}, ${startHour}:${Math.floor(Math.random() * 60).toString().padStart(2, '0')} AM`;
                         serviceEnded = workStatus === 'Completed' ? `${dateString}, ${startHour + 2}:30 PM` : null;
@@ -211,7 +240,9 @@ export const generateDemoJobOrders = () => {
                         ended: serviceEnded || 'Not completed',
                         duration: serviceDuration,
                         technician: serviceTechnician,
-                        notes: 'Service request as per customer requirement'
+                        notes: 'Service request as per customer requirement',
+                        assignedTo: ['Michael Brown', 'Sarah Miller', 'John Davis', 'Emma Wilson'][j % 4],
+                        technicians: [['Michael Brown', 'Sarah Miller', 'John Davis', 'Emma Wilson'][j % 4]]
                     });
                 }
             }
@@ -235,7 +266,7 @@ export const generateDemoJobOrders = () => {
                 
                 jobOrderSummary: {
                     createDate: dateString,
-                    createdBy: 'Sales Agent',
+                    createdBy: getUserNameByRole('Sales Agent'),
                     expectedDelivery: dateString
                 },
                 
@@ -296,14 +327,16 @@ export const generateDemoJobOrders = () => {
                         baseRoadmap[s].status = 'Completed';
                         baseRoadmap[s].startTimestamp = `${dateString}, ${10 + s * 2}:30 AM`;
                         baseRoadmap[s].endTimestamp = `${dateString}, ${12 + s * 2}:15 PM`;
-                        baseRoadmap[s].actionBy = ['Sales Agent', 'Inspector', 'Technician', 'Quality Inspector', 'Supervisor'][s] || 'Supervisor';
+                        const roleNames = ['Sales Agent', 'Inspector', 'Technician', 'Quality Inspector', 'Supervisor'];
+                        baseRoadmap[s].actionBy = getUserNameByRole(roleNames[s] || 'Supervisor');
                     }
                     
                     if (effectiveIndex >= 0 && effectiveIndex < baseRoadmap.length) {
                         baseRoadmap[effectiveIndex].stepStatus = workStatus === 'Cancelled' ? 'Cancelled' : 'Active';
                         baseRoadmap[effectiveIndex].status = workStatus === 'Cancelled' ? 'Cancelled' : 'InProgress';
                         baseRoadmap[effectiveIndex].startTimestamp = `${dateString}, ${10 + effectiveIndex * 2}:30 AM`;
-                        baseRoadmap[effectiveIndex].actionBy = ['Sales Agent', 'Inspector', 'Technician', 'Quality Inspector', 'Supervisor'][effectiveIndex] || 'Supervisor';
+                        const roleNames = ['Sales Agent', 'Inspector', 'Technician', 'Quality Inspector', 'Supervisor'];
+                        baseRoadmap[effectiveIndex].actionBy = getUserNameByRole(roleNames[effectiveIndex] || 'Supervisor');
                         if (workStatus === 'Completed') {
                             baseRoadmap[effectiveIndex].stepStatus = 'Completed';
                             baseRoadmap[effectiveIndex].status = 'Completed';
@@ -320,7 +353,7 @@ export const generateDemoJobOrders = () => {
                     permitId: `PERMIT-${String(orderId).padStart(6, '0')}`,
                     createDate: `${dateString}, 03:15 PM`,
                     nextServiceDate: '15 Apr 2024',
-                    createdBy: 'Supervisor',
+                    createdBy: getUserNameByRole('Supervisor'),
                     collectedBy: vehicle.customerDetails.name,
                     collectedByMobile: vehicle.customerDetails.mobile
                 }
@@ -354,12 +387,102 @@ export const getCustomers = () => sharedData.customers;
 export const getVehicles = () => sharedData.vehicles;
 export const getJobOrders = () => demoJobOrders.map(ensureJobOrderDefaults);
 
+export const updateCompletedServiceCounts = () => {
+    if (typeof localStorage === 'undefined') return;
+
+    const orders = JSON.parse(localStorage.getItem('jobOrders') || '[]');
+    if (orders.length === 0) return;
+
+    const customerCounts = {};
+    const vehicleCounts = {};
+    const customerByNameMobile = {};
+
+    const savedCustomers = JSON.parse(localStorage.getItem('jobOrderCustomers') || '[]');
+    savedCustomers.forEach((customer) => {
+        const nameKey = (customer.name || '').trim().toLowerCase();
+        const mobileKey = (customer.mobile || '').trim().toLowerCase();
+        if (!nameKey || !mobileKey) return;
+        customerByNameMobile[`${nameKey}|${mobileKey}`] = customer.id;
+    });
+
+    orders.forEach((order) => {
+        const workStatus = (order.workStatus || '').toLowerCase();
+        if (workStatus !== 'completed') return;
+
+        const orderName = (order.customerDetails?.name || order.customerName || '').trim().toLowerCase();
+        const orderMobile = (order.customerDetails?.mobile || order.mobile || '').trim().toLowerCase();
+        const customerId = order.customerDetails?.customerId
+            || order.customerDetails?.id
+            || order.customerId
+            || order.customer?.id
+            || order.customer?.customerId
+            || customerByNameMobile[`${orderName}|${orderMobile}`];
+        const vehicleId = order.vehicleDetails?.vehicleId || order.vehicleDetails?.id;
+
+        if (customerId) {
+            customerCounts[customerId] = (customerCounts[customerId] || 0) + 1;
+        }
+        if (vehicleId) {
+            vehicleCounts[vehicleId] = (vehicleCounts[vehicleId] || 0) + 1;
+        }
+    });
+
+    if (savedCustomers.length > 0) {
+        const updatedCustomers = savedCustomers.map((customer) => {
+            const updatedVehicles = (customer.vehicles || []).map((vehicle) => {
+                const updatedCount = vehicleCounts[vehicle.vehicleId];
+                if (updatedCount === undefined) return vehicle;
+                return { ...vehicle, completedServices: updatedCount };
+            });
+
+            const completedServicesCount = customerCounts[customer.id];
+            return {
+                ...customer,
+                vehicles: updatedVehicles,
+                completedServicesCount: completedServicesCount !== undefined
+                    ? completedServicesCount
+                    : customer.completedServicesCount || 0
+            };
+        });
+        localStorage.setItem('jobOrderCustomers', JSON.stringify(updatedCustomers));
+    }
+
+    const savedVehicles = JSON.parse(localStorage.getItem('vehicleManagementVehicles') || '[]');
+    if (savedVehicles.length > 0) {
+        const updatedVehicles = savedVehicles.map((vehicle) => {
+            const updatedCount = vehicleCounts[vehicle.vehicleId];
+            const customerId = vehicle.customerId || vehicle.customerDetails?.customerId;
+            const customerCount = customerId ? customerCounts[customerId] : undefined;
+
+            const updatedCustomerDetails = vehicle.customerDetails
+                ? {
+                    ...vehicle.customerDetails,
+                    completedServicesCount: customerCount !== undefined
+                        ? customerCount
+                        : vehicle.customerDetails.completedServicesCount || 0
+                }
+                : vehicle.customerDetails;
+
+            return {
+                ...vehicle,
+                completedServices: updatedCount !== undefined ? updatedCount : (vehicle.completedServices || 0),
+                customerDetails: updatedCustomerDetails
+            };
+        });
+        localStorage.setItem('vehicleManagementVehicles', JSON.stringify(updatedVehicles));
+    }
+
+    if (typeof window !== 'undefined') {
+        window.dispatchEvent(new Event('completed-services-updated'));
+    }
+};
+
 export const getStoredJobOrders = () => {
     if (typeof localStorage === 'undefined') return getJobOrders();
 
     const stored = JSON.parse(localStorage.getItem('jobOrders') || '[]');
     const demoDataVersion = localStorage.getItem('demoDataVersion');
-    const currentVersion = '1.5.0';
+    const currentVersion = '1.6.0';
 
     if (stored.length === 0 || demoDataVersion !== currentVersion) {
         const demoOrders = getJobOrders();

@@ -3,44 +3,13 @@ import { createPortal } from 'react-dom';
 import './JobOrderManagement.css';
 import { getCustomers, getStoredJobOrders } from './demoData';
 import SuccessPopup from './SuccessPopup';
-import ConfirmationPopup from './ConfirmationPopup';
+import PermissionGate from './PermissionGate';
+import AddServiceScreen from './AddServiceScreen';
+import { PRODUCT_CATALOG } from './productCatalog';
 
 // ============================================
 // DEMO DATA
 // ============================================
-const YOUR_PRODUCTS = [
-  { name: "Extra Cool Tint", suvPrice: 3200, sedanPrice: 2900 },
-  { name: "UV Protection Film", suvPrice: 2500, sedanPrice: 2200 },
-  { name: "Cool Shade Tint", suvPrice: 1800, sedanPrice: 1500 },
-  { name: "Smart Pro Protection", suvPrice: 17500, sedanPrice: 15500 },
-  { name: "Full Body Protection", suvPrice: 5500, sedanPrice: 4400 },
-  { name: "Quarter Panel Protection", suvPrice: 4300, sedanPrice: 3500 },
-  { name: "Glass Protection (Light)", suvPrice: 400, sedanPrice: 400 },
-  { name: "Extreme Glass Protection", suvPrice: 1200, sedanPrice: 1200 },
-  { name: "City Glass Protection", suvPrice: 800, sedanPrice: 800 },
-  { name: "Matte Protection", suvPrice: 18500, sedanPrice: 16500 },
-  { name: "Color Change", suvPrice: 20500, sedanPrice: 18500 },
-  { name: "Leather Protection", suvPrice: 1200, sedanPrice: 1200 },
-  { name: "Wheel Protection", suvPrice: 600, sedanPrice: 600 },
-  { name: "VIP Interior & Exterior Polish", suvPrice: 1650, sedanPrice: 1650 },
-  { name: "Interior Polish", suvPrice: 850, sedanPrice: 850 },
-  { name: "Exterior Polish", suvPrice: 800, sedanPrice: 800 },
-  { name: "Nano Interior & Exterior Polish", suvPrice: 2200, sedanPrice: 2200 },
-  { name: "Rear Bumper Protection", suvPrice: 2200, sedanPrice: 2200 },
-  { name: "Fender Protection", suvPrice: 2000, sedanPrice: 2000 },
-  { name: "Roof Protection", suvPrice: 2200, sedanPrice: 2200 },
-  { name: "Single Door Protection", suvPrice: 400, sedanPrice: 400 },
-  { name: "Front Bumper Protection", suvPrice: 1500, sedanPrice: 1500 },
-  { name: "Mirror Protection (Each)", suvPrice: 150, sedanPrice: 150 },
-  { name: "Front Fender Protection (Each)", suvPrice: 500, sedanPrice: 500 },
-  { name: "Rear Fender for Pickups & Small Cars", suvPrice: 1700, sedanPrice: 1700 },
-  { name: "Rear Fender Protection (Each)", suvPrice: 2800, sedanPrice: 2800 },
-  { name: "Headlight Protection (Each)", suvPrice: 150, sedanPrice: 150 },
-  { name: "Trunk Door Protection", suvPrice: 1000, sedanPrice: 1000 },
-  { name: "Tire Base Protection (Each)", suvPrice: 400, sedanPrice: 400 },
-  { name: "Pedal Protection (Each)", suvPrice: 400, sedanPrice: 400 }
-];
-
 // Get customers from shared demo data and merge with saved customers
 const getDemoAndSavedCustomers = () => {
   const demoCustomers = getCustomers();
@@ -60,7 +29,7 @@ const CUSTOMERS = getDemoAndSavedCustomers();
 // ============================================
 // MAIN COMPONENT
 // ============================================
-function JobOrderManagement({ navigationData, onClearNavigation, onNavigateBack }) {
+function JobOrderManagement({ currentUser, navigationData, onClearNavigation, onNavigateBack }) {
   const [screenState, setScreenState] = useState('main'); // main, details, newJob, addService
   const [currentDetailsOrder, setCurrentDetailsOrder] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
@@ -86,6 +55,24 @@ function JobOrderManagement({ navigationData, onClearNavigation, onNavigateBack 
     const demoJobOrders = getStoredJobOrders();
     setDemoOrders(demoJobOrders);
   }, []);
+
+  // Reload data from localStorage when returning to main screen
+  useEffect(() => {
+    if (screenState === 'main') {
+      const refreshedOrders = getStoredJobOrders();
+      setDemoOrders(refreshedOrders);
+    }
+  }, [screenState]);
+
+  // Reset to page 1 when search query changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery]);
+
+  // Reset to page 1 when page size changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [pageSize]);
 
   useEffect(() => {
     if (navigationData?.openNewJob) {
@@ -167,6 +154,7 @@ function JobOrderManagement({ navigationData, onClearNavigation, onNavigateBack 
 
     const newServiceEntries = selectedServices.map((service) => ({
       name: service.name,
+      price: service.price || 0,
       status: 'New',
       started: 'Not started',
       ended: 'Not completed',
@@ -206,6 +194,14 @@ function JobOrderManagement({ navigationData, onClearNavigation, onNavigateBack 
     // Find the order to cancel
     const orderToCancel = demoOrders.find(order => order.id === cancelOrderId);
     if (!orderToCancel) return;
+
+    // Check if order is already cancelled
+    if (orderToCancel.workStatus === 'Cancelled') {
+      alert(`Job Order ${cancelOrderId} is already cancelled.`);
+      setShowCancelConfirmation(false);
+      setCancelOrderId(null);
+      return;
+    }
 
     // Create a cancelled version of the order
     const cancelledOrder = {
@@ -263,7 +259,10 @@ function JobOrderManagement({ navigationData, onClearNavigation, onNavigateBack 
           searchQuery={searchQuery}
           onSearchChange={setSearchQuery}
           onViewDetails={(order) => {
-            setCurrentDetailsOrder(order);
+            // Reload from localStorage to get the latest data
+            const freshOrders = getStoredJobOrders();
+            const freshOrder = freshOrders.find(o => o.id === order.id) || order;
+            setCurrentDetailsOrder(freshOrder);
             setScreenState('details');
           }}
           onNewJob={() => setScreenState('newJob')}
@@ -290,6 +289,7 @@ function JobOrderManagement({ navigationData, onClearNavigation, onNavigateBack 
       )}
       {screenState === 'newJob' && (
         <NewJobScreen
+          currentUser={currentUser}
           onClose={() => {
             setScreenState('main');
             setNewJobPrefill(null);
@@ -326,6 +326,9 @@ function JobOrderManagement({ navigationData, onClearNavigation, onNavigateBack 
           order={currentAddServiceOrder}
           onClose={() => setScreenState('details')}
           onSubmit={handleAddServiceSubmit}
+          products={PRODUCT_CATALOG}
+          moduleId="joborder"
+          permissionId="joborder_pricesummary"
         />
       )}
       {inspectionModalOpen && currentInspectionItem && (
@@ -373,20 +376,39 @@ function JobOrderManagement({ navigationData, onClearNavigation, onNavigateBack 
         />
       )}
       
-      {/* Cancel Confirmation Popup */}
-      {showCancelConfirmation && cancelOrderId && (
-        <ConfirmationPopup
-          isVisible={true}
-          message={`Are you sure you want to cancel Order ID: ${cancelOrderId}?`}
-          onConfirm={handleCancelOrder}
-          onCancel={() => {
-            setShowCancelConfirmation(false);
-            setCancelOrderId(null);
-          }}
-          confirmText="Yes, Cancel Order"
-          cancelText="No, Keep Order"
-        />
-      )}
+      {/* Cancel Confirmation Modal */}
+      <div className={`cancel-modal-overlay ${showCancelConfirmation && cancelOrderId ? 'active' : ''}`}>
+        <div className="cancel-modal">
+          <div className="cancel-modal-header">
+            <h3>
+              <i className="fas fa-exclamation-triangle"></i> Confirm Cancellation
+            </h3>
+          </div>
+          <div className="cancel-modal-body">
+            <div className="cancel-warning">
+              <i className="fas fa-exclamation-circle"></i>
+              <div className="cancel-warning-text">
+                <p>
+                  You are about to cancel order{' '}
+                  <strong>{cancelOrderId}</strong>.
+                </p>
+                <p>This action cannot be undone.</p>
+              </div>
+            </div>
+            <div className="cancel-modal-actions">
+              <button className="btn-cancel" onClick={() => {
+                setShowCancelConfirmation(false);
+                setCancelOrderId(null);
+              }}>
+                <i className="fas fa-times"></i> Keep Order
+              </button>
+              <button className="btn-confirm-cancel" onClick={handleCancelOrder}>
+                <i className="fas fa-ban"></i> Cancel Order
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
       
       {/* Add Service Success Popup */}
       {showAddServiceSuccessPopup && (
@@ -496,9 +518,11 @@ function MainScreen({
                   <option value="100">100</option>
                 </select>
               </div>
-              <button className="btn-new-job" onClick={onNewJob}>
-                <i className="fas fa-plus-circle"></i> New Job Order
-              </button>
+              <PermissionGate moduleId="joborder" optionId="joborder_add">
+                <button className="btn-new-job" onClick={onNewJob}>
+                  <i className="fas fa-plus-circle"></i> New Job Order
+                </button>
+              </PermissionGate>
             </div>
           </div>
 
@@ -542,31 +566,33 @@ function MainScreen({
                         </span>
                       </td>
                       <td>
-                        <div className="action-dropdown-container">
-                          <button
-                            className={`btn-action-dropdown ${activeDropdown === order.id ? 'active' : ''}`}
-                            onClick={(e) => {
-                              const isActive = activeDropdown === order.id;
-                              if (isActive) {
-                                setActiveDropdown(null);
-                                return;
-                              }
-                              const rect = e.currentTarget.getBoundingClientRect();
-                              const menuHeight = 140;
-                              const menuWidth = 200;
-                              const spaceBelow = window.innerHeight - rect.bottom;
-                              const top = spaceBelow < menuHeight ? rect.top - menuHeight - 6 : rect.bottom + 6;
-                              const left = Math.max(8, Math.min(rect.right - menuWidth, window.innerWidth - menuWidth - 8));
-                              setDropdownPosition({
-                                top,
-                                left
-                              });
-                              setActiveDropdown(order.id);
-                            }}
-                          >
-                            <i className="fas fa-cogs"></i> Actions <i className="fas fa-chevron-down"></i>
-                          </button>
-                        </div>
+                        <PermissionGate moduleId="joborder" optionId="joborder_actions">
+                          <div className="action-dropdown-container">
+                            <button
+                              className={`btn-action-dropdown ${activeDropdown === order.id ? 'active' : ''}`}
+                              onClick={(e) => {
+                                const isActive = activeDropdown === order.id;
+                                if (isActive) {
+                                  setActiveDropdown(null);
+                                  return;
+                                }
+                                const rect = e.currentTarget.getBoundingClientRect();
+                                const menuHeight = 140;
+                                const menuWidth = 200;
+                                const spaceBelow = window.innerHeight - rect.bottom;
+                                const top = spaceBelow < menuHeight ? rect.top - menuHeight - 6 : rect.bottom + 6;
+                                const left = Math.max(8, Math.min(rect.right - menuWidth, window.innerWidth - menuWidth - 8));
+                                setDropdownPosition({
+                                  top,
+                                  left
+                                });
+                                setActiveDropdown(order.id);
+                              }}
+                            >
+                              <i className="fas fa-cogs"></i> Actions <i className="fas fa-chevron-down"></i>
+                            </button>
+                          </div>
+                        </PermissionGate>
                       </td>
                     </tr>
                   ))}
@@ -637,13 +663,19 @@ function MainScreen({
             left: `${dropdownPosition.left}px`
           }}
         >
-          <button className="dropdown-item view" onClick={() => { onViewDetails(orders.find(o => o.id === activeDropdown)); setActiveDropdown(null); }}>
-            <i className="fas fa-eye"></i> View Details
-          </button>
-          <div className="dropdown-divider"></div>
-          <button className="dropdown-item delete" onClick={() => { onCancelOrder(activeDropdown); setActiveDropdown(null); }}>
-            <i className="fas fa-times-circle"></i> Cancel Order
-          </button>
+          <PermissionGate moduleId="joborder" optionId="joborder_viewdetails">
+            <button className="dropdown-item view" onClick={() => { onViewDetails(orders.find(o => o.id === activeDropdown)); setActiveDropdown(null); }}>
+              <i className="fas fa-eye"></i> View Details
+            </button>
+          </PermissionGate>
+          <PermissionGate moduleId="joborder" optionId="joborder_cancel">
+            <>
+              <div className="dropdown-divider"></div>
+              <button className="dropdown-item delete" onClick={() => { onCancelOrder(activeDropdown); setActiveDropdown(null); }}>
+                <i className="fas fa-times-circle"></i> Cancel Order
+              </button>
+            </>
+          </PermissionGate>
         </div>,
         document.body
       )}
@@ -665,23 +697,48 @@ function DetailsScreen({ order, onClose, onAddService }) {
 
       <div className="pim-details-body">
         <div className="pim-details-grid">
-          <JobOrderSummaryCard order={order} />
-          <RoadmapCard order={order} />
+          <PermissionGate moduleId="joborder" optionId="joborder_summary">
+            <JobOrderSummaryCard order={order} />
+          </PermissionGate>
+          <PermissionGate moduleId="joborder" optionId="joborder_roadmap">
+            <RoadmapCard order={order} />
+          </PermissionGate>
           {order.inspectionResult && <InspectionSummaryCard order={order} />}
-          <CustomerDetailsCard order={order} />
-          <VehicleDetailsCard order={order} />
-          <ServicesCard order={order} onAddService={onAddService} />
-          {order.customerNotes && <CustomerNotesCard order={order} />}
+          <PermissionGate moduleId="joborder" optionId="joborder_customer">
+            <CustomerDetailsCard order={order} />
+          </PermissionGate>
+          <PermissionGate moduleId="joborder" optionId="joborder_vehicle">
+            <VehicleDetailsCard order={order} />
+          </PermissionGate>
+          <PermissionGate moduleId="joborder" optionId="joborder_services">
+            <ServicesCard order={order} onAddService={onAddService} />
+          </PermissionGate>
+          <PermissionGate moduleId="joborder" optionId="joborder_notes">
+            {order.customerNotes && <CustomerNotesCard order={order} />}
+          </PermissionGate>
+          <PermissionGate moduleId="joborder" optionId="joborder_quality">
+            <QualityCheckListCard order={order} />
+          </PermissionGate>
           {order.deliveryQualityCheck && <DeliveryQualityCheckCard order={order} />}
-          <BillingCard order={order} />
-          <DocumentsCard order={order} />
+          <PermissionGate moduleId="joborder" optionId="joborder_billing">
+            <BillingCard order={order} />
+          </PermissionGate>
+          <PermissionGate moduleId="joborder" optionId="joborder_paymentlog">
+            <PaymentActivityLogCard order={order} />
+          </PermissionGate>
+          <PermissionGate moduleId="joborder" optionId="joborder_exitpermit">
+            <ExitPermitDetailsCard order={order} />
+          </PermissionGate>
+          <PermissionGate moduleId="joborder" optionId="joborder_documents">
+            <DocumentsCard order={order} />
+          </PermissionGate>
         </div>
       </div>
     </div>
   );
 }
 
-function NewJobScreen({ onClose, onSubmit, prefill }) {
+function NewJobScreen({ currentUser, onClose, onSubmit, prefill }) {
   const [step, setStep] = useState(1);
   const [orderType, setOrderType] = useState(null); // 'new' or 'service'
   const [customerType, setCustomerType] = useState(null);
@@ -742,6 +799,14 @@ function NewJobScreen({ onClose, onSubmit, prefill }) {
     const now = new Date();
     const year = now.getFullYear();
     const jobOrderId = `JO-${year}-${String(Math.floor(Math.random() * 1000000)).padStart(6, '0')}`;
+
+    const selectedOrder = orderType === 'service' && selectedCompletedServices.length > 0
+      ? selectedCompletedServices[0]
+      : null;
+    const originalServices = selectedOrder?.services || [];
+    const normalizedOriginalServices = originalServices.map((service) => (
+      typeof service === 'string' ? { name: service, status: 'Completed' } : service
+    ));
     
     // Calculate billing amounts
     const servicesToBill = orderType === 'service' ? additionalServices : selectedServices;
@@ -764,7 +829,7 @@ function NewJobScreen({ onClose, onSubmit, prefill }) {
       createDate: new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }),
       jobOrderSummary: {
         createDate: new Date().toLocaleString(),
-        createdBy: 'System User',
+        createdBy: currentUser?.name || 'System User',
         expectedDelivery: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toLocaleString()
       },
       customerDetails: {
@@ -791,8 +856,14 @@ function NewJobScreen({ onClose, onSubmit, prefill }) {
         vin: vehicleData.vin || 'N/A',
         registrationDate: vehicleData.registrationDate || 'N/A'
       },
+      serviceOrderReference: selectedOrder ? {
+        orderId: selectedOrder.id,
+        createDate: selectedOrder.createDate,
+        services: normalizedOriginalServices
+      } : null,
       services: orderType === 'service' ? additionalServices.map(s => ({
         name: s.name,
+        price: s.price || 0,
         status: 'New',
         started: 'Not started',
         ended: 'Not completed',
@@ -801,6 +872,7 @@ function NewJobScreen({ onClose, onSubmit, prefill }) {
         notes: 'Additional service for completed order'
       })) : selectedServices.map(s => ({
         name: s.name,
+        price: s.price || 0,
         status: 'New',
         started: 'Not started',
         ended: 'Not completed',
@@ -840,7 +912,7 @@ function NewJobScreen({ onClose, onSubmit, prefill }) {
             hour12: true 
           }),
           endTimestamp: null,
-          actionBy: 'System User',
+          actionBy: currentUser?.name || 'System User',
           status: 'InProgress'
         },
         {
@@ -1432,7 +1504,12 @@ function StepThreeCompletedServices({ vehicleData, completedServices, selectedCo
                           {svc.name}
                         </div>
                         <div style={{ color: '#666', fontSize: '12px' }}>
-                          Price: <span style={{ fontWeight: '500' }}>{typeof svc.price === 'number' ? formatPrice(svc.price) : svc.price}</span>
+                          Price:{' '}
+                          <PermissionGate moduleId="joborder" optionId="joborder_serviceprice">
+                            <span style={{ fontWeight: '500' }}>
+                              {typeof svc.price === 'number' ? formatPrice(svc.price) : svc.price}
+                            </span>
+                          </PermissionGate>
                         </div>
                       </div>
                       <button
@@ -1448,16 +1525,18 @@ function StepThreeCompletedServices({ vehicleData, completedServices, selectedCo
             )}
 
             {/* Add Service Button */}
-            <div style={{ marginBottom: '20px' }}>
-              <button
-                className="btn btn-info"
-                onClick={() => setShowAddServices(true)}
-                style={{ width: '100%' }}
-              >
-                <i className="fas fa-plus" style={{ marginRight: '8px' }}></i>
-                Add Service
-              </button>
-            </div>
+            <PermissionGate moduleId="joborder" optionId="joborder_addservice">
+              <div style={{ marginBottom: '20px' }}>
+                <button
+                  className="btn btn-info"
+                  onClick={() => setShowAddServices(true)}
+                  style={{ width: '100%' }}
+                >
+                  <i className="fas fa-plus" style={{ marginRight: '8px' }}></i>
+                  Add Service
+                </button>
+              </div>
+            </PermissionGate>
 
             {/* Notes */}
             <div style={{ marginBottom: '20px' }}>
@@ -1547,20 +1626,24 @@ function StepThreeCompletedServices({ vehicleData, completedServices, selectedCo
                 <span>Subtotal (New Services Only):</span>
                 <span>{formatPrice(subtotal)}</span>
               </div>
-              <div className="price-row">
-                <span>Apply Discount:</span>
-                <div>
-                  <input
-                    type="number"
-                    min="0"
-                    max="100"
-                    value={discountPercent}
-                    onChange={(e) => setDiscountPercent(parseFloat(e.target.value))}
-                    style={{ width: '80px' }}
-                  />
-                  <span> %</span>
+              <PermissionGate moduleId="joborder" optionId="joborder_servicediscount">
+                <div className="price-row">
+                  <span>Apply Discount:</span>
+                  <div>
+                    <PermissionGate moduleId="joborder" optionId="joborder_servicediscount_percent">
+                      <input
+                        type="number"
+                        min="0"
+                        max="100"
+                        value={discountPercent}
+                        onChange={(e) => setDiscountPercent(parseFloat(e.target.value))}
+                        style={{ width: '80px' }}
+                      />
+                      <span> %</span>
+                    </PermissionGate>
+                  </div>
                 </div>
-              </div>
+              </PermissionGate>
               <div className="price-row discount-amount">
                 <span>Discount Amount:</span>
                 <span>{formatPrice(discount)}</span>
@@ -1579,108 +1662,6 @@ function StepThreeCompletedServices({ vehicleData, completedServices, selectedCo
         <button className="btn btn-primary" onClick={onNext} disabled={!selectedOrder}>
           Next: Confirm
         </button>
-      </div>
-    </div>
-  );
-}
-
-// ============================================
-// ADD SERVICE SCREEN
-// ============================================
-function AddServiceScreen({ order, onClose, onSubmit }) {
-  const [selectedServices, setSelectedServices] = useState([]);
-  const [discountPercent, setDiscountPercent] = useState(0);
-  const vehicleType = order?.vehicleDetails?.type || 'SUV';
-
-  const handleToggleService = (product) => {
-    const price = vehicleType === 'SUV' ? product.suvPrice : product.sedanPrice;
-    if (selectedServices.some(s => s.name === product.name)) {
-      setSelectedServices(selectedServices.filter(s => s.name !== product.name));
-    } else {
-      setSelectedServices([...selectedServices, { name: product.name, price }]);
-    }
-  };
-
-  const formatPrice = (price) => `QAR ${price.toLocaleString()}`;
-  const subtotal = selectedServices.reduce((sum, s) => sum + s.price, 0);
-  const discount = (subtotal * discountPercent) / 100;
-  const total = subtotal - discount;
-
-  return (
-    <div className="pim-details-screen">
-      <div className="pim-details-header">
-        <div className="pim-details-title-container">
-          <h2><i className="fas fa-plus-circle"></i> Add Services to Job Order</h2>
-        </div>
-        <button className="pim-btn-close-details" onClick={onClose}>
-          <i className="fas fa-times"></i> Cancel
-        </button>
-      </div>
-
-      <div className="pim-details-body">
-        <div className="form-card">
-          <div className="form-card-title">
-            <i className="fas fa-concierge-bell"></i>
-            <h2>Services Selection</h2>
-          </div>
-
-          <div className="form-card-content">
-            <p>Select services for {vehicleType}:</p>
-            <div className="services-grid">
-              {YOUR_PRODUCTS.map((product) => (
-                <div
-                  key={product.name}
-                  className={`service-checkbox ${selectedServices.some(s => s.name === product.name) ? 'selected' : ''}`}
-                  onClick={() => handleToggleService(product)}
-                >
-                  <div className="service-info">
-                    <div className="service-name">{product.name}</div>
-                  </div>
-                  <div className="service-price">
-                    {formatPrice(vehicleType === 'SUV' ? product.suvPrice : product.sedanPrice)}
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            <div className="price-summary-box">
-              <h4>Price Summary</h4>
-              <div className="price-row">
-                <span>Services:</span>
-                <span>{formatPrice(subtotal)}</span>
-              </div>
-              <div className="price-row">
-                <span>Apply Discount:</span>
-                <div>
-                  <input
-                    type="number"
-                    min="0"
-                    max="100"
-                    value={discountPercent}
-                    onChange={(e) => setDiscountPercent(parseFloat(e.target.value) || 0)}
-                    style={{ width: '80px' }}
-                  />
-                  <span> %</span>
-                </div>
-              </div>
-              <div className="price-row discount-amount">
-                <span>Discount Amount:</span>
-                <span>{formatPrice(discount)}</span>
-              </div>
-              <div className="price-row total">
-                <span>Total:</span>
-                <span>{formatPrice(total)}</span>
-              </div>
-            </div>
-
-            <div className="action-buttons">
-              <button className="btn btn-secondary" onClick={onClose}>Cancel</button>
-              <button className="btn btn-primary" onClick={() => onSubmit({ selectedServices, discountPercent })} disabled={selectedServices.length === 0}>
-                Add Services
-              </button>
-            </div>
-          </div>
-        </div>
       </div>
     </div>
   );
@@ -1744,7 +1725,7 @@ function StepOneCustomer({ customerType, setCustomerType, customerData, setCusto
   const handleSave = () => {
     if (saving) return; // Prevent multiple clicks
     
-    if (fullName && email && phone) {
+    if (fullName && phone) {
       setSaving(true);
       
       // Get fresh customer list directly from localStorage + demo data
@@ -1902,15 +1883,15 @@ function StepOneCustomer({ customerType, setCustomerType, customerData, setCusto
             </div>
             <div className="form-row">
               <div className="form-group">
-                <label>Email *</label>
-                <input value={email} onChange={(e) => setEmail(e.target.value)} type="email" />
+                <label>Email </label>
+                <input value={email} onChange={(e) => setEmail(e.target.value)} type="email" placeholder="Optional"/>
               </div>
               <div className="form-group">
                 <label>Address</label>
                 <input value={address} onChange={(e) => setAddress(e.target.value)} placeholder="Optional" />
               </div>
             </div>
-            <button className="btn btn-primary" onClick={handleSave} disabled={saving || !fullName || !email || !phone}>
+            <button className="btn btn-primary" onClick={handleSave} disabled={saving || !fullName ||  !phone}>
               {saving ? 'Saving...' : 'Save Customer'}
             </button>
           </div>
@@ -2465,7 +2446,7 @@ function StepThreeServicesForServiceOrder({ additionalServices, setAdditionalSer
     }
   };
 
-  const filteredProducts = YOUR_PRODUCTS.filter(product =>
+  const filteredProducts = PRODUCT_CATALOG.filter(product =>
     product.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
@@ -2614,7 +2595,7 @@ function StepThreeServices({ selectedServices, setSelectedServices, vehicleType,
       <div className="form-card-content">
         <p>Select services for {vehicleType}:</p>
         <div className="services-grid">
-          {YOUR_PRODUCTS.map((product) => (
+          {PRODUCT_CATALOG.map((product) => (
             <div
               key={product.name}
               className={`service-checkbox ${selectedServices.some(s => s.name === product.name) ? 'selected' : ''}`}
@@ -2714,7 +2695,7 @@ function StepThreeServices({ selectedServices, setSelectedServices, vehicleType,
                 max="100"
                 value={discountPercent}
                 onChange={(e) => setDiscountPercent(parseFloat(e.target.value))}
-                style={{ width: '80px' }}
+                style={{ width: '80px', color: '#333', backgroundColor: '#fff' }}
               />
               <span> %</span>
             </div>
@@ -3031,7 +3012,7 @@ function JobOrderSummaryCard({ order }) {
         </div>
         <div className="epm-info-item">
           <span className="epm-info-label">Exit Permit Status</span>
-          <span className="epm-info-value"><span className={`epm-status-badge ${order.exitPermit ? 'epm-permit-created' : 'epm-permit-not-created'}`}>{order.exitPermit ? 'Created' : 'Not Created'}</span></span>
+          <span className="epm-info-value"><span className={`epm-status-badge ${order.exitPermitStatus === 'Created' ? 'epm-payment-full' : 'epm-payment-unpaid'}`}>{order.exitPermitStatus || 'Not Created'}</span></span>
         </div>
       </div>
     </div>
@@ -3198,12 +3179,20 @@ function VehicleDetailsCard({ order }) {
       <h3><i className="fas fa-car"></i> Vehicle Information</h3>
       <div className="pim-card-content">
         <div className="pim-info-item">
-          <span className="pim-info-label">Vehicle ID</span>
+          <span className="pim-info-label">Vehicle Unique ID</span>
           <span className="pim-info-value">{order.vehicleDetails?.vehicleId || 'N/A'}</span>
         </div>
         <div className="pim-info-item">
-          <span className="pim-info-label">Make & Model</span>
-          <span className="pim-info-value">{order.vehicleDetails?.make} {order.vehicleDetails?.model}</span>
+          <span className="pim-info-label">Owned By</span>
+          <span className="pim-info-value">{order.vehicleDetails?.ownedBy || 'N/A'}</span>
+        </div>
+        <div className="pim-info-item">
+          <span className="pim-info-label">Make</span>
+          <span className="pim-info-value">{order.vehicleDetails?.make || 'N/A'}</span>
+        </div>
+        <div className="pim-info-item">
+          <span className="pim-info-label">Model</span>
+          <span className="pim-info-value">{order.vehicleDetails?.model || 'N/A'}</span>
         </div>
         <div className="pim-info-item">
           <span className="pim-info-label">Year</span>
@@ -3218,16 +3207,12 @@ function VehicleDetailsCard({ order }) {
           <span className="pim-info-value">{order.vehicleDetails?.color || 'N/A'}</span>
         </div>
         <div className="pim-info-item">
-          <span className="pim-info-label">License Plate</span>
+          <span className="pim-info-label">Plate Number</span>
           <span className="pim-info-value">{order.vehicleDetails?.plateNumber || order.vehiclePlate || 'N/A'}</span>
         </div>
         <div className="pim-info-item">
           <span className="pim-info-label">VIN</span>
           <span className="pim-info-value">{order.vehicleDetails?.vin || 'N/A'}</span>
-        </div>
-        <div className="pim-info-item">
-          <span className="pim-info-label">Owned By</span>
-          <span className="pim-info-value">{order.vehicleDetails?.ownedBy || 'N/A'}</span>
         </div>
         <div className="pim-info-item">
           <span className="pim-info-label">Registration Date</span>
@@ -3239,17 +3224,26 @@ function VehicleDetailsCard({ order }) {
 }
 
 function ServicesCard({ order, onAddService }) {
+  const referenceServices = order.orderType === 'Service Order'
+    ? (order.serviceOrderReference?.services || [])
+    : [];
+  const combinedServices = referenceServices.length > 0
+    ? [...referenceServices, ...(order.services || [])]
+    : (order.services || []);
+
   return (
     <div className="pim-detail-card">
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
         <h3 style={{ margin: 0 }}><i className="fas fa-tasks"></i> Services Summary</h3>
-        <button className="btn-add-service" onClick={onAddService} style={{ padding: '8px 16px', fontSize: '14px' }}>
-          <i className="fas fa-plus-circle"></i> Add Service
-        </button>
+        <PermissionGate moduleId="joborder" optionId="joborder_addservice">
+          <button className="btn-add-service" onClick={onAddService} style={{ padding: '8px 16px', fontSize: '14px' }}>
+            <i className="fas fa-plus-circle"></i> Add Service
+          </button>
+        </PermissionGate>
       </div>
       <div className="pim-services-list">
-        {order.services && order.services.length > 0 ? (
-          order.services.map((service, idx) => (
+        {combinedServices.length > 0 ? (
+          combinedServices.map((service, idx) => (
             <div key={idx} className="pim-service-item">
               <div className="pim-service-header">
                 <span className="pim-service-name">{service.name}</span>
@@ -3261,12 +3255,12 @@ function ServicesCard({ order, onAddService }) {
                 <div className="pim-timeline-item">
                   <i className="fas fa-play-circle"></i>
                   <span className="pim-timeline-label">Started:</span>
-                  <span className="pim-timeline-value">{service.started || 'Not started'}</span>
+                  <span className="pim-timeline-value">{service.started || service.startTime || 'Not started'}</span>
                 </div>
                 <div className="pim-timeline-item">
                   <i className="fas fa-flag-checkered"></i>
                   <span className="pim-timeline-label">Ended:</span>
-                  <span className="pim-timeline-value">{service.ended || 'Not completed'}</span>
+                  <span className="pim-timeline-value">{service.ended || service.endTime || 'Not completed'}</span>
                 </div>
                 <div className="pim-timeline-item">
                   <i className="fas fa-clock"></i>
@@ -3275,9 +3269,16 @@ function ServicesCard({ order, onAddService }) {
                 </div>
                 <div className="pim-timeline-item">
                   <i className="fas fa-user-cog"></i>
-                  <span className="pim-timeline-label">Technician:</span>
-                  <span className="pim-timeline-value">{service.technician || 'Not assigned'}</span>
+                  <span className="pim-timeline-label">Assigned To:</span>
+                  <span className="pim-timeline-value">{service.assignedTo || service.technician || 'Not assigned'}</span>
                 </div>
+                {service.technicians && service.technicians.length > 0 && (
+                  <div className="pim-timeline-item">
+                    <i className="fas fa-users"></i>
+                    <span className="pim-timeline-label">Technicians:</span>
+                    <span className="pim-timeline-value">{service.technicians.join(', ')}</span>
+                  </div>
+                )}
               </div>
               {service.notes && (
                 <div className="pim-service-notes">
@@ -3344,6 +3345,88 @@ function CustomerNotesCard({ order }) {
       <h3><i className="fas fa-comment-dots"></i> Customer Notes</h3>
       <div style={{ padding: '15px 20px', whiteSpace: 'pre-wrap', color: '#78350f', fontSize: '14px', lineHeight: '1.6' }}>
         {order.customerNotes}
+      </div>
+    </div>
+  );
+}
+
+function QualityCheckListCard({ order }) {
+  const services = order.orderType === 'Service Order'
+    ? [...(order.serviceOrderReference?.services || []), ...(Array.isArray(order.services) ? order.services : [])]
+    : (Array.isArray(order.services) ? order.services : []);
+
+  const getStoredResult = (serviceName, index) => {
+    const storedResults = order.qualityCheckResults;
+    if (!storedResults) return null;
+    if (Array.isArray(storedResults)) {
+      return storedResults[index] || null;
+    }
+    if (typeof storedResults === 'object') {
+      return storedResults[serviceName] || storedResults[index] || null;
+    }
+    return null;
+  };
+
+  const getQualityCheckResult = (service, index) => {
+    if (service && typeof service === 'object') {
+      return service.qualityCheckResult || service.qcResult || service.qcStatus || service.qualityStatus || null;
+    }
+    const serviceName = typeof service === 'string' ? service : 'Service';
+    return getStoredResult(serviceName, index);
+  };
+
+  return (
+    <div className="pim-detail-card" style={{ backgroundColor: '#e8f4f1', borderLeft: '4px solid #16a085' }}>
+      <h3><i className="fas fa-clipboard-check"></i> Quality Check List</h3>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+        {services.length > 0 ? (
+          services.map((service, idx) => {
+            const serviceName = typeof service === 'string' ? service : service.name;
+            const result = getQualityCheckResult(service, idx) || 'Not Evaluated';
+            const isPass = result === 'Pass';
+            const isFailed = result === 'Failed';
+            const isAcceptable = result === 'Acceptable';
+
+            return (
+              <div
+                key={`${serviceName}-${idx}`}
+                style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  padding: '10px 12px',
+                  backgroundColor: 'white',
+                  borderRadius: '6px',
+                  border: '1px solid #e5e7eb',
+                  gap: '12px'
+                }}
+              >
+                <span style={{ fontSize: '14px', fontWeight: '500', color: '#1f2937', flex: 1 }}>
+                  {serviceName}
+                </span>
+                <span
+                  style={{
+                    padding: '4px 8px',
+                    borderRadius: '4px',
+                    fontSize: '12px',
+                    fontWeight: '600',
+                    whiteSpace: 'nowrap',
+                    ...(isPass && { backgroundColor: '#d1fae5', color: '#065f46' }),
+                    ...(isFailed && { backgroundColor: '#fee2e2', color: '#991b1b' }),
+                    ...(isAcceptable && { backgroundColor: '#fef3c7', color: '#92400e' }),
+                    ...(!isPass && !isFailed && !isAcceptable && { backgroundColor: '#e5e7eb', color: '#374151' })
+                  }}
+                >
+                  {result}
+                </span>
+              </div>
+            );
+          })
+        ) : (
+          <div style={{ padding: '12px', textAlign: 'center', color: '#6b7280' }}>
+            No services to evaluate
+          </div>
+        )}
       </div>
     </div>
   );
@@ -3449,12 +3532,6 @@ function BillingCard({ order }) {
                   <i className="fas fa-coins" style={{ color: '#f59e0b', marginRight: '6px' }}></i>
                   Amount: {invoice.amount}
                 </span>
-                <span className="epm-info-value">
-                  Status:{' '}
-                  <span className={`epm-status-badge ${invoice.status === 'Paid' ? 'epm-payment-full' : invoice.status === 'Partially Paid' ? 'epm-payment-partial' : 'epm-payment-unpaid'}`}>
-                    {invoice.status}
-                  </span>
-                </span>
               </div>
               <div className="epm-invoice-details">
                 <div className="epm-detail-row">
@@ -3512,37 +3589,159 @@ function BillingCard({ order }) {
 
 function DocumentsCard({ order }) {
   const documents = Array.isArray(order.documents) ? order.documents : []
-  const baseDocuments = [
-    { id: 'bill-document', name: 'Bill Document', icon: 'fa-file-invoice' },
-    { id: 'proof-document', name: 'Proof Document', icon: 'fa-receipt' }
-  ]
-  const allDocuments = [...documents, ...baseDocuments]
+
+  if (documents.length === 0) return null;
 
   return (
-    <div className="detail-card">
-      <h3><i className="fas fa-file-pdf"></i> Documents</h3>
-      <div className="pdf-links">
-        {allDocuments.map((doc) => (
-          <a
-            key={doc.id || doc.name}
-            href={doc.url || '#'}
-            className={`pdf-link ${doc.type === 'inspection-report' ? 'inspection-document' : ''}`}
-            download={doc.url ? doc.name : undefined}
-            onClick={(e) => {
-              if (!doc.url) {
-                e.preventDefault()
-              }
-            }}
-          >
-            <i className={`fas ${doc.icon || 'fa-file-pdf'}`}></i>
-            <div>
-              <div style={{ fontWeight: 600 }}>{doc.name}</div>
-              {doc.createdAt && (
-                <div style={{ fontSize: '12px', color: '#64748b', marginTop: '4px' }}>{doc.createdAt}</div>
-              )}
+    <div className="pim-detail-card">
+      <h3><i className="fas fa-folder-open"></i> Documents</h3>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+        {documents.map((doc, idx) => (
+          <div key={idx} style={{
+            padding: '15px',
+            border: '1px solid #e5e7eb',
+            borderRadius: '8px',
+            backgroundColor: '#f9fafb',
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center'
+          }}>
+            <div style={{ flex: 1 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px' }}>
+                <i className="fas fa-file-alt" style={{ color: '#3b82f6', fontSize: '20px' }}></i>
+                <div>
+                  <div style={{ fontWeight: '600', color: '#1f2937', fontSize: '14px' }}>
+                    {doc.name}
+                  </div>
+                  <div style={{ fontSize: '12px', color: '#6b7280', marginTop: '2px' }}>
+                    {doc.type} {doc.category ? `• ${doc.category}` : ''}
+                    {doc.paymentReference ? ` • ${doc.paymentReference}` : ''}
+                  </div>
+                </div>
+              </div>
+              <div style={{ display: 'flex', gap: '15px', fontSize: '12px', color: '#6b7280', marginLeft: '30px' }}>
+                {doc.uploadDate && (
+                  <span>
+                    <i className="fas fa-calendar-alt" style={{ marginRight: '5px' }}></i>
+                    {doc.uploadDate}
+                  </span>
+                )}
+                {doc.uploadedBy && (
+                  <span>
+                    <i className="fas fa-user" style={{ marginRight: '5px' }}></i>
+                    {doc.uploadedBy}
+                  </span>
+                )}
+              </div>
             </div>
-          </a>
+            <button
+              onClick={() => {
+                if (doc.url || doc.fileData) {
+                  const link = document.createElement('a');
+                  link.href = doc.fileData || doc.url;
+                  link.download = doc.name || 'document';
+                  link.click();
+                }
+              }}
+              style={{
+                padding: '8px 16px',
+                backgroundColor: '#3b82f6',
+                color: 'white',
+                border: 'none',
+                borderRadius: '6px',
+                cursor: 'pointer',
+                fontSize: '13px',
+                fontWeight: '500',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px'
+              }}
+            >
+              <i className="fas fa-download"></i>
+              Download
+            </button>
+          </div>
         ))}
+      </div>
+    </div>
+  );
+
+}
+
+function PaymentActivityLogCard({ order }) {
+  if (!order.paymentActivityLog || order.paymentActivityLog.length === 0) return null;
+
+  return (
+    <div className="pim-detail-card">
+      <h3><i className="fas fa-history"></i> Payment Activity Log</h3>
+      <table className="pim-payment-log-table">
+        <thead>
+          <tr>
+            <th>Serial</th>
+            <th>Amount</th>
+            <th>Discount</th>
+            <th>Payment Method</th>
+            <th>Cashier</th>
+            <th>Timestamp</th>
+          </tr>
+        </thead>
+        <tbody>
+          {[...order.paymentActivityLog].reverse().map((payment, idx) => (
+            <tr key={idx}>
+              <td className="pim-serial-column">{payment.serial}</td>
+              <td className="pim-amount-column">{payment.amount}</td>
+              <td className="pim-discount-column">{payment.discount}</td>
+              <td className="pim-cashier-column">{payment.paymentMethod}</td>
+              <td className="pim-cashier-column">{payment.cashierName}</td>
+              <td>{payment.timestamp}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+function ExitPermitDetailsCard({ order }) {
+  const permitId = order.exitPermit?.permitId || 'N/A';
+  const createDate = order.exitPermit?.createDate || 'N/A';
+  const nextServiceDate = order.exitPermit?.nextServiceDate || 'N/A';
+  const createdBy = order.exitPermit?.createdBy || 'N/A';
+  const collectedBy = order.exitPermit?.collectedBy || 'N/A';
+  const collectedByMobile = order.exitPermit?.collectedByMobile || 'N/A';
+  
+  return (
+    <div className="epm-detail-card">
+      <h3><i className="fas fa-id-card"></i> Exit Permit Details</h3>
+      <div className="epm-card-content">
+        <div className="epm-info-item">
+          <span className="epm-info-label">Permit ID</span>
+          <span className="epm-info-value">{permitId}</span>
+        </div>
+        <div className="epm-info-item">
+          <span className="epm-info-label">Create Date</span>
+          <span className="epm-info-value">{createDate}</span>
+        </div>
+        <div className="epm-info-item">
+          <span className="epm-info-label">Next Service Date</span>
+          <span className="epm-info-value">{nextServiceDate}</span>
+        </div>
+        <div className="epm-info-item">
+          <span className="epm-info-label">Created By</span>
+          <span className="epm-info-value">{createdBy}</span>
+        </div>
+        <div className="epm-info-item">
+          <span className="epm-info-label">Collected By</span>
+          <span className="epm-info-value">{collectedBy}</span>
+        </div>
+        <div className="epm-info-item">
+          <span className="epm-info-label">Mobile Number</span>
+          <span className="epm-info-value">{collectedByMobile}</span>
+        </div>
+        <div className="epm-info-item">
+          <span className="epm-info-label">Permit Status</span>
+          <span className="epm-info-value"><span className={`epm-status-badge ${order.exitPermitStatus === 'Created' ? 'epm-payment-full' : 'epm-payment-unpaid'}`}>{order.exitPermitStatus || 'Not Created'}</span></span>
+        </div>
       </div>
     </div>
   );

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import './ServiceApprovalHistory.css';
+import PermissionGate from './PermissionGate';
 
 const ServiceApprovalHistory = () => {
   const [showHistoryDetails, setShowHistoryDetails] = useState(false);
@@ -413,9 +414,11 @@ const ServiceApprovalHistory = () => {
                       <td>{history.decisionBy}</td>
                       <td>{history.totalAdded}</td>
                       <td>
-                        <button className="sah-action-btn sah-view" onClick={() => viewHistoryDetails(history.id)}>
-                          View Details
-                        </button>
+                        <PermissionGate moduleId="approvalhistory" optionId="approvalhistory_view">
+                          <button className="sah-action-btn sah-view" onClick={() => viewHistoryDetails(history.id)}>
+                            View Details
+                          </button>
+                        </PermissionGate>
                       </td>
                     </tr>
                   ))}
