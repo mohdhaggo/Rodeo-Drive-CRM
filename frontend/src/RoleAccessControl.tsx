@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { notifyPermissionsUpdated } from './roleAccess'
+import { notifyPermissionsUpdated } from './roleAccess.ts'
 import SuccessPopup from './SuccessPopup'
 import './RoleAccessControl.css'
 

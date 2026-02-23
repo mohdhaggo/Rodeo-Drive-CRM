@@ -1,6 +1,13 @@
+import { ReactNode } from 'react'
 import { hasModuleAccess, hasOptionAccess, useRolePermissions } from './roleAccess'
 
-const PermissionGate = ({ moduleId, optionId, children }) => {
+interface PermissionGateProps {
+  moduleId: string
+  optionId?: string
+  children: ReactNode
+}
+
+const PermissionGate = ({ moduleId, optionId, children }: PermissionGateProps) => {
   const permissions = useRolePermissions()
 
   const allowed = optionId

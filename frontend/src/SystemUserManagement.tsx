@@ -9,7 +9,7 @@ import {
   deleteUser as deleteUserFromService,
   initializeUsers,
   sendUserNotification
-} from './userService'
+} from './userService.ts'
 
 const initialUsers = [
   {

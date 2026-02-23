@@ -5,7 +5,7 @@ import {
   initializeUsers,
   updateUserPassword,
   markNotificationsRead
-} from './userService';
+} from './userService.ts';
 import './Login.css';
 
 export default function Login({ onLoginSuccess }) {

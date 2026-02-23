@@ -1,16 +1,24 @@
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy, useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { FaGripVertical, FaUserTie, FaUsers, FaEdit, FaSave, FaCheckDouble, FaPlusCircle, FaClock, FaCheckCircle, FaTimesCircle, FaWrench } from 'react-icons/fa';
+import { FaGripVertical, FaUserTie, FaUsers, FaEdit, FaSave, FaCheckDouble, FaPlusCircle, FaWrench } from 'react-icons/fa';
 import { useApprovalRequests } from './ApprovalRequestsContext.tsx';
 import PermissionGate from './PermissionGate';
 
 // =====================================================================
 // Sortable Service Item Component
 // =====================================================================
-const SortableServiceItem = ({ service, editMode, onUpdate, onApprovalRequest, availableTechs, availableAssignees, tabPrefix = 'serviceexec_assigned' }) => {
-  const { addRequest } = useApprovalRequests();
+const SortableServiceItem = ({
+  service,
+  editMode,
+  onUpdate,
+  onApprovalRequest,
+  availableTechs,
+  availableAssignees,
+  tabPrefix = 'serviceexec_assigned',
+}: any) => {
+  const { addRequest } = useApprovalRequests() as any;
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: service.id });
   
   const style = {
@@ -19,11 +27,11 @@ const SortableServiceItem = ({ service, editMode, onUpdate, onApprovalRequest, a
     opacity: isDragging ? 0.5 : 1,
   };
 
-  const [techDropdownOpen, setTechDropdownOpen] = useState(false);
-  const dropdownRef = useRef(null);
+  const [techDropdownOpen, setTechDropdownOpen] = useState<boolean>(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
   // Handle technician checkbox change
-  const handleTechChange = (techName, checked) => {
+  const handleTechChange = (techName: string, checked: boolean) => {
     let updatedTechs = [...(service.technicians || [])];
     if (checked) {
       if (!updatedTechs.includes(techName)) {
@@ -36,12 +44,12 @@ const SortableServiceItem = ({ service, editMode, onUpdate, onApprovalRequest, a
   };
 
   // Handle assigned to change
-  const handleAssignedToChange = (e) => {
+  const handleAssignedToChange = (e: any) => {
     onUpdate(service.id, { assignedTo: e.target.value || null });
   };
 
   // Handle status change
-  const handleStatusChange = (e) => {
+  const handleStatusChange = (e: any) => {
     const newStatus = e.target.value;
     if ((newStatus === 'Postponed' || newStatus === 'Cancelled') && service.status !== 'Pending Approval' && service.status !== newStatus) {
       // Add approval request to context
@@ -57,7 +65,7 @@ const SortableServiceItem = ({ service, editMode, onUpdate, onApprovalRequest, a
       });
       onUpdate(service.id, { status: 'Pending Approval', requestedAction: newStatus, approvalModule: true });
     } else {
-      const updates = { status: newStatus };
+      const updates: Record<string, any> = { status: newStatus };
       if (newStatus === 'Inprogress' && service.status !== 'Inprogress' && !service.startTime) {
         updates.startTime = new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
       }
@@ -70,8 +78,8 @@ const SortableServiceItem = ({ service, editMode, onUpdate, onApprovalRequest, a
 
   // Close dropdown when clicking outside
   useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
         setTechDropdownOpen(false);
       }
     };
@@ -80,7 +88,7 @@ const SortableServiceItem = ({ service, editMode, onUpdate, onApprovalRequest, a
   }, []);
 
   // Get status badge class
-  const getStatusClass = (status) => {
+  const getStatusClass = (status: string) => {
     switch (status) {
       case 'Inprogress': return 'status-inprogress';
       case 'Completed': return 'status-completed';
@@ -141,7 +149,7 @@ const SortableServiceItem = ({ service, editMode, onUpdate, onApprovalRequest, a
                 onChange={handleAssignedToChange}
               >
                 <option value="">— assign —</option>
-                {availableAssignees.map((assignee, idx) => (
+                {availableAssignees.map((assignee: any, idx: number) => (
                   <option key={idx} value={assignee}>{assignee}</option>
                 ))}
               </select>
@@ -164,7 +172,7 @@ const SortableServiceItem = ({ service, editMode, onUpdate, onApprovalRequest, a
                 </button>
                 {techDropdownOpen && (
                   <div className="tech-dropdown-content show">
-                    {availableTechs.map((tech, idx) => (
+                    {availableTechs.map((tech: any, idx: number) => (
                       <div key={idx} className="tech-option">
                         <input
                           type="checkbox"
@@ -215,7 +223,7 @@ const SortableServiceItem = ({ service, editMode, onUpdate, onApprovalRequest, a
         </div>
         <div className="tech-badge-list">
           {service.technicians?.length ? (
-            service.technicians.map(tech => (
+            service.technicians.map((tech: any) => (
               <span key={tech} className="tech-badge">{tech}</span>
             ))
           ) : (
@@ -246,16 +254,16 @@ export const ServiceSummaryCard = ({
   availableTechs = [],
   availableAssignees = [],
   tabPrefix = 'serviceexec_assigned',
-}) => {
-  const [localServices, setLocalServices] = useState([]);
-  const [hasChanges, setHasChanges] = useState(false);
+}: any) => {
+  const [localServices, setLocalServices] = useState<any[]>([]);
+  const [hasChanges, setHasChanges] = useState<boolean>(false);
 
   // Normalize and sync services when props change
   useEffect(() => {
     const mergedServices = referenceServices.length > 0
       ? [...referenceServices, ...(services || [])]
       : (services || []);
-    const normalizedServices = mergedServices.map((s, idx) => {
+    const normalizedServices = mergedServices.map((s: any, idx: number) => {
       const baseService = typeof s === 'string' ? { name: s } : (s || {});
       return {
         ...baseService,
@@ -278,28 +286,28 @@ export const ServiceSummaryCard = ({
   const sensors = useSensors(
     useSensor(PointerSensor, {
       distance: 8,
-    }),
+    } as any),
     useSensor(KeyboardSensor, {
       coordinateGetter: sortableKeyboardCoordinates,
     })
   );
 
   // Handle drag end
-  const handleDragEnd = (event) => {
+  const handleDragEnd = (event: any) => {
     const { active, over } = event;
     
     if (!over || active.id === over.id) {
       return;
     }
 
-    const oldIndex = localServices.findIndex(s => s.id === active.id);
-    const newIndex = localServices.findIndex(s => s.id === over.id);
+    const oldIndex = localServices.findIndex((s: any) => s.id === (active as any).id);
+    const newIndex = localServices.findIndex((s: any) => s.id === (over as any).id);
     
     if (oldIndex === -1 || newIndex === -1) {
       return;
     }
 
-    const reordered = arrayMove(localServices, oldIndex, newIndex).map((s, idx) => ({
+    const reordered = arrayMove(localServices, oldIndex, newIndex).map((s: any, idx: number) => ({
       ...s,
       order: idx + 1,
     }));
@@ -310,7 +318,7 @@ export const ServiceSummaryCard = ({
   };
 
   // Handle approval request for postponed/cancelled
-  const handleApprovalRequest = (serviceId, requestedAction) => {
+  const handleApprovalRequest = (serviceId: string, requestedAction: string) => {
     // Set status to Pending Approval and wait for approval module (no alert/confirm)
     handleServiceUpdate(serviceId, {
       status: 'Pending Approval',
@@ -320,8 +328,8 @@ export const ServiceSummaryCard = ({
   };
 
   // Handle service update with local state management
-  const handleServiceUpdate = (serviceId, updates) => {
-    const updatedServices = localServices.map(s =>
+  const handleServiceUpdate = (serviceId: string, updates: any) => {
+    const updatedServices = localServices.map((s: any) =>
       s.id === serviceId ? { ...s, ...updates } : s
     );
     setLocalServices(updatedServices);

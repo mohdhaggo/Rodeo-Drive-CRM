@@ -1,19 +1,19 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect, JSX } from 'react';
 import { createPortal } from 'react-dom';
 import './ServiceExecutionModule.css';
 import { getStoredJobOrders } from './demoData';
 import ServiceSummaryCard from './ServiceSummaryCard';
 import AddServiceScreen from './AddServiceScreen';
-import { PRODUCT_CATALOG } from './productCatalog';
+import { PRODUCT_CATALOG } from './productCatalog.ts';
 import PermissionGate from './PermissionGate';
 import { useApprovalRequests } from './ApprovalRequestsContext.tsx';
-import { getAllUsers, getTechnicians, getSupervisorsAndManagers } from './userService';
+import { getTechnicians, getSupervisorsAndManagers } from './userService.ts';
 import SuccessPopup from './SuccessPopup';
-import { useRolePermissions, hasOptionAccess } from './roleAccess';
+import { useRolePermissions, hasOptionAccess } from './roleAccess.ts';
 
 // Helper function to normalize service fields for compatibility
-const normalizeServices = (services) => {
-    return (services || []).map(service => ({
+const normalizeServices = (services: any) => {
+    return (services || []).map((service: any) => ({
         ...service,
         started: service.startTime || service.started || 'Not started',
         ended: service.endTime || service.ended || 'Not completed',
@@ -22,9 +22,9 @@ const normalizeServices = (services) => {
     }));
 };
 
-const ServiceExecutionModule = ({ currentUser }) => {
+const ServiceExecutionModule = ({ currentUser }: { currentUser: any }) => {
     // Ensure approval requests exist for all services with Pending Approval
-    const { addRequest, requests, removeRequest } = useApprovalRequests();
+    const { addRequest, requests, removeRequest } = useApprovalRequests() as any;
     
     // Get user permissions
     const permissions = useRolePermissions();
@@ -33,18 +33,17 @@ const ServiceExecutionModule = ({ currentUser }) => {
     const allJobs = getStoredJobOrders();
     
     // Get real users from the system
-    const systemUsers = getAllUsers();
     const technicians = getTechnicians();
     const supervisors = getSupervisorsAndManagers();
     
     // Function to determine if an order should be auto-assigned as unassigned
     // Orders transition to unassigned when they move past Inspection step
-    const shouldBeUnassigned = (job) => {
+    const shouldBeUnassigned = (job: any) => {
         if (!job.roadmap || job.roadmap.length === 0) return false;
         
         // Find the Inspection step
-        const inspectionStep = job.roadmap.find(s => s.step === 'Inspection');
-        const inprogressStep = job.roadmap.find(s => s.step === 'Inprogress');
+        const inspectionStep = job.roadmap.find((s: any) => s.step === 'Inspection');
+        const inprogressStep = job.roadmap.find((s: any) => s.step === 'Inprogress');
         
         // If order has completed Inspection (stepStatus is 'Completed') 
         // and is now in Inprogress, it should be unassigned and ready for pickup
@@ -57,7 +56,7 @@ const ServiceExecutionModule = ({ currentUser }) => {
     
     // Distribute assignees to jobs for display purposes
     // Check for explicit assignment first, then auto-assign based on rules
-    const jobsWithAssignees = allJobs.map((job, idx) => {
+    const jobsWithAssignees = allJobs.map((job: any, idx: number) => {
         // Auto-assign to 'unassigned' if order has transitioned from Inspection
         if (shouldBeUnassigned(job)) {
             return {
@@ -74,7 +73,7 @@ const ServiceExecutionModule = ({ currentUser }) => {
             // Use the saved assignment
             const assigneeType = job.assignedToUser.name === currentUser?.name 
                 ? 'me' 
-                : supervisors.some(s => s.name === job.assignedToUser.name) 
+                : supervisors.some((s: any) => s.name === job.assignedToUser.name) 
                     ? 'team' 
                     : 'unassigned';
             
@@ -111,10 +110,10 @@ const ServiceExecutionModule = ({ currentUser }) => {
 
     // On mount and after every job refresh, ensure all services with Pending Approval have a request
     useEffect(() => {
-        mockJobs.forEach(job => {
-            (job.services || []).forEach(service => {
+        mockJobs.forEach((job: any) => {
+            (job.services || []).forEach((service: any) => {
                 if (service.status === 'Pending Approval') {
-                    const alreadyExists = requests.some(r => r.id === service.id && r.status === 'pending');
+                    const alreadyExists = requests.some((r: any) => r.id === service.id && r.status === 'pending');
                     if (!alreadyExists) {
                         addRequest({
                             id: service.id,
@@ -136,7 +135,7 @@ const ServiceExecutionModule = ({ currentUser }) => {
     useEffect(() => {
         const refreshInterval = setInterval(() => {
             const updatedJobs = getStoredJobOrders();
-            const refreshedJobs = updatedJobs.map((job, idx) => {
+            const refreshedJobs = updatedJobs.map((job: any, idx: number) => {
                 if (shouldBeUnassigned(job)) {
                     return {
                         ...job,
@@ -152,7 +151,7 @@ const ServiceExecutionModule = ({ currentUser }) => {
                     // Use the saved assignment
                     const assigneeType = job.assignedToUser.name === currentUser?.name 
                         ? 'me' 
-                        : supervisors.some(s => s.name === job.assignedToUser.name) 
+                        : supervisors.some((s: any) => s.name === job.assignedToUser.name) 
                             ? 'team' 
                             : 'unassigned';
                     
@@ -191,7 +190,7 @@ const ServiceExecutionModule = ({ currentUser }) => {
     }, [currentUser, supervisors]);
     const [currentTab, setCurrentTab] = useState('assigned');
     const [currentSearch, setCurrentSearch] = useState('');
-    const [currentDetailsJob, setCurrentDetailsJob] = useState(null);
+    const [currentDetailsJob, setCurrentDetailsJob] = useState<any>(null);
     const [editMode, setEditMode] = useState(false);
     const [showDetails, setShowDetails] = useState(false);
     const [showAddServiceScreen, setShowAddServiceScreen] = useState(false);
@@ -218,11 +217,11 @@ const ServiceExecutionModule = ({ currentUser }) => {
             setCurrentTab('assigned');
         }
     }, [permissions]);
-    const [cancelOrderId, setCancelOrderId] = useState(null);
+    const [cancelOrderId, setCancelOrderId] = useState<string | null>(null);
     const [activeDropdown, setActiveDropdown] = useState(null);
     const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0 });
 
-    const parseAmount = (value) => {
+    const parseAmount = (value: any) => {
       if (typeof value === 'number') return value;
       if (typeof value === 'string') {
         const cleaned = value.replace(/[^0-9.-]/g, '');
@@ -232,11 +231,11 @@ const ServiceExecutionModule = ({ currentUser }) => {
       return 0;
     };
 
-    const formatAmount = (value) => `QAR ${Number(value || 0).toLocaleString()}`;
+    const formatAmount = (value: any) => `QAR ${Number(value || 0).toLocaleString()}`;
 
     // Close dropdown when clicking outside
     useEffect(() => {
-        const handleClickOutside = (event) => {
+        const handleClickOutside = (event: any) => {
             const isDropdownButton = event.target.closest('.btn-action-dropdown');
             const isDropdownMenu = event.target.closest('.action-dropdown-menu');
             
@@ -254,36 +253,36 @@ const ServiceExecutionModule = ({ currentUser }) => {
     }, [activeDropdown]);
 
     // Use real technicians and supervisors from system users
-    const technicianNames = technicians.map(t => t.name);
-    const assigneeNames = [...supervisors.map(s => s.name), ...(currentUser ? [currentUser.name] : [])];
-    const filterJobsByTabAndRoadmap = (tab, query) => {
+    const technicianNames = technicians.map((t: any) => t.name);
+    const assigneeNames = [...supervisors.map((s: any) => s.name), ...(currentUser ? [currentUser.name] : [])];
+    const filterJobsByTabAndRoadmap = (tab: string, query: string): any[] => {
         let filtered = [];
         if (tab === 'assigned') {
             // Show jobs where the next service to execute is assigned to the current user
-            filtered = mockJobs.filter(j => {
-                const nextService = j.services?.find(s => s.status !== 'Completed' && s.status !== 'Cancelled' && s.status !== 'Postponed');
+            filtered = mockJobs.filter((j: any) => {
+                const nextService = j.services?.find((s: any) => s.status !== 'Completed' && s.status !== 'Cancelled' && s.status !== 'Postponed');
                 return nextService && nextService.assignedTo === currentUser?.name;
             });
         } else if (tab === 'unassigned') {
             // Show jobs where the next service to execute is unassigned
-            filtered = mockJobs.filter(j => {
-                const nextService = j.services?.find(s => s.status !== 'Completed' && s.status !== 'Cancelled' && s.status !== 'Postponed');
+            filtered = mockJobs.filter((j: any) => {
+                const nextService = j.services?.find((s: any) => s.status !== 'Completed' && s.status !== 'Cancelled' && s.status !== 'Postponed');
                 return nextService && !nextService.assignedTo;
             });
         } else {
             // Show jobs where the next service to execute is assigned to another user
-            filtered = mockJobs.filter(j => {
-                const nextService = j.services?.find(s => s.status !== 'Completed' && s.status !== 'Cancelled' && s.status !== 'Postponed');
+            filtered = mockJobs.filter((j: any) => {
+                const nextService = j.services?.find((s: any) => s.status !== 'Completed' && s.status !== 'Cancelled' && s.status !== 'Postponed');
                 return nextService && nextService.assignedTo && nextService.assignedTo !== currentUser?.name;
             });
         }
-        filtered = filtered.filter(job => {
-            const inprogressStep = job.roadmap?.find(s => s.step === 'Inprogress');
+        filtered = filtered.filter((job: any) => {
+            const inprogressStep = job.roadmap?.find((s: any) => s.step === 'Inprogress');
             return inprogressStep && inprogressStep.stepStatus === 'Active';
         });
         if (query.trim()) {
             const q = query.toLowerCase();
-            filtered = filtered.filter(j => 
+            filtered = filtered.filter((j: any) => 
                 j.id.toLowerCase().includes(q) ||
                 j.customerName?.toLowerCase().includes(q) ||
                 j.vehiclePlate?.toLowerCase().includes(q) ||
@@ -293,27 +292,28 @@ const ServiceExecutionModule = ({ currentUser }) => {
         return filtered;
     };
 
-    const getTabCounts = () => {
+    const getTabCounts = (): { assigned: number; unassigned: number; team: number } => {
         // Count jobs where the next service to execute is assigned to the current user
-        const assigned = mockJobs.filter(j => {
-            const nextService = j.services?.find(s => s.status !== 'Completed' && s.status !== 'Cancelled' && s.status !== 'Postponed');
-            return nextService && nextService.assignedTo === currentUser?.name && j.roadmap?.find(s => s.step === 'Inprogress' && s.stepStatus === 'Active');
+        const assigned = mockJobs.filter((j: any) => {
+            const nextService = j.services?.find((s: any) => s.status !== 'Completed' && s.status !== 'Cancelled' && s.status !== 'Postponed');
+            return nextService && nextService.assignedTo === currentUser?.name && j.roadmap?.find((s: any) => s.step === 'Inprogress' && s.stepStatus === 'Active');
         }).length;
         // Count jobs where the next service to execute is unassigned
-        const unassigned = mockJobs.filter(j => {
-            const nextService = j.services?.find(s => s.status !== 'Completed' && s.status !== 'Cancelled' && s.status !== 'Postponed');
-            return nextService && !nextService.assignedTo && j.roadmap?.find(s => s.step === 'Inprogress' && s.stepStatus === 'Active');
+        const unassigned = mockJobs.filter((j: any) => {
+            const nextService = j.services?.find((s: any) => s.status !== 'Completed' && s.status !== 'Cancelled' && s.status !== 'Postponed');
+            return nextService && !nextService.assignedTo && j.roadmap?.find((s: any) => s.step === 'Inprogress' && s.stepStatus === 'Active');
         }).length;
         // Count jobs where the next service to execute is assigned to another user
-        const team = mockJobs.filter(j => {
-            const nextService = j.services?.find(s => s.status !== 'Completed' && s.status !== 'Cancelled' && s.status !== 'Postponed');
-            return nextService && nextService.assignedTo && nextService.assignedTo !== currentUser?.name && j.roadmap?.find(s => s.step === 'Inprogress' && s.stepStatus === 'Active');
+        const team = mockJobs.filter((j: any) => {
+            const nextService = j.services?.find((s: any) => s.status !== 'Completed' && s.status !== 'Cancelled' && s.status !== 'Postponed');
+            return nextService && nextService.assignedTo && nextService.assignedTo !== currentUser?.name && j.roadmap?.find((s: any) => s.step === 'Inprogress' && s.stepStatus === 'Active');
         }).length;
         return { assigned, unassigned, team };
     };
 
-    const getStatusClass = (status) => {
-        const statusMap = {
+    // @ts-ignore - Used for debugging/reference
+    const getStatusClass = (status: string): string => {
+        const statusMap: Record<string, string> = {
             'Inprogress': 'status-inprogress',
             'Completed': 'status-completed',
             'Cancelled': 'status-cancelled',
@@ -325,19 +325,19 @@ const ServiceExecutionModule = ({ currentUser }) => {
     };
 
     // Returns the next uncompleted service in arranged order
-    const getCurrentService = (job) => {
+    const getCurrentService = (job: any): any => {
         if (!job.services) return null;
         // Find the first service that is not completed/cancelled/postponed
-        return job.services.find(s => s.status !== 'Completed' && s.status !== 'Cancelled' && s.status !== 'Postponed') || null;
+        return job.services.find((s: any) => s.status !== 'Completed' && s.status !== 'Cancelled' && s.status !== 'Postponed') || null;
     };
 
-    // Get all assigned users for a job
-    const getAssignedUsers = (job) => {
+    // @ts-ignore - Used for future reference
+    const getAssignedUsers = (job: any): string[] => {
         if (!job.services) return [];
         const assignedUsers = [...new Set(job.services
-            .filter(s => s.assignedTo)
-            .map(s => s.assignedTo)
-        )];
+            .filter((s: any) => s.assignedTo)
+            .map((s: any) => s.assignedTo)
+        )] as string[];
         return assignedUsers;
     };
 
@@ -348,16 +348,16 @@ const ServiceExecutionModule = ({ currentUser }) => {
     };
 
     // Check if a tab has permission
-    const isTabAccessible = (tabName) => {
+    const isTabAccessible = (tabName: string): boolean => {
         const tabPermissionId = `serviceexec_${tabName}`;
         return hasOptionAccess(permissions, 'serviceexec', tabPermissionId);
     };
 
-    const openDetailsView = (jobId) => {
-        const job = mockJobs.find(j => j.id === jobId);
+    const openDetailsView = (jobId: string): void => {
+        const job = mockJobs.find((j: any) => j.id === jobId);
         if (job) {
             // Ensure all services have IDs
-            let services = (job.services || []).map((s, idx) => ({
+            let services = (job.services || []).map((s: any, idx: number) => ({
                 ...s,
                 id: s.id || `service-${idx}-${Date.now()}`,
                 order: s.order || (idx + 1),
@@ -380,15 +380,15 @@ const ServiceExecutionModule = ({ currentUser }) => {
         }
     };
 
-    const closeDetails = () => {
+    const closeDetails = (): void => {
         // Save service changes to localStorage before closing
         if (currentDetailsJob) {
             const storedOrders = JSON.parse(localStorage.getItem('jobOrders') || '[]');
-            const updatedOrders = storedOrders.map(order => {
-                if (order.id === currentDetailsJob.id) {
+            const updatedOrders = storedOrders.map((order: any) => {
+                if (order.id === (currentDetailsJob as any).id) {
                     return {
                         ...order,
-                        services: normalizeServices(currentDetailsJob.services)
+                        services: normalizeServices((currentDetailsJob as any).services)
                     };
                 }
                 return order;
@@ -403,39 +403,40 @@ const ServiceExecutionModule = ({ currentUser }) => {
         setShowAddServiceSuccessPopup(false);
     };
 
-    const handleEditToggle = () => setEditMode(!editMode);
+    // @ts-ignore - Used for future edit mode toggle
+    const handleEditToggle = (): void => setEditMode(!editMode);
 
-    const handleServicesReorder = (reorderedServices) => {
+    const handleServicesReorder = (reorderedServices: any): void => {
         if (!currentDetailsJob) return;
-        const updatedJob = { ...currentDetailsJob, services: reorderedServices };
+        const updatedJob = { ...(currentDetailsJob as any), services: reorderedServices };
         setCurrentDetailsJob(updatedJob);
     };
 
-    const handleServiceUpdate = (serviceId, updates) => {
+    const handleServiceUpdate = (serviceId: string, updates: any): void => {
         if (!currentDetailsJob) return;
         // If updating to Postponed or Cancelled, remove pending approval for this service
         if (updates.status === 'Postponed' || updates.status === 'Cancelled') {
             removeRequest(serviceId);
         }
-        const updatedJob = { ...currentDetailsJob };
-        let services = updatedJob.services || [];
+        const updatedJob = { ...(currentDetailsJob as any) };
+        let services = (updatedJob as any).services || [];
         // Ensure services have IDs
-        services = services.map((s, idx) => ({
+        services = services.map((s: any, idx: number) => ({
             ...s,
             id: s.id || `service-${idx}-${Date.now()}`,
         }));
-        const service = services.find(s => s.id === serviceId);
+        const service = services.find((s: any) => s.id === serviceId);
         if (!service) return;
         Object.assign(service, updates);
-        updatedJob.services = services;
+        (updatedJob as any).services = services;
         setCurrentDetailsJob(updatedJob);
         // Persist to localStorage immediately
         const storedOrders = JSON.parse(localStorage.getItem('jobOrders') || '[]');
-        const updatedOrders = storedOrders.map(order => {
-            if (order.id === updatedJob.id) {
+        const updatedOrders = storedOrders.map((order: any) => {
+            if (order.id === (updatedJob as any).id) {
                 return {
                     ...order,
-                    services: normalizeServices(updatedJob.services)
+                    services: normalizeServices((updatedJob as any).services)
                 };
             }
             return order;
@@ -449,7 +450,7 @@ const ServiceExecutionModule = ({ currentUser }) => {
       }
     };
 
-    const handleAddServiceSubmit = ({ selectedServices, discountPercent }) => {
+    const handleAddServiceSubmit = ({ selectedServices, discountPercent }: any): void => {
       if (!currentDetailsJob || !selectedServices || selectedServices.length === 0) {
         setShowAddServiceScreen(false);
         return;
@@ -458,16 +459,16 @@ const ServiceExecutionModule = ({ currentUser }) => {
       const now = new Date();
       const year = now.getFullYear();
       const invoiceNumber = `INV-${year}-${String(Math.floor(Math.random() * 1000000)).padStart(6, '0')}`;
-      const billId = currentDetailsJob.billing?.billId || `BILL-${year}-${String(Math.floor(Math.random() * 1000000)).padStart(6, '0')}`;
+      const billId = (currentDetailsJob as any).billing?.billId || `BILL-${year}-${String(Math.floor(Math.random() * 1000000)).padStart(6, '0')}`;
 
-      const subtotal = selectedServices.reduce((sum, s) => sum + (s.price || 0), 0);
+      const subtotal = selectedServices.reduce((sum: number, s: any) => sum + (s.price || 0), 0);
       const discount = (subtotal * (discountPercent || 0)) / 100;
       const netAmount = subtotal - discount;
 
-      const existingTotal = parseAmount(currentDetailsJob.billing?.totalAmount);
-      const existingDiscount = parseAmount(currentDetailsJob.billing?.discount);
-      const existingNet = parseAmount(currentDetailsJob.billing?.netAmount);
-      const existingPaid = parseAmount(currentDetailsJob.billing?.amountPaid);
+      const existingTotal = parseAmount((currentDetailsJob as any).billing?.totalAmount);
+      const existingDiscount = parseAmount((currentDetailsJob as any).billing?.discount);
+      const existingNet = parseAmount((currentDetailsJob as any).billing?.netAmount);
+      const existingPaid = parseAmount((currentDetailsJob as any).billing?.amountPaid);
 
       const updatedBilling = {
         billId,
@@ -476,22 +477,22 @@ const ServiceExecutionModule = ({ currentUser }) => {
         netAmount: formatAmount(existingNet + netAmount),
         amountPaid: formatAmount(existingPaid),
         balanceDue: formatAmount((existingNet + netAmount) - existingPaid),
-        paymentMethod: currentDetailsJob.billing?.paymentMethod || null,
+        paymentMethod: (currentDetailsJob as any).billing?.paymentMethod || null,
         invoices: [
-          ...(currentDetailsJob.billing?.invoices || []),
+          ...((currentDetailsJob as any).billing?.invoices || []),
           {
             number: invoiceNumber,
             amount: formatAmount(netAmount),
             discount: formatAmount(discount),
             status: 'Unpaid',
             paymentMethod: null,
-            services: selectedServices.map(s => s.name)
+            services: selectedServices.map((s: any) => s.name)
           }
         ]
       };
 
       const timestamp = Date.now();
-      const newServiceEntries = selectedServices.map((service, idx) => ({
+      const newServiceEntries = selectedServices.map((service: any, idx: number) => ({
         id: `service-${timestamp}-${idx}`,
         name: service.name,
         price: service.price || 0,
@@ -508,53 +509,53 @@ const ServiceExecutionModule = ({ currentUser }) => {
       }));
 
       const updatedJob = {
-        ...currentDetailsJob,
-        services: [...(currentDetailsJob.services || []), ...newServiceEntries],
+        ...(currentDetailsJob as any),
+        services: [...((currentDetailsJob as any).services || []), ...newServiceEntries],
         billing: updatedBilling
       };
 
       const storedOrders = JSON.parse(localStorage.getItem('jobOrders') || '[]');
-      const updatedOrders = storedOrders.map(order =>
-        order.id === currentDetailsJob.id ? updatedJob : order
+      const updatedOrders = storedOrders.map((order: any) =>
+        order.id === (currentDetailsJob as any).id ? updatedJob : order
       );
 
       localStorage.setItem('jobOrders', JSON.stringify(updatedOrders));
       setMockJobs(updatedOrders);
       setCurrentDetailsJob(updatedJob);
 
-      setAddServiceSuccessData({ orderId: currentDetailsJob.id, invoiceId: invoiceNumber });
+      setAddServiceSuccessData({ orderId: (currentDetailsJob as any).id, invoiceId: invoiceNumber });
       setShowAddServiceSuccessPopup(true);
       setShowAddServiceScreen(false);
     };
 
-    const allServicesCompleted = currentDetailsJob?.services?.every((s) => 
+    const allServicesCompleted = (currentDetailsJob as any)?.services?.every((s: any) => 
         s.status === 'Postponed' || s.status === 'Cancelled' || s.status === 'Completed'
     ) ?? false;
 
-    const handleFinishWork = () => {
+    const handleFinishWork = (): void => {
         if (!currentDetailsJob) return;
-        const updatedJob = { ...currentDetailsJob };
-        const allCancelled = updatedJob.services && updatedJob.services.length > 0 && updatedJob.services.every(s => s.status === 'Cancelled');
+        const updatedJob = { ...(currentDetailsJob as any) };
+        const allCancelled = (updatedJob as any).services && (updatedJob as any).services.length > 0 && (updatedJob as any).services.every((s: any) => s.status === 'Cancelled');
         if (allCancelled) {
             // Mark all roadmap steps as Cancelled
-            if (updatedJob.roadmap) {
-                updatedJob.roadmap.forEach(step => {
+            if ((updatedJob as any).roadmap) {
+                (updatedJob as any).roadmap.forEach((step: any) => {
                     step.stepStatus = 'Cancelled';
                     step.endTimestamp = new Date().toLocaleString();
                 });
             }
-            updatedJob.workStatus = 'Cancelled';
+            (updatedJob as any).workStatus = 'Cancelled';
             setCurrentDetailsJob(updatedJob);
             // Update jobOrders in localStorage
             const storedOrders = JSON.parse(localStorage.getItem('jobOrders') || '[]');
-            const updatedOrders = storedOrders.map(order => {
-                if (order.id === updatedJob.id) {
+            const updatedOrders = storedOrders.map((order: any) => {
+                if (order.id === (updatedJob as any).id) {
                     return {
                         ...order,
-                        roadmap: updatedJob.roadmap,
+                        roadmap: (updatedJob as any).roadmap,
                         workStatus: 'Cancelled',
                         paymentStatus: 'Fully Refunded',
-                        services: normalizeServices(updatedJob.services),
+                        services: normalizeServices((updatedJob as any).services),
                         // Move to exit permit module by setting a flag (example)
                         exitPermitReady: true
                     };
@@ -568,29 +569,29 @@ const ServiceExecutionModule = ({ currentUser }) => {
         }
         // ...existing code for normal finish work...
         // Update roadmap steps
-        const inprogressStep = updatedJob.roadmap.find(s => s.step === 'Inprogress');
+        const inprogressStep = (updatedJob as any).roadmap.find((s: any) => s.step === 'Inprogress');
         if (inprogressStep) {
             inprogressStep.stepStatus = 'Completed';
             inprogressStep.endTimestamp = new Date().toLocaleString();
         }
-        const qcStep = updatedJob.roadmap.find(s => s.step === 'Quality Check');
+        const qcStep = (updatedJob as any).roadmap.find((s: any) => s.step === 'Quality Check');
         if (qcStep) {
             qcStep.stepStatus = 'Active';
             qcStep.startTimestamp = new Date().toLocaleString();
         }
         // Update workStatus for all modules
-        updatedJob.workStatus = 'Quality Check';
+        (updatedJob as any).workStatus = 'Quality Check';
         setCurrentDetailsJob(updatedJob);
         // Update jobOrders in localStorage
         const storedOrders = JSON.parse(localStorage.getItem('jobOrders') || '[]');
-        const updatedOrders = storedOrders.map(order => {
-            if (order.id === updatedJob.id) {
+        const updatedOrders = storedOrders.map((order: any) => {
+            if (order.id === (updatedJob as any).id) {
                 // Update roadmap and workStatus
                 return {
                     ...order,
-                    roadmap: updatedJob.roadmap,
+                    roadmap: (updatedJob as any).roadmap,
                     workStatus: 'Quality Check',
-                    services: normalizeServices(updatedJob.services)
+                    services: normalizeServices((updatedJob as any).services)
                 };
             }
             return order;
@@ -600,12 +601,13 @@ const ServiceExecutionModule = ({ currentUser }) => {
         setShowSuccessPopup(true);
     };
 
-    const handleReassignOrder = (orderId, newAssignedUser) => {
+    // @ts-ignore - Used for future reassignment functionality
+    const handleReassignOrder = (orderId: string, newAssignedUser: any): void => {
         // Get current jobs from localStorage
         const storedOrders = JSON.parse(localStorage.getItem('jobOrders') || '[]');
         
         // Update the specific order with new assignment
-        const updatedOrders = storedOrders.map(order => {
+        const updatedOrders = storedOrders.map((order: any) => {
             if (order.id === orderId) {
                 return {
                     ...order,
@@ -620,16 +622,14 @@ const ServiceExecutionModule = ({ currentUser }) => {
         localStorage.setItem('jobOrders', JSON.stringify(updatedOrders));
         
         // Update current job in view if it's the one being edited
-        if (currentDetailsJob?.id === orderId) {
-            setCurrentDetailsJob(prev => ({
-                ...prev,
-                assignedToUser: newAssignedUser,
-                assignedTo: newAssignedUser ? newAssignedUser.name : null
-            }));
+        if ((currentDetailsJob as any)?.id === orderId) {
+            setCurrentDetailsJob((prev: any) => 
+                prev ? { ...(prev as any), assignedToUser: newAssignedUser, assignedTo: newAssignedUser ? newAssignedUser.name : null } : prev
+            );
         }
         
         // Refresh mockJobs to show the update immediately
-        const refreshedJobs = updatedOrders.map((job, idx) => {
+        const refreshedJobs = updatedOrders.map((job: any, idx: number) => {
             if (job.shouldBeUnassigned) {
                 return {
                     ...job,
@@ -643,7 +643,7 @@ const ServiceExecutionModule = ({ currentUser }) => {
             if (job.assignedToUser && job.assignedToUser.name) {
                 const assigneeType = job.assignedToUser.name === currentUser?.name 
                     ? 'me' 
-                    : supervisors.some(s => s.name === job.assignedToUser.name) 
+                    : supervisors.some((s: any) => s.name === job.assignedToUser.name) 
                         ? 'team' 
                         : 'unassigned';
                 
@@ -677,17 +677,17 @@ const ServiceExecutionModule = ({ currentUser }) => {
         setMockJobs(refreshedJobs);
     };
 
-    const handleShowCancelConfirmation = (orderId) => {
+    const handleShowCancelConfirmation = (orderId: string): void => {
         setCancelOrderId(orderId);
         setShowCancelConfirmation(true);
     };
 
-    const handleCancelOrder = () => {
+    const handleCancelOrder = (): void => {
         if (!cancelOrderId) return;
 
         // Find the order to cancel
         const storedOrders = JSON.parse(localStorage.getItem('jobOrders') || '[]');
-        const orderToCancel = storedOrders.find(order => order.id === cancelOrderId);
+        const orderToCancel = storedOrders.find((order: any) => order.id === cancelOrderId);
         if (!orderToCancel) return;
 
         // Create a cancelled version of the order
@@ -698,7 +698,7 @@ const ServiceExecutionModule = ({ currentUser }) => {
         };
 
         // Update the order status in jobOrders storage
-        const updatedOrders = storedOrders.map(order =>
+        const updatedOrders = storedOrders.map((order: any) =>
             order.id === cancelOrderId ? cancelledOrder : order
         );
         localStorage.setItem('jobOrders', JSON.stringify(updatedOrders));
@@ -740,7 +740,7 @@ const ServiceExecutionModule = ({ currentUser }) => {
               order={currentDetailsJob}
               onClose={() => setShowAddServiceScreen(false)}
               onSubmit={handleAddServiceSubmit}
-              products={PRODUCT_CATALOG}
+              products={PRODUCT_CATALOG as any}
               moduleId="serviceexec"
               permissionId={`${getTabPrefix()}_pricesummary`}
             />
@@ -861,9 +861,9 @@ const ServiceExecutionModule = ({ currentUser }) => {
                       </PermissionGate>
                       <PermissionGate moduleId="serviceexec" optionId={`${getTabPrefix()}_services`}>
                         <ServiceSummaryCard
-                          jobId={currentDetailsJob.id}
-                          services={currentDetailsJob.services || []}
-                          referenceServices={currentDetailsJob.serviceOrderReference?.services || []}
+                          jobId={(currentDetailsJob as any).id}
+                          services={(currentDetailsJob as any).services || []}
+                          referenceServices={(currentDetailsJob as any).serviceOrderReference?.services || []}
                           onServicesReorder={handleServicesReorder}
                           onServiceUpdate={handleServiceUpdate}
                           onAddService={handleAddService}
@@ -872,7 +872,7 @@ const ServiceExecutionModule = ({ currentUser }) => {
                           editMode={editMode}
                           setEditMode={setEditMode}
                           availableTechs={technicianNames}
-                          availableAssignees={assigneeNames}
+                          availableAssignees={assigneeNames as any}
                           tabPrefix={getTabPrefix()}
                         />
                       </PermissionGate>
@@ -906,23 +906,27 @@ const ServiceExecutionModule = ({ currentUser }) => {
                             closeDetails();
                         }}
                         message={successMessage}
+                        userName=""
                     />
                     <SuccessPopup
                       isVisible={showAddServiceSuccessPopup}
                       onClose={() => setShowAddServiceSuccessPopup(false)}
                       message={
-                        <>
-                          <span style={{ fontSize: '1.2rem', fontWeight: 'bold', color: '#4CAF50', display: 'block', marginBottom: '15px' }}>
-                            <i className="fas fa-check-circle"></i> Services Added Successfully!
-                          </span>
-                          <span style={{ fontSize: '1.05rem', color: '#333', display: 'block', marginTop: '10px' }}>
-                            <strong>Job Order ID:</strong> <span style={{ color: '#2196F3', fontWeight: '600' }}>{addServiceSuccessData.orderId}</span>
-                          </span>
-                          <span style={{ fontSize: '1.05rem', color: '#333', display: 'block', marginTop: '8px' }}>
-                            <strong>New Invoice ID:</strong> <span style={{ color: '#27ae60', fontWeight: '600' }}>{addServiceSuccessData.invoiceId}</span>
-                          </span>
-                        </>
+                        (
+                          <>
+                            <span style={{ fontSize: '1.2rem', fontWeight: 'bold', color: '#4CAF50', display: 'block', marginBottom: '15px' }}>
+                              <i className="fas fa-check-circle"></i> Services Added Successfully!
+                            </span>
+                            <span style={{ fontSize: '1.05rem', color: '#333', display: 'block', marginTop: '10px' }}>
+                              <strong>Job Order ID:</strong> <span style={{ color: '#2196F3', fontWeight: '600' }}>{addServiceSuccessData.orderId}</span>
+                            </span>
+                            <span style={{ fontSize: '1.05rem', color: '#333', display: 'block', marginTop: '8px' }}>
+                              <strong>New Invoice ID:</strong> <span style={{ color: '#27ae60', fontWeight: '600' }}>{addServiceSuccessData.invoiceId}</span>
+                            </span>
+                          </>
+                        ) as any
                       }
+                      userName=""
                     />
                 </div>
             </div>
@@ -1120,8 +1124,8 @@ const ServiceExecutionModule = ({ currentUser }) => {
     );
 };
 
-function getWorkStatusClass(status) {
-  const statusMap = {
+function getWorkStatusClass(status: string): string {
+  const statusMap: Record<string, string> = {
     'New Request': 'epm-status-new',
     'Inspection': 'epm-status-inspection',
     'Inprogress': 'epm-status-inprogress',
@@ -1134,13 +1138,13 @@ function getWorkStatusClass(status) {
   return statusMap[status] || 'epm-status-inprogress';
 }
 
-function getPaymentStatusClass(status) {
+function getPaymentStatusClass(status: string): string {
   if (status === 'Fully Paid' || status === 'Paid') return 'epm-payment-full';
   if (status === 'Partially Paid') return 'epm-payment-partial';
   return 'epm-payment-unpaid';
 }
 
-function getPaymentMethodClass(method) {
+function getPaymentMethodClass(method: string): string {
   if (!method) return '';
   const normalized = method.toLowerCase();
   if (normalized.includes('cash')) return 'epm-payment-method-cash';
@@ -1149,7 +1153,7 @@ function getPaymentMethodClass(method) {
   return 'epm-payment-method-card';
 }
 
-function CustomerNotesCard({ order }) {
+function CustomerNotesCard({ order }: { order: any }): JSX.Element {
   return (
     <div className="epm-detail-card" style={{ backgroundColor: '#fffbea', borderLeft: '4px solid #f59e0b' }}>
       <h3><i className="fas fa-comment-dots"></i> Customer Notes</h3>
@@ -1160,7 +1164,7 @@ function CustomerNotesCard({ order }) {
   );
 }
 
-function BillingCard({ order }) {
+function BillingCard({ order }: { order: any }): JSX.Element {
   return (
     <div className="epm-detail-card">
       <h3><i className="fas fa-receipt"></i> Billing & Invoices</h3>
@@ -1234,7 +1238,7 @@ function BillingCard({ order }) {
             <i className="fas fa-file-invoice" style={{ color: '#3b82f6' }}></i>
             Invoice Details ({order.billing.invoices.length})
           </div>
-          {order.billing.invoices.map((invoice, idx) => (
+          {order.billing.invoices.map((invoice: any, idx: number) => (
             <div key={idx} className="epm-invoice-item" style={{ 
               background: 'linear-gradient(to right, #ffffff, #fafbfc)',
               border: '1px solid #e2e8f0',
@@ -1293,7 +1297,7 @@ function BillingCard({ order }) {
                 }}>
                   <i className="fas fa-list-ul"></i> Services Included:
                 </div>
-                {invoice.services?.map((service, sidx) => (
+                {invoice.services?.map((service: any, sidx: number) => (
                   <div key={sidx} className="epm-service-in-invoice" style={{ 
                     padding: '8px 0 8px 15px',
                     fontSize: '14px',
@@ -1315,12 +1319,12 @@ function BillingCard({ order }) {
   );
 }
 
-function QualityCheckListCard({ order }) {
+function QualityCheckListCard({ order }: { order: any }): JSX.Element | null {
   const combinedServices = order.orderType === 'Service Order'
     ? [...(order.serviceOrderReference?.services || []), ...(order.services || [])]
     : (Array.isArray(order.services) ? order.services : []);
 
-  const getStoredResult = (serviceName, index) => {
+  const getStoredResult = (serviceName: string, index: number): any => {
     const storedResults = order.qualityCheckResults;
     if (!storedResults) return null;
     if (Array.isArray(storedResults)) {
@@ -1332,7 +1336,7 @@ function QualityCheckListCard({ order }) {
     return null;
   };
 
-  const getQualityCheckResult = (service, index) => {
+  const getQualityCheckResult = (service: any, index: number): any => {
     if (service && typeof service === 'object') {
       return service.qualityCheckResult || service.qcResult || service.qcStatus || service.qualityStatus || null;
     }
@@ -1345,7 +1349,7 @@ function QualityCheckListCard({ order }) {
       <h3><i className="fas fa-clipboard-check"></i> Quality Check List</h3>
       <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
         {combinedServices.length > 0 ? (
-          combinedServices.map((service, idx) => {
+          combinedServices.map((service: any, idx: number) => {
             const serviceName = typeof service === 'string' ? service : service.name;
             const result = getQualityCheckResult(service, idx) || 'Not Evaluated';
             const isPass = result === 'Pass';
@@ -1397,7 +1401,7 @@ function QualityCheckListCard({ order }) {
   );
 }
 
-function DocumentsCard({ order }) {
+function DocumentsCard({ order }: { order: any }): JSX.Element | null {
   const documents = Array.isArray(order.documents) ? order.documents : []
 
   if (documents.length === 0) return null;
@@ -1406,7 +1410,7 @@ function DocumentsCard({ order }) {
     <div className="pim-detail-card">
       <h3><i className="fas fa-folder-open"></i> Documents</h3>
       <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-        {documents.map((doc, idx) => (
+        {documents.map((doc: any, idx: number) => (
           <div key={idx} style={{
             padding: '15px',
             border: '1px solid #e5e7eb',
@@ -1475,10 +1479,9 @@ function DocumentsCard({ order }) {
       </div>
     </div>
   );
-
 }
 
-function PaymentActivityLogCard({ order }) {
+function PaymentActivityLogCard({ order }: { order: any }): JSX.Element | null {
   if (!order.paymentActivityLog || order.paymentActivityLog.length === 0) return null;
 
   return (
@@ -1496,7 +1499,7 @@ function PaymentActivityLogCard({ order }) {
           </tr>
         </thead>
         <tbody>
-          {[...order.paymentActivityLog].reverse().map((payment, idx) => (
+          {[...order.paymentActivityLog].reverse().map((payment: any, idx: number) => (
             <tr key={idx}>
               <td className="pim-serial-column">{payment.serial}</td>
               <td className="pim-amount-column">{payment.amount}</td>
@@ -1512,7 +1515,7 @@ function PaymentActivityLogCard({ order }) {
   );
 }
 
-function ExitPermitDetailsCard({ order }) {
+function ExitPermitDetailsCard({ order }: { order: any }): JSX.Element {
   const permitId = order.exitPermit?.permitId || 'N/A';
   const createDate = order.exitPermit?.createDate || 'N/A';
   const nextServiceDate = order.exitPermit?.nextServiceDate || 'N/A';
@@ -1557,7 +1560,7 @@ function ExitPermitDetailsCard({ order }) {
   );
 }
 
-function JobOrderSummaryCard({ order }) {
+function JobOrderSummaryCard({ order }: { order: any }): JSX.Element {
   return (
     <div className="epm-detail-card">
       <h3><i className="fas fa-info-circle"></i> Job Order Summary</h3>
@@ -1599,10 +1602,10 @@ function JobOrderSummaryCard({ order }) {
   );
 }
 
-function RoadmapCard({ order }) {
+function RoadmapCard({ order }: { order: any }): JSX.Element | null {
   if (!order.roadmap || order.roadmap.length === 0) return null;
 
-  const getStepStatusClass = (stepStatus) => {
+  const getStepStatusClass = (stepStatus: string): string => {
     switch (stepStatus) {
       case 'Completed': return 'sem-step-completed';
       case 'Active': return 'sem-step-active';
@@ -1614,7 +1617,7 @@ function RoadmapCard({ order }) {
     }
   };
 
-  const getStepIcon = (stepStatus) => {
+  const getStepIcon = (stepStatus: string): string => {
     switch (stepStatus) {
       case 'Completed': return 'fas fa-check-circle';
       case 'Active': return 'fas fa-play-circle';
@@ -1626,7 +1629,7 @@ function RoadmapCard({ order }) {
     }
   };
 
-  const formatStepStatus = (status) => {
+  const formatStepStatus = (status: string): string => {
     switch (status) {
       case 'New': return 'sem-status-new';
       case 'Completed': return 'sem-status-completed';
@@ -1642,7 +1645,7 @@ function RoadmapCard({ order }) {
       <h3><i className="fas fa-map-signs"></i> Job Order Roadmap</h3>
       <div className="sem-roadmap-container">
         <div className="sem-roadmap-steps">
-          {order.roadmap.map((step, idx) => (
+          {order.roadmap.map((step: any, idx: number) => (
             <div key={idx} className={`sem-roadmap-step ${getStepStatusClass(step.stepStatus)}`}>
               <div className="sem-step-icon">
                 <i className={getStepIcon(step.stepStatus)}></i>

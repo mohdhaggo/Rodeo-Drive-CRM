@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { getCurrentUser as getSystemUser } from './userService'
+import { getCurrentUser as getSystemUser } from './userService.ts'
 
 const ROLE_STORAGE_KEY = 'department_roles'
 const PERMISSIONS_UPDATED_EVENT = 'role-permissions-updated'
@@ -13,7 +13,7 @@ const DEFAULT_ROLE_MAP = {
   'view only': 'viewer',
 }
 
-const normalize = (value) => (value || '').trim().toLowerCase()
+const normalize = (value: string | undefined | null): string => (value || '').trim().toLowerCase()
 
 const loadDepartmentRoles = () => {
   const stored = localStorage.getItem(ROLE_STORAGE_KEY)
@@ -30,7 +30,7 @@ const loadDepartmentRoles = () => {
   }
 }
 
-const findRoleValue = (roleName) => {
+const findRoleValue = (roleName: string): string | null => {
   const normalized = normalize(roleName)
   if (!normalized) {
     return null
@@ -45,10 +45,10 @@ const findRoleValue = (roleName) => {
     }
   }
 
-  return DEFAULT_ROLE_MAP[normalized] || null
+  return (DEFAULT_ROLE_MAP as Record<string, string>)[normalized] || null
 }
 
-const loadPermissions = (roleValue) => {
+const loadPermissions = (roleValue: string | null) => {
   if (!roleValue) {
     return null
   }
@@ -66,7 +66,7 @@ const loadPermissions = (roleValue) => {
   }
 }
 
-export const getRolePermissionsForUser = (user) => {
+export const getRolePermissionsForUser = (user: any) => {
   if (!user?.role) {
     return null
   }
@@ -75,7 +75,7 @@ export const getRolePermissionsForUser = (user) => {
   return loadPermissions(roleValue)
 }
 
-export const hasModuleAccess = (permissions, moduleId) => {
+export const hasModuleAccess = (permissions: any, moduleId: string): boolean => {
   if (!permissions || !permissions[moduleId]) {
     return false
   }
@@ -83,7 +83,7 @@ export const hasModuleAccess = (permissions, moduleId) => {
   return Boolean(permissions[moduleId].enabled)
 }
 
-export const hasOptionAccess = (permissions, moduleId, optionId) => {
+export const hasOptionAccess = (permissions: any, moduleId: string, optionId?: string): boolean => {
   if (!permissions || !permissions[moduleId]) {
     return false
   }
@@ -113,7 +113,7 @@ export const useRolePermissions = () => {
       setPermissions(getRolePermissionsForUser(user))
     }
 
-    const handleStorage = (event) => {
+    const handleStorage = (event: StorageEvent) => {
       if (!event.key) {
         return
       }
@@ -123,8 +123,8 @@ export const useRolePermissions = () => {
       }
     }
 
-    window.addEventListener('storage', handleStorage)
-    window.addEventListener(PERMISSIONS_UPDATED_EVENT, refreshPermissions)
+    window.addEventListener('storage', handleStorage as EventListener)
+    window.addEventListener(PERMISSIONS_UPDATED_EVENT, refreshPermissions as EventListener)
 
     return () => {
       window.removeEventListener('storage', handleStorage)

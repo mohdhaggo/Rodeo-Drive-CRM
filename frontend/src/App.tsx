@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react'
 import { Amplify } from 'aws-amplify'
 import amplifyOutputs from '../../amplify_outputs.json'
-import { getCurrentUser as getSystemUser, clearCurrentUser } from './userService'
-import { getRolePermissionsForUser, hasModuleAccess, hasOptionAccess } from './roleAccess'
+import { getCurrentUser as getSystemUser, clearCurrentUser } from './userService.ts'
+import { getRolePermissionsForUser, hasModuleAccess, hasOptionAccess } from './roleAccess.ts'
 import Login from './Login'
 import JobOrderManagement from './JobOrderManagement'
 import PaymentInvoiceManagement from './PaymentInvoiceManagement'
@@ -28,16 +28,17 @@ import './App.css'
 try {
   Amplify.configure(amplifyOutputs)
 } catch (err) {
-  console.warn('Amplify config warning:', err.message)
+  const error = err instanceof Error ? err : new Error(String(err))
+  console.warn('Amplify config warning:', error.message)
 }
 
 function App() {
-  const [user, setUser] = useState(null)
+  const [user, setUser] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [activeSection, setActiveSection] = useState('Overview')
-  const [navigationData, setNavigationData] = useState(null)
-  const [returnToCustomerId, setReturnToCustomerId] = useState(null)
-  const [rolePermissions, setRolePermissions] = useState(null)
+  const [navigationData, setNavigationData] = useState<Record<string, any> | null>(null)
+  const [returnToCustomerId, setReturnToCustomerId] = useState<string | null>(null)
+  const [rolePermissions, setRolePermissions] = useState<any>(null)
 
   useEffect(() => {
     checkUser()
@@ -65,7 +66,7 @@ function App() {
     }
   }
 
-  const handleLoginSuccess = (loggedInUser) => {
+  const handleLoginSuccess = (loggedInUser: any): void => {
     setUser(loggedInUser)
   }
 
@@ -78,7 +79,7 @@ function App() {
     }
   }
 
-  const handleNavigate = (section, data = null) => {
+  const handleNavigate = (section: string, data: any = null): void => {
     setActiveSection(section)
     setNavigationData(data)
     if (section !== 'Customers Management') {
@@ -90,7 +91,7 @@ function App() {
     setNavigationData(null)
   }
 
-  const handleNavigateBack = (section, returnId = null) => {
+  const handleNavigateBack = (section: string, returnId: string | null = null): void => {
     setActiveSection(section)
     if (section === 'Customers Management') {
       setReturnToCustomerId(returnId)
@@ -98,7 +99,7 @@ function App() {
       return
     }
     if (section === 'Vehicles Management' && returnId) {
-      setNavigationData({ openDetails: true, vehicleId: returnId })
+      setNavigationData({ openDetails: true, vehicleId: returnId } as Record<string, any>)
       return
     }
     setNavigationData(null)
@@ -160,7 +161,7 @@ function App() {
   }
 
   const renderContent = () => {
-    const isAllowed = (moduleId, optionId) =>
+    const isAllowed = (moduleId: string, optionId?: string): boolean =>
       optionId
         ? hasOptionAccess(rolePermissions, moduleId, optionId)
         : hasModuleAccess(rolePermissions, moduleId)
@@ -177,7 +178,7 @@ function App() {
     }
 
     if (activeSection === 'Job Order Management') {
-      if (!isAllowed('joborder')) {
+      if (!isAllowed('joborder', '')) {
         return renderDenied()
       }
       return (
@@ -198,42 +199,42 @@ function App() {
     }
 
     if (activeSection === 'Payment & Invoice') {
-      if (!isAllowed('payment')) {
+      if (!isAllowed('payment', '')) {
         return renderDenied()
       }
       return <PaymentInvoiceManagement currentUser={user} />
     }
 
     if (activeSection === 'Exit Permit') {
-      if (!isAllowed('exitpermit')) {
+      if (!isAllowed('exitpermit', '')) {
         return renderDenied()
       }
       return <ExitPermitManagement currentUser={user} />
     }
 
     if (activeSection === 'Inspection') {
-      if (!isAllowed('inspection')) {
+      if (!isAllowed('inspection', '')) {
         return renderDenied()
       }
       return <InspectionModule currentUser={user} />
     }
 
     if (activeSection === 'Service Execution') {
-      if (!isAllowed('serviceexec')) {
+      if (!isAllowed('serviceexec', '')) {
         return renderDenied()
       }
       return <ServiceExecutionModule currentUser={user} />
     }
 
     if (activeSection === 'Delivery Quality Check' || activeSection === 'Quality Check List') {
-      if (!isAllowed('deliveryqc')) {
+      if (!isAllowed('deliveryqc', '')) {
         return renderDenied()
       }
       return <QualityCheckModule currentUser={user} />
     }
 
     if (activeSection === 'Job Order History') {
-      if (!isAllowed('joborderhistory')) {
+      if (!isAllowed('joborderhistory', '')) {
         return renderDenied()
       }
       return (
@@ -261,7 +262,7 @@ function App() {
     }
 
     if (activeSection === 'Customers Management') {
-      if (!isAllowed('customer')) {
+      if (!isAllowed('customer', '')) {
         return renderDenied()
       }
       return (
@@ -273,7 +274,7 @@ function App() {
     }
 
     if (activeSection === 'Vehicles Management') {
-      if (!isAllowed('vehicle')) {
+      if (!isAllowed('vehicle', '')) {
         return renderDenied()
       }
       return (
@@ -348,8 +349,8 @@ function App() {
           <h1>Rodeo Drive CRM</h1>
         </div>
         <div className="user-info">
-          <span>Welcome, {user.name || user.username}</span>
-          <span className="user-role">{user.role}</span>
+          <span>Welcome, {(user as any)?.name || (user as any)?.username}</span>
+          <span className="user-role">{(user as any)?.role}</span>
           <button onClick={handleLogout} className="logout-btn">Logout</button>
         </div>
       </header>
