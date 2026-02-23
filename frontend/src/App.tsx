@@ -56,13 +56,16 @@ function App() {
   const checkUser = async () => {
     try {
       // Check if user is logged in via our user service
+      console.log('Checking current user...')
       const currentUser = getSystemUser()
+      console.log('Current user:', currentUser)
       setUser(currentUser)
     } catch (err) {
-      console.log('User not logged in')
+      console.log('User not logged in', err)
       setUser(null)
     } finally {
       setLoading(false)
+      console.log('Loading complete')
     }
   }
 
