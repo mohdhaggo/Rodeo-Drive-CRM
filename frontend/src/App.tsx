@@ -20,6 +20,8 @@ import QualityCheckModule from './QualityCheckModule'
 import SystemUserManagement from './SystemUserManagement'
 import DepartmentRoleManagement from './DepartmentRoleManagement'
 import RoleAccessControl from './RoleAccessControl'
+import Overview from './Overview'
+import PurchaseModule from './PurchaseModule'
 import './App.css'
 
 // Configure Amplify using generated outputs
@@ -188,6 +190,13 @@ function App() {
       )
     }
 
+    if (activeSection === 'Overview') {
+      if (!isAllowed('overview', 'overview_access')) {
+        return renderDenied()
+      }
+      return <Overview onNavigate={handleNavigate} currentUser={user} />
+    }
+
     if (activeSection === 'Payment & Invoice') {
       if (!isAllowed('payment')) {
         return renderDenied()
@@ -291,6 +300,13 @@ function App() {
       return <SalesLeadHistory />
     }
 
+    if (activeSection === 'Purchases') {
+      if (!isAllowed('system', 'system_purchases')) {
+        return renderDenied()
+      }
+      return <PurchaseModule currentUser={user} />
+    }
+
     if (activeSection === 'System User Management') {
       if (!isAllowed('system', 'system_systemuser')) {
         return renderDenied()
@@ -323,7 +339,14 @@ function App() {
   return (
     <div className="dashboard">
       <header className="dashboard-header">
-        <h1>Rodeo Drive CRM</h1>
+        <div className="header-left">
+          <img 
+            src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQPoCJV5AIkhwzaOSgnWDVpRIZITDAkRDsf5A&s" 
+            alt="Rodeo Drive Logo" 
+            className="dashboard-logo" 
+          />
+          <h1>Rodeo Drive CRM</h1>
+        </div>
         <div className="user-info">
           <span>Welcome, {user.name || user.username}</span>
           <span className="user-role">{user.role}</span>

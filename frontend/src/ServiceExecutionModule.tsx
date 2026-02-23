@@ -6,7 +6,7 @@ import ServiceSummaryCard from './ServiceSummaryCard';
 import AddServiceScreen from './AddServiceScreen';
 import { PRODUCT_CATALOG } from './productCatalog';
 import PermissionGate from './PermissionGate';
-import { useApprovalRequests } from './ApprovalRequestsContext.jsx';
+import { useApprovalRequests } from './ApprovalRequestsContext.tsx';
 import { getAllUsers, getTechnicians, getSupervisorsAndManagers } from './userService';
 import SuccessPopup from './SuccessPopup';
 import { useRolePermissions, hasOptionAccess } from './roleAccess';

@@ -772,6 +772,353 @@ const formatDateForDisplay = (dateString) => {
   return `${day} ${month} ${year}`;
 };
 
+// Generate Exit Permit PDF (HTML-based like other modules)
+const generateExitPermitPDF = (order, exitPermit) => {
+  // Create HTML document matching the system's design pattern
+  const exitPermitHTML = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="UTF-8">
+      <title>Exit_Permit_${exitPermit.permitId}_${order.id}.html</title>
+      <style>
+        body { font-family: 'Segoe UI', sans-serif; margin: 0; padding: 20mm; background: #f3f6fb; color: #2c3e50; }
+        * { box-sizing: border-box; }
+        @page { size: A4; margin: 0; }
+        @media print { body { background: white; } }
+        
+        /* Header */
+        .report-header { 
+          text-align: center; 
+          margin-bottom: 28px; 
+          padding: 20px 10px; 
+          background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%); 
+          color: white; 
+          border-radius: 12px; 
+        }
+        .report-logo { 
+          width: 60px; 
+          height: 60px; 
+          border-radius: 50%; 
+          object-fit: cover; 
+          margin: 0 auto 12px; 
+          display: block; 
+          border: 3px solid white; 
+        }
+        .report-header h1 { 
+          margin: 0 0 6px 0; 
+          font-size: 28px; 
+          letter-spacing: 0.3px; 
+        }
+        .report-header p { 
+          margin: 0; 
+          font-size: 13px; 
+          opacity: 0.9; 
+        }
+
+        /* Card Sections */
+        .report-card { 
+          background: white; 
+          border-radius: 10px; 
+          padding: 22px; 
+          box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06); 
+          margin-bottom: 20px; 
+          border-left: 5px solid #3498db; 
+        }
+        .card-title { 
+          font-size: 18px; 
+          font-weight: 600; 
+          margin: 0 0 18px; 
+          padding-bottom: 12px; 
+          border-bottom: 2px solid #e6ecf5; 
+          display: flex; 
+          align-items: center; 
+          gap: 10px; 
+        }
+        .card-title.blue { color: #3498db; }
+        .card-title.green { color: #27ae60; }
+        .card-title.orange { color: #e67e22; }
+
+        /* Info Grid */
+        .info-grid { 
+          display: grid; 
+          grid-template-columns: repeat(2, 1fr); 
+          gap: 16px; 
+        }
+        .info-item { 
+          display: flex; 
+          flex-direction: column; 
+        }
+        .info-label { 
+          font-size: 11px; 
+          color: #7f8c8d; 
+          font-weight: 600; 
+          text-transform: uppercase; 
+          letter-spacing: 0.5px; 
+          margin-bottom: 4px; 
+        }
+        .info-value { 
+          font-size: 15px; 
+          color: #2c3e50; 
+          font-weight: 500; 
+        }
+
+        /* Full Width Items */
+        .full-width { 
+          grid-column: span 2; 
+        }
+
+        /* Disclaimer Box */
+        .disclaimer-box { 
+          background: #fff3cd; 
+          border: 3px solid #dc3545; 
+          border-radius: 10px; 
+          padding: 20px; 
+          margin: 25px 0; 
+        }
+        .disclaimer-title { 
+          color: #dc3545; 
+          font-size: 16px; 
+          font-weight: 700; 
+          margin: 0 0 12px 0; 
+          text-transform: uppercase; 
+          display: flex; 
+          align-items: center; 
+          gap: 8px; 
+        }
+        .disclaimer-text { 
+          color: #2c3e50; 
+          font-size: 13px; 
+          line-height: 1.6; 
+          margin: 0; 
+        }
+
+        /* Signature Section */
+        .signature-section { 
+          display: grid; 
+          grid-template-columns: repeat(2, 1fr); 
+          gap: 30px; 
+          margin-top: 40px; 
+          padding-top: 25px; 
+          border-top: 2px solid #e6ecf5; 
+        }
+        .signature-box { 
+          text-align: center; 
+        }
+        .signature-label { 
+          font-weight: 600; 
+          color: #2c3e50; 
+          margin-bottom: 30px; 
+          font-size: 14px; 
+        }
+        .signature-line { 
+          border-top: 2px solid #2c3e50; 
+          margin: 0 20px 10px; 
+        }
+        .signature-date { 
+          font-size: 12px; 
+          color: #7f8c8d; 
+        }
+
+        /* Footer */
+        .footer { 
+          margin-top: 28px; 
+          padding-top: 18px; 
+          border-top: 2px solid #e6ecf5; 
+          text-align: center; 
+          color: #7f8c8d; 
+          font-size: 11px; 
+        }
+        .footer p { 
+          margin: 4px 0; 
+        }
+      </style>
+    </head>
+    <body>
+      <!-- Header -->
+      <div class="report-header">
+        <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQPoCJV5AIkhwzaOSgnWDVpRIZITDAkRDsf5A&s" alt="Logo" class="report-logo" />
+        <h1>🚗 Vehicle Exit Permit</h1>
+        <p>Generated on ${exitPermit.createDate}</p>
+      </div>
+
+      <!-- Permit Information -->
+      <div class="report-card">
+        <h2 class="card-title blue">📋 Permit Information</h2>
+        <div class="info-grid">
+          <div class="info-item">
+            <span class="info-label">Permit ID</span>
+            <span class="info-value">${exitPermit.permitId}</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">Date Issued</span>
+            <span class="info-value">${exitPermit.createDate}</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">Job Order ID</span>
+            <span class="info-value">${order.id}</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">Authorized By</span>
+            <span class="info-value">${exitPermit.createdBy}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Customer Information -->
+      <div class="report-card">
+        <h2 class="card-title blue">👤 Customer Information</h2>
+        <div class="info-grid">
+          <div class="info-item">
+            <span class="info-label">Customer Name</span>
+            <span class="info-value">${order.customerName}</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">Mobile Number</span>
+            <span class="info-value">${order.mobile}</span>
+          </div>
+          ${order.customerDetails?.email ? `
+          <div class="info-item full-width">
+            <span class="info-label">Email Address</span>
+            <span class="info-value">${order.customerDetails.email}</span>
+          </div>
+          ` : ''}
+        </div>
+      </div>
+
+      <!-- Vehicle Information -->
+      <div class="report-card">
+        <h2 class="card-title green">🚙 Vehicle Information</h2>
+        <div class="info-grid">
+          <div class="info-item">
+            <span class="info-label">Plate Number</span>
+            <span class="info-value">${order.vehiclePlate}</span>
+          </div>
+          ${order.vehicleDetails?.make || order.vehicleDetails?.model ? `
+          <div class="info-item">
+            <span class="info-label">Make / Model</span>
+            <span class="info-value">${order.vehicleDetails.make || ''} ${order.vehicleDetails.model || ''}</span>
+          </div>
+          ` : ''}
+          ${order.vehicleDetails?.year ? `
+          <div class="info-item">
+            <span class="info-label">Year</span>
+            <span class="info-value">${order.vehicleDetails.year}</span>
+          </div>
+          ` : ''}
+          ${order.vehicleDetails?.color ? `
+          <div class="info-item">
+            <span class="info-label">Color</span>
+            <span class="info-value">${order.vehicleDetails.color}</span>
+          </div>
+          ` : ''}
+          ${order.vehicleDetails?.vin ? `
+          <div class="info-item full-width">
+            <span class="info-label">VIN Number</span>
+            <span class="info-value">${order.vehicleDetails.vin}</span>
+          </div>
+          ` : ''}
+        </div>
+      </div>
+
+      <!-- Service Information -->
+      <div class="report-card">
+        <h2 class="card-title orange">🔧 Service Information</h2>
+        <div class="info-grid">
+          <div class="info-item">
+            <span class="info-label">Work Status</span>
+            <span class="info-value">${order.workStatus}</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">Payment Status</span>
+            <span class="info-value">${order.paymentStatus}</span>
+          </div>
+          ${exitPermit.nextServiceDate && exitPermit.nextServiceDate !== 'N/A' ? `
+          <div class="info-item full-width">
+            <span class="info-label">Next Service Date</span>
+            <span class="info-value">${exitPermit.nextServiceDate}</span>
+          </div>
+          ` : ''}
+        </div>
+      </div>
+
+      <!-- Collection Information -->
+      <div class="report-card">
+        <h2 class="card-title blue">📦 Collection Information</h2>
+        <div class="info-grid">
+          <div class="info-item">
+            <span class="info-label">Collected By</span>
+            <span class="info-value">${exitPermit.collectedBy}</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">Contact Number</span>
+            <span class="info-value">${exitPermit.collectedByMobile}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Disclaimer -->
+      <div class="disclaimer-box">
+        <div class="disclaimer-title">⚠️ IMPORTANT DISCLAIMER</div>
+        <p class="disclaimer-text">
+          By Issuing this document, I acknowledge that I have had the opportunity to inspect the vehicle and accept delivery in its current condition. I understand and agree that Rodeo Drive assumes no liability for the operation of this vehicle once it leaves the premises, nor for any personal property left inside the vehicle.
+        </p>
+      </div>
+
+      <!-- Signature Section -->
+      <div class="signature-section">
+        <div class="signature-box">
+          <div class="signature-label">Customer/Collector Signature</div>
+          <div class="signature-line"></div>
+          <div class="signature-date">Date: _______________</div>
+        </div>
+        <div class="signature-box">
+          <div class="signature-label">Authorized Personnel</div>
+          <div class="signature-line"></div>
+          <div class="signature-date">Date: _______________</div>
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <div class="footer">
+        <p>Thank you for choosing Rodeo Drive! This is an electronically generated document.</p>
+        <p>Rodeo Drive - Service Management System</p>
+        <p>© ${new Date().getFullYear()} All Rights Reserved</p>
+      </div>
+    </body>
+    </html>
+  `;
+
+  // Convert HTML to data URL
+  const blob = new Blob([exitPermitHTML], { type: 'text/html' });
+  const reader = new FileReader();
+  
+  return new Promise((resolve) => {
+    reader.onloadend = () => {
+      const dataUrl = reader.result;
+      
+      // Download the HTML file
+      const link = document.createElement('a');
+      link.href = dataUrl;
+      link.download = `Exit_Permit_${exitPermit.permitId}_${order.id}.html`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      // Open in new window for printing
+      const printWindow = window.open('', '_blank');
+      if (printWindow) {
+        printWindow.document.write(exitPermitHTML);
+        printWindow.document.close();
+      }
+      
+      // Resolve with data URL for storage
+      resolve(dataUrl);
+    };
+    reader.readAsDataURL(blob);
+  });
+};
+
 // Exit Permit Management Component
 const ExitPermitManagement = ({ currentUser }) => {
   const [allOrders, setAllOrders] = useState([]);
@@ -1009,7 +1356,7 @@ const ExitPermitManagement = ({ currentUser }) => {
     setShowCancelConfirmation(false);
   };
 
-  const handleCreateExitPermit = (e) => {
+  const handleCreateExitPermit = async (e) => {
     e.preventDefault();
     
     if (!currentOrderForPermit) {
@@ -1044,6 +1391,19 @@ const ExitPermitManagement = ({ currentUser }) => {
     const nextServiceDateDisplay = currentOrderForPermit.workStatus === 'Cancelled' ? 
       'N/A' : formatDateForDisplay(nextServiceDate);
     
+    // Create temporary exit permit object for PDF generation
+    const exitPermitData = {
+      permitId,
+      createDate,
+      nextServiceDate: nextServiceDateDisplay,
+      createdBy: currentUser?.name || 'System User',
+      collectedBy,
+      collectedByMobile: mobileNumber
+    };
+    
+    // Generate PDF and get the data URL (await since it returns a Promise)
+    const pdfDataUrl = await generateExitPermitPDF(currentOrderForPermit, exitPermitData);
+    
     const updatedOrders = allOrders.map(order => {
       if (order.id === currentOrderForPermit.id) {
         // Update the roadmap to mark "Ready for Delivery" step as completed
@@ -1075,20 +1435,25 @@ const ExitPermitManagement = ({ currentUser }) => {
         // Determine final work status based on current status
         // If Ready -> Completed, If Cancelled -> keep Cancelled
         const finalWorkStatus = order.workStatus === 'Cancelled' ? 'Cancelled' : 'Completed';
+        
+        // Add exit permit HTML document to documents array
+        const existingDocuments = Array.isArray(order.documents) ? order.documents : [];
+        const exitPermitDocument = {
+          name: `Exit_Permit_${permitId}_${order.id}.html`,
+          type: 'HTML',
+          category: 'Exit Permit',
+          uploadDate: createDate,
+          uploadedBy: currentUser?.name || 'System User',
+          fileData: pdfDataUrl
+        };
 
         return {
           ...order,
           workStatus: finalWorkStatus,
-          exitPermit: {
-            permitId,
-            createDate,
-            nextServiceDate: nextServiceDateDisplay,
-            createdBy: currentUser?.name || 'System User',
-            collectedBy,
-            collectedByMobile: mobileNumber
-          },
+          exitPermit: exitPermitData,
           exitPermitStatus: 'Created',
-          roadmap: finalRoadmap
+          roadmap: finalRoadmap,
+          documents: [...existingDocuments, exitPermitDocument]
         };
       }
       return order;

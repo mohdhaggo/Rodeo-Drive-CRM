@@ -7,7 +7,8 @@ import {
   addUser as addUserToService,
   updateUser as updateUserInService,
   deleteUser as deleteUserFromService,
-  initializeUsers 
+  initializeUsers,
+  sendUserNotification
 } from './userService'
 
 const initialUsers = [
@@ -596,6 +597,7 @@ export default function SystemUserManagement() {
       return
     }
 
+    const tempPassword = generateTempPassword()
     const newUser = {
       id: String(users.length + 1),
       employeeId: getNextEmployeeId(),
@@ -608,8 +610,9 @@ export default function SystemUserManagement() {
       status: 'active',
       dashboardAccess: 'allowed',
       createdDate: new Date().toISOString().slice(0, 10),
-      tempPassword: 'password123', // Default password for new users
-      password: 'password123', // Store password in user object
+      tempPassword,
+      mustChangePassword: true,
+      password: tempPassword,
       description: '',
     }
 
@@ -618,7 +621,11 @@ export default function SystemUserManagement() {
     if (result.success) {
       loadUsers() // Reload users from service
       closeCreateForm()
-      showNotification('User created successfully!', false)
+      const notificationMessage =
+        `Your account has been created. Use ${email} as your username. ` +
+        `Temporary password: ${tempPassword}. You will be asked to change it on first login.`
+      sendUserNotification(email, notificationMessage)
+      showNotification('User created and notification queued successfully!', false)
     } else {
       showNotification('Failed to create user', true)
     }
@@ -690,6 +697,7 @@ export default function SystemUserManagement() {
     const password = generateTempPassword()
     const result = updateUserInService(userId, { 
       tempPassword: password,
+      mustChangePassword: true,
       password: password // Update actual password as well
     })
     if (result.success) {
@@ -961,7 +969,7 @@ export default function SystemUserManagement() {
                   </div>
                 </PermissionGate>,
                 document.body
-              )}}
+              )}
 
             <div className="pagination">
               <button

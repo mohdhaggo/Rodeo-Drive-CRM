@@ -2,6 +2,7 @@
 
 const STORAGE_KEY = 'rodeo_crm_users';
 const SESSION_KEY = 'rodeo_crm_current_user';
+const NOTIFICATIONS_KEY = 'rodeo_crm_user_notifications';
 
 // Initial system users - can be extended with more users
 const initialUsers = [
@@ -415,6 +416,47 @@ export const getUserById = (id) => {
   return users.find(user => user.id === id);
 };
 
+const getAllNotifications = () => {
+  const stored = localStorage.getItem(NOTIFICATIONS_KEY);
+  return stored ? JSON.parse(stored) : [];
+};
+
+const saveNotifications = (notifications) => {
+  localStorage.setItem(NOTIFICATIONS_KEY, JSON.stringify(notifications));
+};
+
+export const sendUserNotification = (email, message) => {
+  const notifications = getAllNotifications();
+  const newNotification = {
+    id: `${Date.now()}-${Math.random().toString(16).slice(2)}`,
+    email: email.toLowerCase(),
+    message,
+    createdAt: new Date().toISOString(),
+    read: false
+  };
+  notifications.push(newNotification);
+  saveNotifications(notifications);
+  return { success: true, notification: newNotification };
+};
+
+export const getUnreadNotificationsForUser = (email) => {
+  const notifications = getAllNotifications();
+  return notifications.filter(
+    (notification) =>
+      notification.email === email.toLowerCase() && !notification.read
+  );
+};
+
+export const markNotificationsRead = (email) => {
+  const notifications = getAllNotifications();
+  const updated = notifications.map((notification) =>
+    notification.email === email.toLowerCase()
+      ? { ...notification, read: true }
+      : notification
+  );
+  saveNotifications(updated);
+};
+
 // Validate user credentials
 export const validateCredentials = (email, password) => {
   const user = getUserByEmail(email);
@@ -438,7 +480,12 @@ export const validateCredentials = (email, password) => {
   
   // Don't return the password in the user object
   const { password: _, ...userWithoutPassword } = user;
-  return { success: true, user: userWithoutPassword };
+  return {
+    success: true,
+    user: userWithoutPassword,
+    requiresPasswordChange: Boolean(user.mustChangePassword || user.tempPassword),
+    notifications: getUnreadNotificationsForUser(email)
+  };
 };
 
 // Set current logged-in user
@@ -513,6 +560,20 @@ export const updateUser = (userId, updates) => {
   }
   
   return { success: false, error: 'User not found' };
+};
+
+export const updateUserPassword = (email, newPassword) => {
+  const user = getUserByEmail(email);
+  if (!user) {
+    return { success: false, error: 'User not found' };
+  }
+
+  return updateUser(user.id, {
+    password: newPassword,
+    tempPassword: null,
+    mustChangePassword: false,
+    passwordUpdatedAt: new Date().toISOString()
+  });
 };
 
 // Add new user

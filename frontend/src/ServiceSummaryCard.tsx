@@ -3,7 +3,7 @@ import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, us
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy, useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { FaGripVertical, FaUserTie, FaUsers, FaEdit, FaSave, FaCheckDouble, FaPlusCircle, FaClock, FaCheckCircle, FaTimesCircle, FaWrench } from 'react-icons/fa';
-import { useApprovalRequests } from './ApprovalRequestsContext.jsx';
+import { useApprovalRequests } from './ApprovalRequestsContext.tsx';
 import PermissionGate from './PermissionGate';
 
 // =====================================================================

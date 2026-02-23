@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useApprovalRequests } from './ApprovalRequestsContext.jsx';
+import { useApprovalRequests } from './ApprovalRequestsContext.tsx';
 import './SalesApprovals.css';
 import PermissionGate from './PermissionGate';
 

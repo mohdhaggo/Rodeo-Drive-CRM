@@ -958,6 +958,7 @@ function InspectionModule({ currentUser }) {
       @page { size: A4; margin: 0; }
       @media print { body { background: white; } }
       .report-header { text-align: center; margin-bottom: 28px; padding: 20px 10px; background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%); color: white; border-radius: 12px; }
+      .report-logo { width: 60px; height: 60px; border-radius: 50%; object-fit: cover; margin: 0 auto 12px; display: block; border: 3px solid white; }
       .report-header h1 { margin: 0 0 6px 0; font-size: 28px; letter-spacing: 0.3px; }
       .report-header p { margin: 0; font-size: 13px; opacity: 0.9; }
       .report-card { background: white; padding: 20px; border-radius: 10px; margin-bottom: 18px; box-shadow: 0 6px 16px rgba(25, 42, 70, 0.08); border: 1px solid #e6ecf5; }
@@ -984,6 +985,7 @@ function InspectionModule({ currentUser }) {
 
     const headerHtml = `
       <div class="report-header">
+        <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQPoCJV5AIkhwzaOSgnWDVpRIZITDAkRDsf5A&s" alt="Logo" class="report-logo" />
         <h1>Inspection Result Report</h1>
         <p>Generated on ${new Date().toLocaleString()}</p>
       </div>
