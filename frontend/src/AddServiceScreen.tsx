@@ -1,7 +1,16 @@
 import React, { useState } from 'react';
 import PermissionGate from './PermissionGate';
 
-function AddServiceScreen({ order, onClose, onSubmit, products = [], moduleId = 'joborder', permissionId = 'joborder_pricesummary' }) {
+interface AddServiceScreenProps {
+  order: any;
+  onClose: () => void;
+  onSubmit: (data: any) => void;
+  products?: any[];
+  moduleId?: string;
+  permissionId?: string;
+}
+
+function AddServiceScreen({ order, onClose, onSubmit, products = [], moduleId = 'joborder', permissionId = 'joborder_pricesummary' }: AddServiceScreenProps) {
   const [selectedServices, setSelectedServices] = useState([]);
   const [discountPercent, setDiscountPercent] = useState(0);
   const vehicleType = order?.vehicleDetails?.type || 'SUV';

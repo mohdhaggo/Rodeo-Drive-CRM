@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import amplifyOutputs from '../../amplify_outputs.json'
 import { getCurrentUser as getSystemUser, clearCurrentUser } from './userService.ts'
 import { getRolePermissionsForUser, hasModuleAccess, hasOptionAccess } from './roleAccess.ts'
-import { authService } from './authService'
+import { authService, type AuthUser } from './authService'
 import Login from './Login'
 import JobOrderManagement from './JobOrderManagement'
 import PaymentInvoiceManagement from './PaymentInvoiceManagement'
@@ -71,9 +71,9 @@ function App() {
         
         // Try to get Amplify user (with timeout to prevent hanging)
         try {
-          const amplifyUser = await Promise.race([
+          const amplifyUser: AuthUser | null = await Promise.race([
             authService.initializeAuth(),
-            new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 3000))
+            new Promise<null>((_, reject) => setTimeout(() => reject(new Error('Timeout')), 3000))
           ])
           
           if (amplifyUser) {

@@ -470,8 +470,8 @@ export const jobOrderService = {
     try {
       const { data } = await client.models.JobOrder.create({
         ...input,
-        workStatus: input.workStatus || 'New Request',
-        paymentStatus: input.paymentStatus || 'Unpaid',
+        workStatus: (input.workStatus || 'New Request') as 'Inspection' | 'Cancelled' | 'Inprogress' | 'Completed' | 'New Request' | 'Quality Check' | 'Ready',
+        paymentStatus: (input.paymentStatus || 'Unpaid') as 'Cancelled' | 'Fully Paid' | 'Partially Paid' | 'Unpaid',
       });
       return data;
     } catch (error) {
@@ -490,12 +490,23 @@ export const jobOrderService = {
     assignedToUserId: string;
   }>) {
     try {
-      const { data } = await client.models.JobOrder.update({
+      const { workStatus, paymentStatus, completionDate, ...rest } = input;
+      const updateData: any = {
         id,
-        ...input,
-      });
+        ...rest,
+      };
+      if (workStatus) {
+        updateData.workStatus = workStatus as 'Inspection' | 'Cancelled' | 'Inprogress' | 'Completed' | 'New Request' | 'Quality Check' | 'Ready';
+      }
+      if (paymentStatus) {
+        updateData.paymentStatus = paymentStatus as 'Cancelled' | 'Fully Paid' | 'Partially Paid' | 'Unpaid';
+      }
+      if (completionDate) {
+        updateData.completionDate = completionDate.toISOString();
+      }
+      const { data } = await client.models.JobOrder.update(updateData);
       return data;
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error updating job order:', error);
       throw error;
     }
@@ -536,7 +547,7 @@ export const serviceRequestService = {
     try {
       const { data } = await client.models.ServiceRequest.create({
         ...input,
-        status: input.status || 'Pending',
+        status: (input.status || 'Pending') as 'Cancelled' | 'Inprogress' | 'Completed' | 'Pending',
       });
       return data;
     } catch (error) {
@@ -555,12 +566,23 @@ export const serviceRequestService = {
     notes: string;
   }>) {
     try {
-      const { data } = await client.models.ServiceRequest.update({
+      const { status, startTime, endTime, ...rest } = input;
+      const updateData: any = {
         id,
-        ...input,
-      });
+        ...rest,
+      };
+      if (status) {
+        updateData.status = status as 'Cancelled' | 'Inprogress' | 'Completed' | 'Pending';
+      }
+      if (startTime) {
+        updateData.startTime = startTime.toISOString();
+      }
+      if (endTime) {
+        updateData.endTime = endTime.toISOString();
+      }
+      const { data } = await client.models.ServiceRequest.update(updateData);
       return data;
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error updating service request:', error);
       throw error;
     }
@@ -602,7 +624,7 @@ export const additionalServiceRequestService = {
     try {
       const { data } = await client.models.AdditionalServiceRequest.create({
         ...input,
-        status: input.status || 'Requested',
+        status: (input.status || 'Requested') as 'Completed' | 'Requested' | 'Approved' | 'Rejected',
       });
       return data;
     } catch (error) {
@@ -618,9 +640,11 @@ export const additionalServiceRequestService = {
     status: string;
   }>) {
     try {
+      const { status, ...rest } = input;
       const { data } = await client.models.AdditionalServiceRequest.update({
         id,
-        ...input,
+        ...rest,
+        ...(status && { status: status as 'Completed' | 'Requested' | 'Approved' | 'Rejected' }),
       });
       return data;
     } catch (error) {
@@ -653,12 +677,14 @@ export const paymentService = {
     notes?: string;
   }) {
     try {
+      const { paymentMethod, paymentStatus, ...rest } = input;
       const { data } = await client.models.Payment.create({
-        ...input,
-        paymentStatus: input.paymentStatus || 'Pending',
+        ...rest,
+        paymentStatus: (paymentStatus || 'Pending') as 'Completed' | 'Pending' | 'Failed' | 'Refunded',
+        ...(paymentMethod && { paymentMethod: paymentMethod as 'Cash' | 'Card' | 'Check' | 'Bank Transfer' | 'Online' }),
       });
       return data;
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error creating payment:', error);
       throw error;
     }
@@ -672,12 +698,15 @@ export const paymentService = {
     notes: string;
   }>) {
     try {
+      const { paymentStatus, paymentMethod, ...rest } = input;
       const { data } = await client.models.Payment.update({
         id,
-        ...input,
+        ...rest,
+        ...(paymentStatus && { paymentStatus: paymentStatus as 'Completed' | 'Pending' | 'Failed' | 'Refunded' }),
+        ...(paymentMethod && { paymentMethod: paymentMethod as 'Cash' | 'Card' | 'Check' | 'Bank Transfer' | 'Online' }),
       });
       return data;
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error updating payment:', error);
       throw error;
     }
@@ -707,7 +736,7 @@ export const exitPermitService = {
     try {
       const { data } = await client.models.ExitPermit.create({
         ...input,
-        status: input.status || 'Not Created',
+        status: (input.status || 'Not Created') as 'Created' | 'Not Created' | 'Collected',
       });
       return data;
     } catch (error) {
@@ -725,12 +754,31 @@ export const exitPermitService = {
     collectedByUserId: string;
   }>) {
     try {
-      const { data } = await client.models.ExitPermit.update({
+      const { status, createdDate, collectedDate, nextServiceDate, permitNumber, collectedByUserId } = input;
+      const updateData: any = {
         id,
-        ...input,
-      });
+      };
+      if (permitNumber) {
+        updateData.permitNumber = permitNumber;
+      }
+      if (collectedByUserId) {
+        updateData.collectedByUserId = collectedByUserId;
+      }
+      if (status) {
+        updateData.status = status as 'Created' | 'Not Created' | 'Collected';
+      }
+      if (createdDate) {
+        updateData.createdDate = createdDate.toISOString();
+      }
+      if (collectedDate) {
+        updateData.collectedDate = collectedDate.toISOString();
+      }
+      if (nextServiceDate) {
+        updateData.nextServiceDate = nextServiceDate.toISOString();
+      }
+      const { data } = await client.models.ExitPermit.update(updateData);
       return data;
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error updating exit permit:', error);
       throw error;
     }
@@ -777,7 +825,7 @@ export const inspectionService = {
     try {
       const { data } = await client.models.Inspection.create({
         ...input,
-        status: input.status || 'Pending',
+        status: (input.status || 'Pending') as 'Completed' | 'Pending' | 'In Progress' | 'Failed',
       });
       return data;
     } catch (error) {
@@ -794,9 +842,11 @@ export const inspectionService = {
     checklist: any;
   }>) {
     try {
+      const { status, ...rest } = input;
       const { data } = await client.models.Inspection.update({
         id,
-        ...input,
+        ...rest,
+        ...(status && { status: status as 'Completed' | 'Pending' | 'In Progress' | 'Failed' }),
       });
       return data;
     } catch (error) {
@@ -831,8 +881,8 @@ export const qualityCheckService = {
     try {
       const { data } = await client.models.QualityCheck.create({
         ...input,
-        status: input.status || 'Pending',
-        approvalStatus: input.approvalStatus || 'Not Required',
+        status: (input.status || 'Pending') as 'Pending' | 'In Progress' | 'Failed' | 'Passed',
+        approvalStatus: (input.approvalStatus || 'Not Required') as 'Pending' | 'Approved' | 'Rejected' | 'Not Required',
       });
       return data;
     } catch (error) {
@@ -849,9 +899,12 @@ export const qualityCheckService = {
     approvalStatus: string;
   }>) {
     try {
+      const { status, approvalStatus, ...rest } = input;
       const { data } = await client.models.QualityCheck.update({
         id,
-        ...input,
+        ...rest,
+        ...(status && { status: status as 'Pending' | 'In Progress' | 'Failed' | 'Passed' }),
+        ...(approvalStatus && { approvalStatus: approvalStatus as 'Pending' | 'Approved' | 'Rejected' | 'Not Required' }),
       });
       return data;
     } catch (error) {
@@ -896,12 +949,14 @@ export const salesLeadService = {
     notes?: string;
   }) {
     try {
+      const { stage, expectedCloseDate, ...rest } = input;
       const { data } = await client.models.SalesLead.create({
-        ...input,
-        stage: input.stage || 'Lead',
+        ...rest,
+        stage: (stage || 'Lead') as 'Lead' | 'Prospect' | 'Proposal' | 'Negotiation' | 'Won' | 'Lost',
+        ...(expectedCloseDate && { expectedCloseDate: expectedCloseDate.toISOString() }),
       });
       return data;
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error creating sales lead:', error);
       throw error;
     }
@@ -918,12 +973,15 @@ export const salesLeadService = {
     notes: string;
   }>) {
     try {
+      const { stage, expectedCloseDate, ...rest } = input;
       const { data } = await client.models.SalesLead.update({
         id,
-        ...input,
+        ...rest,
+        ...(stage && { stage: stage as 'Lead' | 'Prospect' | 'Proposal' | 'Negotiation' | 'Won' | 'Lost' }),
+        ...(expectedCloseDate && { expectedCloseDate: expectedCloseDate.toISOString() }),
       });
       return data;
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error updating sales lead:', error);
       throw error;
     }
@@ -1031,12 +1089,14 @@ export const purchaseOrderService = {
     notes?: string;
   }) {
     try {
+      const { status, deliveryDate, ...rest } = input;
       const { data } = await client.models.PurchaseOrder.create({
-        ...input,
-        status: input.status || 'Draft',
+        ...rest,
+        status: (status || 'Draft') as 'Cancelled' | 'Approved' | 'Draft' | 'Submitted' | 'Received',
+        ...(deliveryDate && { deliveryDate: deliveryDate.toISOString() }),
       });
       return data;
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error creating purchase order:', error);
       throw error;
     }
@@ -1052,12 +1112,15 @@ export const purchaseOrderService = {
     notes: string;
   }>) {
     try {
+      const { status, deliveryDate, ...rest } = input;
       const { data } = await client.models.PurchaseOrder.update({
         id,
-        ...input,
+        ...rest,
+        ...(status && { status: status as 'Cancelled' | 'Approved' | 'Draft' | 'Submitted' | 'Received' }),
+        ...(deliveryDate && { deliveryDate: deliveryDate.toISOString() }),
       });
       return data;
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error updating purchase order:', error);
       throw error;
     }
@@ -1098,12 +1161,20 @@ export const serviceExecutionService = {
     notes?: string;
   }) {
     try {
-      const { data } = await client.models.ServiceExecution.create({
-        ...input,
-        status: input.status || 'Scheduled',
-      });
+      const { status, startTime, endTime, ...rest } = input;
+      const createData: any = {
+        ...rest,
+        status: (status || 'Scheduled') as 'Cancelled' | 'Completed' | 'In Progress' | 'Scheduled' | 'On Hold',
+      };
+      if (startTime) {
+        createData.startTime = startTime.toISOString();
+      }
+      if (endTime) {
+        createData.endTime = endTime.toISOString();
+      }
+      const { data } = await client.models.ServiceExecution.create(createData);
       return data;
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error creating service execution:', error);
       throw error;
     }
@@ -1118,12 +1189,23 @@ export const serviceExecutionService = {
     notes: string;
   }>) {
     try {
-      const { data } = await client.models.ServiceExecution.update({
+      const { status, startTime, endTime, ...rest } = input;
+      const updateData: any = {
         id,
-        ...input,
-      });
+        ...rest,
+      };
+      if (status) {
+        updateData.status = status as 'Cancelled' | 'Completed' | 'In Progress' | 'Scheduled' | 'On Hold';
+      }
+      if (startTime) {
+        updateData.startTime = startTime.toISOString();
+      }
+      if (endTime) {
+        updateData.endTime = endTime.toISOString();
+      }
+      const { data } = await client.models.ServiceExecution.update(updateData);
       return data;
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error updating service execution:', error);
       throw error;
     }

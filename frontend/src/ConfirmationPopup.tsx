@@ -1,5 +1,22 @@
-import React, { useEffect } from 'react';
+import { useEffect, CSSProperties } from 'react';
 import './ConfirmationPopup.css';
+
+interface ConfirmationPopupProps {
+  isVisible: boolean;
+  onConfirm: () => void;
+  onCancel: () => void;
+  message?: string;
+  confirmText?: string;
+  cancelText?: string;
+  confirmButtonStyle?: CSSProperties;
+  cancelButtonStyle?: CSSProperties;
+  confirmButtonClass?: string | null;
+  cancelButtonClass?: string | null;
+  secondaryAction?: (() => void) | null;
+  secondaryActionText?: string | null;
+  secondaryActionStyle?: CSSProperties;
+  secondaryActionClass?: string | null;
+}
 
 const ConfirmationPopup = ({ 
   isVisible, 
@@ -8,18 +25,18 @@ const ConfirmationPopup = ({
   message = "Are you sure?",
   confirmText = "Yes",
   cancelText = "No",
-  confirmButtonStyle = null,
-  cancelButtonStyle = null,
+  confirmButtonStyle,
+  cancelButtonStyle,
   confirmButtonClass = null,
   cancelButtonClass = null,
   secondaryAction = null,
   secondaryActionText = null,
-  secondaryActionStyle = null,
+  secondaryActionStyle,
   secondaryActionClass = null
-}) => {
+}: ConfirmationPopupProps) => {
   // Close popup on Escape key press
   useEffect(() => {
-    const handleEscape = (event) => {
+    const handleEscape = (event: KeyboardEvent) => {
       if (event.key === 'Escape' && isVisible) {
         onCancel();
       }
@@ -47,7 +64,7 @@ const ConfirmationPopup = ({
 
   if (!isVisible) return null;
 
-  const handleOverlayClick = (e) => {
+  const handleOverlayClick = (e: React.MouseEvent<HTMLDivElement>) => {
     if (e.target === e.currentTarget) {
       onCancel();
     }

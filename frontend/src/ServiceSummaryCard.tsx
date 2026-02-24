@@ -13,7 +13,6 @@ const SortableServiceItem = ({
   service,
   editMode,
   onUpdate,
-  onApprovalRequest,
   availableTechs,
   availableAssignees,
   tabPrefix = 'serviceexec_assigned',
@@ -241,7 +240,6 @@ const SortableServiceItem = ({
 // Main Service Summary Card Component
 // =====================================================================
 export const ServiceSummaryCard = ({
-  jobId,
   services,
   referenceServices = [],
   onServicesReorder,

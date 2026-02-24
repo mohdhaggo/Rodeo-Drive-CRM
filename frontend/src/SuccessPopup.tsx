@@ -1,12 +1,19 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, ReactNode } from 'react';
 import './SuccessPopup.css';
+
+interface SuccessPopupProps {
+  isVisible: boolean;
+  onClose: () => void;
+  message?: ReactNode;
+  userName?: string;
+}
 
 const SuccessPopup = ({ 
   isVisible, 
   onClose, 
   message = "User has been added successfully!",
   userName 
-}) => {
+}: SuccessPopupProps) => {
   // Close popup on Escape key press
   useEffect(() => {
     const handleEscape = (event) => {

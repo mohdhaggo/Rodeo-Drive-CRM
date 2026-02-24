@@ -11,27 +11,36 @@ let signOut: any = null
 let getCurrentUser: any = null
 let confirmSignUp: any = null
 let fetchUserAttributes: any = null
+let userService: any = null
 
 // Try to load Amplify auth modules
-try {
-  const authModule = require('aws-amplify/auth')
-  signUp = authModule.signUp
-  signIn = authModule.signIn
-  signOut = authModule.signOut
-  getCurrentUser = authModule.getCurrentUser
-  confirmSignUp = authModule.confirmSignUp
-  fetchUserAttributes = authModule.fetchUserAttributes
-} catch (err) {
-  console.warn('⚠️ Amplify auth not available:', err)
+const loadAuthModules = async () => {
+  try {
+    const authModule = await import('aws-amplify/auth')
+    signUp = authModule.signUp
+    signIn = authModule.signIn
+    signOut = authModule.signOut
+    getCurrentUser = authModule.getCurrentUser
+    confirmSignUp = authModule.confirmSignUp
+    fetchUserAttributes = authModule.fetchUserAttributes
+  } catch (err) {
+    console.warn('⚠️ Amplify auth not available:', err)
+  }
 }
 
 // Safe import of userService
-let userService: any = null
-try {
-  userService = require('./amplifyService').userService
-} catch (err) {
-  console.warn('⚠️ Amplify service not available:', err)
+const loadUserService = async () => {
+  try {
+    const amplifyService = await import('./amplifyService')
+    userService = amplifyService.userService
+  } catch (err) {
+    console.warn('⚠️ Amplify service not available:', err)
+  }
 }
+
+// Initialize modules on load
+loadAuthModules()
+loadUserService()
 
 export interface AuthUser {
   userId: string;

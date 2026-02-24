@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import './JobOrderManagement.css';
 import { getCustomers, getStoredJobOrders } from './demoData';
@@ -16,7 +16,7 @@ const getDemoAndSavedCustomers = () => {
   const savedCustomers = JSON.parse(localStorage.getItem('jobOrderCustomers') || '[]');
   // Merge saved customers with demo customers (avoiding duplicates)
   const allCustomers = [...demoCustomers];
-  savedCustomers.forEach(saved => {
+  savedCustomers.forEach((saved: any) => {
     if (!allCustomers.some(customer => customer.id === saved.id)) {
       allCustomers.push(saved);
     }
@@ -24,30 +24,35 @@ const getDemoAndSavedCustomers = () => {
   return allCustomers;
 };
 
-const CUSTOMERS = getDemoAndSavedCustomers();
-
 // ============================================
 // MAIN COMPONENT
 // ============================================
-function JobOrderManagement({ currentUser, navigationData, onClearNavigation, onNavigateBack }) {
-  const [screenState, setScreenState] = useState('main'); // main, details, newJob, addService
-  const [currentDetailsOrder, setCurrentDetailsOrder] = useState(null);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize, setPageSize] = useState(20);
-  const [demoOrders, setDemoOrders] = useState([]);
-  const [currentAddServiceOrder, setCurrentAddServiceOrder] = useState(null);
-  const [inspectionModalOpen, setInspectionModalOpen] = useState(false);
-  const [currentInspectionItem, setCurrentInspectionItem] = useState(null);
-  const [showSuccessPopup, setShowSuccessPopup] = useState(false);
-  const [submittedOrderId, setSubmittedOrderId] = useState('');
-  const [showAddServiceSuccessPopup, setShowAddServiceSuccessPopup] = useState(false);
-  const [addServiceSuccessData, setAddServiceSuccessData] = useState({ orderId: '', invoiceId: '' });
-  const [newJobPrefill, setNewJobPrefill] = useState(null);
-  const [navigationSource, setNavigationSource] = useState(null);
-  const [returnToVehicleId, setReturnToVehicleId] = useState(null);
-  const [showCancelConfirmation, setShowCancelConfirmation] = useState(false);
-  const [cancelOrderId, setCancelOrderId] = useState(null);
+interface JobOrderManagementProps {
+  currentUser: any;
+  navigationData: any;
+  onClearNavigation: () => void;
+  onNavigateBack: (source?: any, vehicleId?: any) => void;
+}
+
+function JobOrderManagement({ currentUser, navigationData, onClearNavigation, onNavigateBack }: JobOrderManagementProps) {
+  const [screenState, setScreenState] = useState<string>('main'); // main, details, newJob, addService
+  const [currentDetailsOrder, setCurrentDetailsOrder] = useState<any>(null);
+  const [searchQuery, setSearchQuery] = useState<string>('');
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [pageSize, setPageSize] = useState<number>(20);
+  const [demoOrders, setDemoOrders] = useState<any[]>([]);
+  const [currentAddServiceOrder, setCurrentAddServiceOrder] = useState<any>(null);
+  const [inspectionModalOpen, setInspectionModalOpen] = useState<boolean>(false);
+  const [currentInspectionItem, setCurrentInspectionItem] = useState<any>(null);
+  const [showSuccessPopup, setShowSuccessPopup] = useState<boolean>(false);
+  const [submittedOrderId, setSubmittedOrderId] = useState<string>('');
+  const [showAddServiceSuccessPopup, setShowAddServiceSuccessPopup] = useState<boolean>(false);
+  const [addServiceSuccessData, setAddServiceSuccessData] = useState<{ orderId: string; invoiceId: string }>({ orderId: '', invoiceId: '' });
+  const [newJobPrefill, setNewJobPrefill] = useState<any>(null);
+  const [navigationSource, setNavigationSource] = useState<any>(null);
+  const [returnToVehicleId, setReturnToVehicleId] = useState<any>(null);
+  const [showCancelConfirmation, setShowCancelConfirmation] = useState<boolean>(false);
+  const [cancelOrderId, setCancelOrderId] = useState<string | null>(null);
   const [lastAction, setLastAction] = useState('create'); // 'create' or 'cancel'
 
   // Initialize demo data on mount
@@ -76,11 +81,12 @@ function JobOrderManagement({ currentUser, navigationData, onClearNavigation, on
 
   useEffect(() => {
     if (navigationData?.openNewJob) {
-      setNewJobPrefill({
+      const prefillData: any = {
         startStep: navigationData.startStep || 1,
         customerData: navigationData.customerData || null,
         vehicleData: navigationData.vehicleData || null
-      });
+      };
+      setNewJobPrefill(prefillData);
       if (navigationData.source) {
         setNavigationSource(navigationData.source);
       }
@@ -99,7 +105,7 @@ function JobOrderManagement({ currentUser, navigationData, onClearNavigation, on
     }
   }, [navigationData, onClearNavigation]);
 
-  const parseAmount = (value) => {
+  const parseAmount = (value: any): number => {
     if (typeof value === 'number') return value;
     if (typeof value === 'string') {
       const cleaned = value.replace(/[^0-9.-]/g, '');
@@ -109,9 +115,9 @@ function JobOrderManagement({ currentUser, navigationData, onClearNavigation, on
     return 0;
   };
 
-  const formatAmount = (value) => `QAR ${Number(value || 0).toLocaleString()}`;
+  const formatAmount = (value: any): string => `QAR ${Number(value || 0).toLocaleString()}`;
 
-  const handleAddServiceSubmit = ({ selectedServices, discountPercent }) => {
+  const handleAddServiceSubmit = ({ selectedServices, discountPercent }: { selectedServices: any[]; discountPercent: number }) => {
     if (!currentAddServiceOrder || !selectedServices || selectedServices.length === 0) {
       setScreenState('details');
       return;
@@ -122,7 +128,7 @@ function JobOrderManagement({ currentUser, navigationData, onClearNavigation, on
     const invoiceNumber = `INV-${year}-${String(Math.floor(Math.random() * 1000000)).padStart(6, '0')}`;
     const billId = currentAddServiceOrder.billing?.billId || `BILL-${year}-${String(Math.floor(Math.random() * 1000000)).padStart(6, '0')}`;
 
-    const subtotal = selectedServices.reduce((sum, s) => sum + (s.price || 0), 0);
+    const subtotal = selectedServices.reduce((sum: number, s: any) => sum + (s.price || 0), 0);
     const discount = (subtotal * (discountPercent || 0)) / 100;
     const netAmount = subtotal - discount;
 
@@ -147,12 +153,12 @@ function JobOrderManagement({ currentUser, navigationData, onClearNavigation, on
           discount: formatAmount(discount),
           status: 'Unpaid',
           paymentMethod: null,
-          services: selectedServices.map(s => s.name)
+          services: selectedServices.map((s: any) => s.name)
         }
       ]
     };
 
-    const newServiceEntries = selectedServices.map((service) => ({
+    const newServiceEntries = selectedServices.map((service: any) => ({
       name: service.name,
       price: service.price || 0,
       status: 'New',
@@ -164,13 +170,13 @@ function JobOrderManagement({ currentUser, navigationData, onClearNavigation, on
     }));
 
     const updatedOrder = {
-      ...currentAddServiceOrder,
-      services: [...(currentAddServiceOrder.services || []), ...newServiceEntries],
+      ...(currentAddServiceOrder as any),
+      services: [...(currentAddServiceOrder?.services || []), ...newServiceEntries],
       billing: updatedBilling
     };
 
-    const updatedOrders = demoOrders.map((order) =>
-      order.id === currentAddServiceOrder.id ? updatedOrder : order
+    const updatedOrders = demoOrders.map((order: any) =>
+      order.id === currentAddServiceOrder?.id ? updatedOrder : order
     );
 
     localStorage.setItem('jobOrders', JSON.stringify(updatedOrders));
@@ -179,7 +185,7 @@ function JobOrderManagement({ currentUser, navigationData, onClearNavigation, on
     setCurrentAddServiceOrder(updatedOrder);
     
     // Set popup data first
-    setAddServiceSuccessData({ orderId: currentAddServiceOrder.id, invoiceId: invoiceNumber });
+    setAddServiceSuccessData({ orderId: currentAddServiceOrder?.id || '', invoiceId: invoiceNumber });
     setShowAddServiceSuccessPopup(true);
     
     // Then close the add service screen
@@ -192,11 +198,11 @@ function JobOrderManagement({ currentUser, navigationData, onClearNavigation, on
     if (!cancelOrderId) return;
 
     // Find the order to cancel
-    const orderToCancel = demoOrders.find(order => order.id === cancelOrderId);
+    const orderToCancel = demoOrders.find((order: any) => order.id === cancelOrderId);
     if (!orderToCancel) return;
 
     // Check if order is already cancelled
-    if (orderToCancel.workStatus === 'Cancelled') {
+    if ((orderToCancel as any).workStatus === 'Cancelled') {
       alert(`Job Order ${cancelOrderId} is already cancelled.`);
       setShowCancelConfirmation(false);
       setCancelOrderId(null);
@@ -205,13 +211,13 @@ function JobOrderManagement({ currentUser, navigationData, onClearNavigation, on
 
     // Create a cancelled version of the order
     const cancelledOrder = {
-      ...orderToCancel,
+      ...(orderToCancel as any),
       workStatus: 'Cancelled'
     };
 
     // Update the order status in jobOrders storage
     const savedOrders = JSON.parse(localStorage.getItem('jobOrders') || '[]');
-    const updatedSavedOrders = savedOrders.map(order => 
+    const updatedSavedOrders = savedOrders.map((order: any) => 
       order.id === cancelOrderId ? cancelledOrder : order
     );
     localStorage.setItem('jobOrders', JSON.stringify(updatedSavedOrders));
@@ -227,7 +233,7 @@ function JobOrderManagement({ currentUser, navigationData, onClearNavigation, on
     setCancelOrderId(null);
   };
 
-  const filteredOrders = demoOrders.filter(order => {
+  const filteredOrders = demoOrders.filter((order: any) => {
     // Filter out Completed and Cancelled orders
     const allowedStatuses = ['New Request', 'Inspection', 'Inprogress', 'Quality Check', 'Ready'];
     if (!allowedStatuses.includes(order.workStatus)) {
@@ -258,10 +264,10 @@ function JobOrderManagement({ currentUser, navigationData, onClearNavigation, on
           orders={paginatedOrders}
           searchQuery={searchQuery}
           onSearchChange={setSearchQuery}
-          onViewDetails={(order) => {
+          onViewDetails={(order: any) => {
             // Reload from localStorage to get the latest data
             const freshOrders = getStoredJobOrders();
-            const freshOrder = freshOrders.find(o => o.id === order.id) || order;
+            const freshOrder = freshOrders.find((o: any) => o.id === order.id) || order;
             setCurrentDetailsOrder(freshOrder);
             setScreenState('details');
           }}
@@ -271,7 +277,7 @@ function JobOrderManagement({ currentUser, navigationData, onClearNavigation, on
           pageSize={pageSize}
           onPageSizeChange={setPageSize}
           totalCount={filteredOrders.length}
-          onCancelOrder={(orderId) => {
+          onCancelOrder={(orderId: string) => {
             setCancelOrderId(orderId);
             setShowCancelConfirmation(true);
           }}
@@ -301,7 +307,7 @@ function JobOrderManagement({ currentUser, navigationData, onClearNavigation, on
             }
           }}
           prefill={newJobPrefill}
-          onSubmit={(newOrder) => {
+          onSubmit={(newOrder: any) => {
             const savedOrders = JSON.parse(localStorage.getItem('jobOrders') || '[]');
             const updatedOrders = [newOrder, ...savedOrders];
             localStorage.setItem('jobOrders', JSON.stringify(updatedOrders));
@@ -440,6 +446,20 @@ function JobOrderManagement({ currentUser, navigationData, onClearNavigation, on
 // SCREEN COMPONENTS
 // ============================================
 
+interface MainScreenProps {
+  orders: any[];
+  searchQuery: string;
+  onSearchChange: (query: string) => void;
+  onViewDetails: (order: any) => void;
+  onNewJob: () => void;
+  currentPage: number;
+  onPageChange: (page: number) => void;
+  pageSize: number;
+  onPageSizeChange: (size: number) => void;
+  totalCount: number;
+  onCancelOrder: (orderId: string) => void;
+}
+
 function MainScreen({
   orders,
   searchQuery,
@@ -452,16 +472,16 @@ function MainScreen({
   onPageSizeChange,
   totalCount,
   onCancelOrder
-}) {
+}: MainScreenProps) {
   const [activeDropdown, setActiveDropdown] = useState(null);
   const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0 });
   const totalPages = Math.ceil(totalCount / pageSize) || 1;
 
   // Close dropdown when clicking outside
   useEffect(() => {
-    const handleClickOutside = (event) => {
-      const isDropdownButton = event.target.closest('.btn-action-dropdown');
-      const isDropdownMenu = event.target.closest('.action-dropdown-menu');
+    const handleClickOutside = (event: MouseEvent) => {
+      const isDropdownButton = (event.target as HTMLElement).closest('.btn-action-dropdown');
+      const isDropdownMenu = (event.target as HTMLElement).closest('.action-dropdown-menu');
       
       if (!isDropdownButton && !isDropdownMenu) {
         setActiveDropdown(null);
@@ -664,7 +684,7 @@ function MainScreen({
           }}
         >
           <PermissionGate moduleId="joborder" optionId="joborder_viewdetails">
-            <button className="dropdown-item view" onClick={() => { onViewDetails(orders.find(o => o.id === activeDropdown)); setActiveDropdown(null); }}>
+            <button className="dropdown-item view" onClick={() => { onViewDetails(orders.find((o: any) => o.id === activeDropdown)); setActiveDropdown(null); }}>
               <i className="fas fa-eye"></i> View Details
             </button>
           </PermissionGate>
@@ -683,7 +703,13 @@ function MainScreen({
   );
 }
 
-function DetailsScreen({ order, onClose, onAddService }) {
+interface DetailsScreenProps {
+  order: any;
+  onClose: () => void;
+  onAddService: () => void;
+}
+
+function DetailsScreen({ order, onClose, onAddService }: DetailsScreenProps) {
   return (
     <div className="pim-details-screen">
       <div className="pim-details-header">
@@ -738,31 +764,38 @@ function DetailsScreen({ order, onClose, onAddService }) {
   );
 }
 
-function NewJobScreen({ currentUser, onClose, onSubmit, prefill }) {
-  const [step, setStep] = useState(1);
-  const [orderType, setOrderType] = useState(null); // 'new' or 'service'
-  const [customerType, setCustomerType] = useState(null);
-  const [customerData, setCustomerData] = useState(null);
-  const [vehicleData, setVehicleData] = useState(null);
-  const [selectedServices, setSelectedServices] = useState([]);
-  const [selectedCompletedServices, setSelectedCompletedServices] = useState([]);
-  const [additionalServices, setAdditionalServices] = useState([]);
-  const [discountPercent, setDiscountPercent] = useState(0);
-  const [orderNotes, setOrderNotes] = useState('');
-  const [expectedDeliveryDate, setExpectedDeliveryDate] = useState('');
-  const [expectedDeliveryTime, setExpectedDeliveryTime] = useState('');
-  const [vehicleCompletedServices, setVehicleCompletedServices] = useState([]);
+interface NewJobScreenProps {
+  currentUser: any;
+  onClose: () => void;
+  onSubmit: (order: any) => void;
+  prefill: any;
+}
 
-  const formatAmount = (value) => `QAR ${Number(value || 0).toLocaleString()}`;
+function NewJobScreen({ currentUser, onClose, onSubmit, prefill }: NewJobScreenProps) {
+  const [step, setStep] = useState<number>(1);
+  const [orderType, setOrderType] = useState<string | null>(null); // 'new' or 'service'
+  const [customerType, setCustomerType] = useState<string | null>(null);
+  const [customerData, setCustomerData] = useState<any>(null);
+  const [vehicleData, setVehicleData] = useState<any>(null);
+  const [selectedServices, setSelectedServices] = useState<any[]>([]);
+  const [selectedCompletedServices, setSelectedCompletedServices] = useState<any[]>([]);
+  const [additionalServices, setAdditionalServices] = useState<any[]>([]);
+  const [discountPercent, setDiscountPercent] = useState<number>(0);
+  const [orderNotes, setOrderNotes] = useState<string>('');
+  const [expectedDeliveryDate, setExpectedDeliveryDate] = useState<string>('');
+  const [expectedDeliveryTime, setExpectedDeliveryTime] = useState<string>('');
+  const [vehicleCompletedServices, setVehicleCompletedServices] = useState<any[]>([]);
 
-  const handleVehicleSelected = (vehicleInfo) => {
+  const formatAmount = (value: any): string => `QAR ${Number(value || 0).toLocaleString()}`;
+
+  const handleVehicleSelected = (vehicleInfo: any) => {
     setVehicleData(vehicleInfo);
     
     // Get completed services for this vehicle from demoOrders
     const jobOrders = JSON.parse(localStorage.getItem('jobOrders') || '[]');
     
     const completedServices = jobOrders.filter(
-      order => {
+      (order: any) => {
         const matches = order.vehicleDetails?.vehicleId === vehicleInfo.vehicleId && order.workStatus === 'Completed';
         return matches;
       }
@@ -803,14 +836,14 @@ function NewJobScreen({ currentUser, onClose, onSubmit, prefill }) {
     const selectedOrder = orderType === 'service' && selectedCompletedServices.length > 0
       ? selectedCompletedServices[0]
       : null;
-    const originalServices = selectedOrder?.services || [];
-    const normalizedOriginalServices = originalServices.map((service) => (
+    const originalServices = (selectedOrder as any)?.services || [];
+    const normalizedOriginalServices = originalServices.map((service: any) => (
       typeof service === 'string' ? { name: service, status: 'Completed' } : service
     ));
     
     // Calculate billing amounts
     const servicesToBill = orderType === 'service' ? additionalServices : selectedServices;
-    const subtotal = servicesToBill.reduce((sum, s) => sum + (s.price || 0), 0);
+    const subtotal = servicesToBill.reduce((sum: number, s: any) => sum + (s.price || 0), 0);
     const discount = (subtotal * (discountPercent || 0)) / 100;
     const netAmount = subtotal - discount;
     
@@ -821,9 +854,9 @@ function NewJobScreen({ currentUser, onClose, onSubmit, prefill }) {
     const newOrder = {
       id: jobOrderId,
       orderType: orderType === 'service' ? 'Service Order' : 'New Job Order',
-      customerName: customerData.name,
-      mobile: customerData.mobile || customerData.phone,
-      vehiclePlate: vehicleData.plateNumber || vehicleData.license,
+      customerName: customerData?.name || '',
+      mobile: customerData?.mobile || customerData?.phone || '',
+      vehiclePlate: vehicleData?.plateNumber || vehicleData?.license || '',
       workStatus: 'New Request',
       paymentStatus: 'Unpaid',
       createDate: new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }),
@@ -1007,7 +1040,7 @@ function NewJobScreen({ currentUser, onClose, onSubmit, prefill }) {
           <OrderTypeSelection
             vehicleCompletedServices={vehicleCompletedServices}
             orderType={orderType}
-            onSelectOrderType={(type) => {
+            onSelectOrderType={(type: string) => {
               setOrderType(type);
               setStep(4);
             }}
@@ -1077,7 +1110,7 @@ function NewJobScreen({ currentUser, onClose, onSubmit, prefill }) {
           <StepFourConfirm
             customerData={customerData}
             vehicleData={vehicleData}
-            orderType={orderType}
+            orderType={orderType || 'New Job Order'}
             selectedCompletedServices={selectedCompletedServices}
             selectedServices={orderType === 'service' ? additionalServices : selectedServices}
             discountPercent={discountPercent}
@@ -1096,7 +1129,13 @@ function NewJobScreen({ currentUser, onClose, onSubmit, prefill }) {
 // ============================================
 // ORDER TYPE HEADER (Shows selected type in step 4)
 // ============================================
-function OrderTypeHeader({ orderType, vehicleData, onChangeType }) {
+interface OrderTypeHeaderProps {
+  orderType: any;
+  vehicleData: any;
+  onChangeType: () => void;
+}
+
+function OrderTypeHeader({ orderType, vehicleData, onChangeType }: OrderTypeHeaderProps) {
   return (
     <div style={{ 
       marginBottom: '15px', 
@@ -1137,13 +1176,15 @@ function OrderTypeHeader({ orderType, vehicleData, onChangeType }) {
           gap: '6px',
           transition: 'all 0.2s'
         }}
-        onMouseOver={(e) => {
-          e.target.style.borderColor = '#999';
-          e.target.style.color = '#333';
+        onMouseOver={(e: React.MouseEvent) => {
+          const button = e.currentTarget as HTMLButtonElement;
+          button.style.borderColor = '#999';
+          button.style.color = '#333';
         }}
-        onMouseOut={(e) => {
-          e.target.style.borderColor = '#ddd';
-          e.target.style.color = '#666';
+        onMouseOut={(e: React.MouseEvent) => {
+          const button = e.currentTarget as HTMLButtonElement;
+          button.style.borderColor = '#ddd';
+          button.style.color = '#666';
         }}
       >
         <i className="fas fa-exchange-alt"></i>
@@ -1156,7 +1197,14 @@ function OrderTypeHeader({ orderType, vehicleData, onChangeType }) {
 // ============================================
 // ORDER TYPE SELECTION
 // ============================================
-function OrderTypeSelection({ vehicleCompletedServices, onSelectOrderType, onBack, orderType }) {
+interface OrderTypeSelectionProps {
+  vehicleCompletedServices: any[];
+  onSelectOrderType: (type: string) => void;
+  onBack: () => void;
+  orderType: any;
+}
+
+function OrderTypeSelection({ vehicleCompletedServices, onSelectOrderType, onBack, orderType }: OrderTypeSelectionProps) {
   return (
     <div className="form-card">
       <div className="form-card-title">
@@ -1204,7 +1252,12 @@ function OrderTypeSelection({ vehicleCompletedServices, onSelectOrderType, onBac
 // ============================================
 // NO COMPLETED SERVICES MESSAGE
 // ============================================
-function NoCompletedServicesMessage({ onNext, onBack }) {
+interface NoCompletedServicesMessageProps {
+  onNext: () => void;
+  onBack: () => void;
+}
+
+function NoCompletedServicesMessage({ onNext, onBack }: NoCompletedServicesMessageProps) {
   return (
     <div className="form-card">
       <div className="form-card-title">
@@ -1232,10 +1285,13 @@ function NoCompletedServicesMessage({ onNext, onBack }) {
   );
 }
 
-// ============================================
-// ORDER TYPE SELECTION (OLD - KEPT FOR REFERENCE BUT NOT USED)
-// ============================================
-function OrderTypeSelectionOld({ onSelectOrderType, onCancel }) {
+interface OrderTypeSelectionOldProps {
+  onSelectOrderType: (type: string) => void;
+  onBack?: () => void;
+}
+
+// @ts-ignore - This is an old component kept for reference but not actively used
+function _OrderTypeSelectionOld({ onSelectOrderType, onBack }: OrderTypeSelectionOldProps) {
   return (
     <div className="form-card">
       <div className="form-card-title">
@@ -1317,14 +1373,49 @@ function OrderTypeSelectionOld({ onSelectOrderType, onCancel }) {
 // ============================================
 // COMPLETED SERVICES SELECTION (SERVICE ORDER)
 // ============================================
-function StepThreeCompletedServices({ vehicleData, completedServices, selectedCompletedServices, setSelectedCompletedServices, additionalServices, setAdditionalServices, discountPercent, setDiscountPercent, orderNotes, setOrderNotes, expectedDeliveryDate, setExpectedDeliveryDate, expectedDeliveryTime, setExpectedDeliveryTime, onNext, onBack }) {
+interface StepThreeCompletedServicesProps {
+  vehicleData?: any;
+  completedServices: any[];
+  selectedCompletedServices: any[];
+  setSelectedCompletedServices: (services: any[]) => void;
+  additionalServices: any[];
+  setAdditionalServices: (services: any[]) => void;
+  discountPercent: number;
+  setDiscountPercent: (percent: number) => void;
+  orderNotes: string;
+  setOrderNotes: (notes: string) => void;
+  expectedDeliveryDate: string;
+  setExpectedDeliveryDate: (date: string) => void;
+  expectedDeliveryTime: string;
+  setExpectedDeliveryTime: (time: string) => void;
+  onNext: () => void;
+  onBack: () => void;
+}
+
+function StepThreeCompletedServices({
+  completedServices,
+  selectedCompletedServices,
+  setSelectedCompletedServices,
+  additionalServices,
+  setAdditionalServices,
+  discountPercent,
+  setDiscountPercent,
+  orderNotes,
+  setOrderNotes,
+  expectedDeliveryDate,
+  setExpectedDeliveryDate,
+  expectedDeliveryTime,
+  setExpectedDeliveryTime,
+  onNext,
+  onBack
+}: StepThreeCompletedServicesProps) {
   const [showAddServices, setShowAddServices] = useState(false);
 
-  const formatPrice = (price) => {
+  const formatPrice = (price: any): string => {
     return `QAR ${price.toLocaleString()}`;
   };
 
-  const parseQARAmount = (amountStr) => {
+  const parseQARAmount = (amountStr: any): number => {
     if (typeof amountStr === 'number') return amountStr;
     if (typeof amountStr === 'string') {
       return parseFloat(amountStr.replace(/QAR|,|\s/g, '')) || 0;
@@ -1339,7 +1430,7 @@ function StepThreeCompletedServices({ vehicleData, completedServices, selectedCo
   const originalOrderPrice = selectedOrder ? parseQARAmount(selectedOrder.billing?.netAmount) : 0;
 
   // Calculate additional services price
-  const additionalServicesPrice = additionalServices.reduce((sum, service) => {
+  const additionalServicesPrice = additionalServices.reduce((sum: number, service: any) => {
     const price = typeof service.price === 'number' ? service.price : parseQARAmount(service.price);
     return sum + price;
   }, 0);
@@ -1383,7 +1474,7 @@ function StepThreeCompletedServices({ vehicleData, completedServices, selectedCo
             </label>
             <div style={{ border: '1px solid #ddd', borderRadius: '8px', maxHeight: '400px', overflowY: 'auto' }}>
               {completedServices.length > 0 ? (
-                completedServices.map((service, index) => (
+                completedServices.map((service: any, index: any) => (
                   <div
                     key={index}
                     onClick={() => setSelectedCompletedServices([service])}
@@ -1472,7 +1563,7 @@ function StepThreeCompletedServices({ vehicleData, completedServices, selectedCo
                 </h5>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                   {selectedOrder.services?.length > 0 ? (
-                    selectedOrder.services.map((svc, idx) => (
+                    selectedOrder.services.map((svc: any, idx: any) => (
                       <div key={idx} style={{ padding: '10px', backgroundColor: 'white', borderRadius: '6px', border: '1px solid #dee2e6', fontSize: '13px' }}>
                         <div style={{ fontWeight: '500', color: '#333', marginBottom: '2px' }}>
                           {svc.name}
@@ -1497,7 +1588,7 @@ function StepThreeCompletedServices({ vehicleData, completedServices, selectedCo
                   Additional Services to Add:
                 </h5>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                  {additionalServices.map((svc, idx) => (
+                  {additionalServices.map((svc: any, idx: any) => (
                     <div key={idx} style={{ padding: '10px', backgroundColor: 'white', borderRadius: '6px', border: '1px solid #bbdefb', fontSize: '13px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                       <div>
                         <div style={{ fontWeight: '500', color: '#333', marginBottom: '2px' }}>
@@ -1514,7 +1605,7 @@ function StepThreeCompletedServices({ vehicleData, completedServices, selectedCo
                       </div>
                       <button
                         className="btn btn-danger btn-sm"
-                        onClick={() => setAdditionalServices(additionalServices.filter((_, i) => i !== idx))}
+                        onClick={() => setAdditionalServices(additionalServices.filter((_: any, i: any) => i !== idx))}
                       >
                         <i className="fas fa-trash"></i>
                       </button>
@@ -1548,7 +1639,7 @@ function StepThreeCompletedServices({ vehicleData, completedServices, selectedCo
                 value={orderNotes}
                 onChange={(e) => setOrderNotes(e.target.value)}
                 placeholder="Add any additional notes or comments..."
-                rows="4"
+                rows={4}
                 style={{
                   width: '100%',
                   padding: '12px',
@@ -1667,7 +1758,12 @@ function StepThreeCompletedServices({ vehicleData, completedServices, selectedCo
   );
 }
 
-function InspectionModal({ item, onClose }) {
+interface InspectionModalProps {
+  item: any;
+  onClose: () => void;
+}
+
+function InspectionModal({ item, onClose }: InspectionModalProps) {
   if (!item) return null;
   
   return (
@@ -1701,18 +1797,27 @@ function InspectionModal({ item, onClose }) {
 // SUB-COMPONENTS FOR FORMS
 // ============================================
 
-function StepOneCustomer({ customerType, setCustomerType, customerData, setCustomerData, onNext, onCancel }) {
-  const [fullName, setFullName] = useState('');
-  const [email, setEmail] = useState('');
-  const [phone, setPhone] = useState('');
-  const [address, setAddress] = useState('');
-  const [smartSearch, setSmartSearch] = useState('');
-  const [searchResults, setSearchResults] = useState([]);
-  const [showResults, setShowResults] = useState(false);
-  const [verifiedCustomer, setVerifiedCustomer] = useState(null);
-  const [showDuplicateWarning, setShowDuplicateWarning] = useState(false);
-  const [pendingCustomer, setPendingCustomer] = useState(null);
-  const [saving, setSaving] = useState(false);
+interface StepOneCustomerProps {
+  customerType: any;
+  setCustomerType: (type: any) => void;
+  customerData: any;
+  setCustomerData: (data: any) => void;
+  onNext: () => void;
+  onCancel: () => void;
+}
+
+function StepOneCustomer({ customerType, setCustomerType, customerData, setCustomerData, onNext, onCancel }: StepOneCustomerProps) {
+  const [fullName, setFullName] = useState<string>('');
+  const [email, setEmail] = useState<string>('');
+  const [phone, setPhone] = useState<string>('');
+  const [address, setAddress] = useState<string>('');
+  const [smartSearch, setSmartSearch] = useState<string>('');
+  const [searchResults, setSearchResults] = useState<any[]>([]);
+  const [showResults, setShowResults] = useState<boolean>(false);
+  const [verifiedCustomer, setVerifiedCustomer] = useState<any>(null);
+  const [showDuplicateWarning, setShowDuplicateWarning] = useState<boolean>(false);
+  const [pendingCustomer, setPendingCustomer] = useState<any>(null);
+  const [saving, setSaving] = useState<boolean>(false);
 
   useEffect(() => {
     setCustomerData(null);
@@ -1774,7 +1879,7 @@ function StepOneCustomer({ customerType, setCustomerType, customerData, setCusto
         const currentSaved = JSON.parse(localStorage.getItem('jobOrderCustomers') || '[]');
         // Check once more if customer was just added
         const finalCheck = currentSaved.find(
-          customer => 
+          (customer: any) =>  
             customer.mobile.toLowerCase() === phone.toLowerCase() ||
             customer.name.toLowerCase() === fullName.toLowerCase()
         );
@@ -1795,7 +1900,7 @@ function StepOneCustomer({ customerType, setCustomerType, customerData, setCusto
       // Save customer to localStorage despite duplicate
       const savedCustomers = JSON.parse(localStorage.getItem('jobOrderCustomers') || '[]');
       // Check if this exact customer was already added (prevent double save)
-      const alreadyExists = savedCustomers.find(c => c.id === pendingCustomer.id);
+      const alreadyExists = savedCustomers.find((c: any) => c.id === pendingCustomer.id);
       if (!alreadyExists) {
         savedCustomers.push(pendingCustomer);
         localStorage.setItem('jobOrderCustomers', JSON.stringify(savedCustomers));
@@ -1827,7 +1932,7 @@ function StepOneCustomer({ customerType, setCustomerType, customerData, setCusto
     const freshCustomers = getDemoAndSavedCustomers();
 
     // Smart search across all customer fields
-    const matches = freshCustomers.filter((customer) => {
+    const matches = freshCustomers.filter((customer: any) => {
       const customerName = customer.name.toLowerCase();
       const customerId = customer.id.toLowerCase();
       const customerEmail = customer.email.toLowerCase();
@@ -1845,7 +1950,7 @@ function StepOneCustomer({ customerType, setCustomerType, customerData, setCusto
     setShowResults(true);
   };
 
-  const handleSelectCustomer = (customer) => {
+  const handleSelectCustomer = (customer: any) => {
     setVerifiedCustomer(customer);
     setCustomerData(customer);
     setSmartSearch('');
@@ -2121,7 +2226,17 @@ function StepOneCustomer({ customerType, setCustomerType, customerData, setCusto
   );
 }
 
-function StepTwoVehicle({ vehicleData, setVehicleData, customerData, setCustomerData, onVehicleSelected, onNext, onBack }) {
+interface StepTwoVehicleProps {
+  vehicleData: any;
+  setVehicleData: (data: any) => void;
+  customerData: any;
+  setCustomerData: (data: any) => void;
+  onVehicleSelected: (vehicle: any) => void;
+  onNext: () => void;
+  onBack: () => void;
+}
+
+function StepTwoVehicle({ vehicleData, setVehicleData, customerData, setCustomerData, onVehicleSelected, onNext, onBack }: StepTwoVehicleProps) {
   const [showNewVehicleForm, setShowNewVehicleForm] = useState(false);
   const [factory, setFactory] = useState('Toyota');
   const [model, setModel] = useState('');
@@ -2129,8 +2244,6 @@ function StepTwoVehicle({ vehicleData, setVehicleData, customerData, setCustomer
   const [license, setLicense] = useState('');
   const [carType, setCarType] = useState('SUV');
   const [color, setColor] = useState('');
-  const [selectedExistingVehicle, setSelectedExistingVehicle] = useState(null);
-
   // Check if customer has vehicles
   const hasVehicles = customerData?.vehicles && customerData.vehicles.length > 0;
 
@@ -2166,7 +2279,7 @@ function StepTwoVehicle({ vehicleData, setVehicleData, customerData, setCustomer
       
       // Update customer in jobOrderCustomers localStorage
       const savedCustomers = JSON.parse(localStorage.getItem('jobOrderCustomers') || '[]');
-      const customerIndex = savedCustomers.findIndex(c => c.id === customerData.id);
+      const customerIndex = savedCustomers.findIndex((c: any) => c.id === customerData.id);
       if (customerIndex >= 0) {
         savedCustomers[customerIndex] = updatedCustomer;
         localStorage.setItem('jobOrderCustomers', JSON.stringify(savedCustomers));
@@ -2211,18 +2324,17 @@ function StepTwoVehicle({ vehicleData, setVehicleData, customerData, setCustomer
     }
   };
 
-  const handleSelectExistingVehicle = (vehicle) => {
-    setSelectedExistingVehicle(vehicle);
+  const handleSelectExistingVehicle = (vehicle: any) => {
     const vehicleInfo = {
-      vehicleId: vehicle.vehicleId,
-      make: vehicle.make,
-      model: vehicle.model,
-      year: vehicle.year,
-      color: vehicle.color,
-      plateNumber: vehicle.plateNumber,
-      vehicleType: vehicle.vehicleType,
-      vin: vehicle.vin,
-      completedServices: vehicle.completedServices
+      vehicleId: vehicle?.vehicleId,
+      make: vehicle?.make,
+      model: vehicle?.model,
+      year: vehicle?.year,
+      color: vehicle?.color,
+      plateNumber: vehicle?.plateNumber,
+      vehicleType: vehicle?.vehicleType,
+      vin: vehicle?.vin,
+      completedServices: vehicle?.completedServices
     };
     setVehicleData(vehicleInfo);
     if (onVehicleSelected) {
@@ -2247,7 +2359,7 @@ function StepTwoVehicle({ vehicleData, setVehicleData, customerData, setCustomer
 
             <h3 style={{ marginBottom: '15px', fontSize: '16px', fontWeight: '600' }}>Registered Vehicles</h3>
             <div className="vehicles-list">
-              {customerData.vehicles.map((vehicle) => (
+              {customerData.vehicles.map((vehicle: any) => (
                 <div 
                   key={vehicle.vehicleId} 
                   className={`vehicle-result-item`}
@@ -2329,7 +2441,7 @@ function StepTwoVehicle({ vehicleData, setVehicleData, customerData, setCustomer
             <div className="form-row">
               <div className="form-group">
                 <label>Year *</label>
-                <select value={year} onChange={(e) => setYear(e.target.value)}>
+                <select value={String(year)} onChange={(e) => setYear(parseInt(e.target.value) || new Date().getFullYear())}>
                   {Array.from({ length: 20 }, (_, i) => new Date().getFullYear() - i).map(y => (
                     <option key={y} value={y}>{y}</option>
                   ))}
@@ -2397,7 +2509,7 @@ function StepTwoVehicle({ vehicleData, setVehicleData, customerData, setCustomer
               className="btn btn-change-customer" 
               onClick={() => {
                 setVehicleData(null);
-                setSelectedExistingVehicle(null);
+                handleSelectExistingVehicle(null);
                 if (!hasVehicles) {
                   setFactory('Toyota');
                   setModel('');
@@ -2427,17 +2539,22 @@ function StepTwoVehicle({ vehicleData, setVehicleData, customerData, setCustomer
 // ============================================
 // ADD SERVICES FOR SERVICE ORDER
 // ============================================
-function StepThreeServicesForServiceOrder({ additionalServices, setAdditionalServices, onBack }) {
+interface StepThreeServicesForServiceOrderProps {
+  additionalServices: any[];
+  setAdditionalServices: (services: any[]) => void;
+  onBack: () => void;
+}
+
+function StepThreeServicesForServiceOrder({ additionalServices, setAdditionalServices, onBack }: StepThreeServicesForServiceOrderProps) {
   const [searchQuery, setSearchQuery] = useState('');
 
-  const handleToggleService = (product) => {
-    const price = 'SUV'; // Default price - you can adjust based on vehicle type
+  const handleToggleService = (product: any) => {
     const suvPrice = product.suvPrice;
 
-    const existingService = additionalServices.find(s => s.name === product.name);
+    const existingService = additionalServices.find((s: any) => s.name === product.name);
 
     if (existingService) {
-      setAdditionalServices(additionalServices.filter(s => s.name !== product.name));
+      setAdditionalServices(additionalServices.filter((s: any) => s.name !== product.name));
     } else {
       setAdditionalServices([
         ...additionalServices,
@@ -2450,7 +2567,7 @@ function StepThreeServicesForServiceOrder({ additionalServices, setAdditionalSer
     product.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const totalPrice = additionalServices.reduce((sum, s) => sum + (s.price || 0), 0);
+  const totalPrice = additionalServices.reduce((sum: number, s: any) => sum + (s.price || 0), 0);
 
   return (
     <div className="form-card">
@@ -2483,7 +2600,7 @@ function StepThreeServicesForServiceOrder({ additionalServices, setAdditionalSer
           <div style={{ border: '1px solid #ddd', borderRadius: '8px', maxHeight: '500px', overflowY: 'auto' }}>
             {filteredProducts.length > 0 ? (
               filteredProducts.map((product, index) => {
-                const isSelected = additionalServices.some(s => s.name === product.name);
+                const isSelected = additionalServices.some((s: any) => s.name === product.name);
 
                 return (
                   <div
@@ -2568,17 +2685,48 @@ function StepThreeServicesForServiceOrder({ additionalServices, setAdditionalSer
   );
 }
 
-function StepThreeServices({ selectedServices, setSelectedServices, vehicleType, discountPercent, setDiscountPercent, orderNotes, setOrderNotes, expectedDeliveryDate, setExpectedDeliveryDate, expectedDeliveryTime, setExpectedDeliveryTime, onNext, onBack }) {
+interface StepThreeServicesProps {
+  selectedServices: any[];
+  setSelectedServices: (services: any[]) => void;
+  vehicleType: any;
+  discountPercent: number;
+  setDiscountPercent: (percent: number) => void;
+  orderNotes: string;
+  setOrderNotes: (notes: string) => void;
+  expectedDeliveryDate: string;
+  setExpectedDeliveryDate: (date: string) => void;
+  expectedDeliveryTime: string;
+  setExpectedDeliveryTime: (time: string) => void;
+  onNext: () => void;
+  onBack: () => void;
+}
+
+function StepThreeServices({
+  selectedServices,
+  setSelectedServices,
+  vehicleType,
+  discountPercent,
+  setDiscountPercent,
+  orderNotes,
+  setOrderNotes,
+  expectedDeliveryDate,
+  setExpectedDeliveryDate,
+  expectedDeliveryTime,
+  setExpectedDeliveryTime,
+  onNext,
+  onBack
+}: StepThreeServicesProps) {
+  // @ts-ignore
   const handleToggleService = (product) => {
     const price = vehicleType === 'SUV' ? product.suvPrice : product.sedanPrice;
-    if (selectedServices.some(s => s.name === product.name)) {
-      setSelectedServices(selectedServices.filter(s => s.name !== product.name));
+    if (selectedServices.some((s: any) => s.name === product.name)) {
+      setSelectedServices(selectedServices.filter((s: any) => s.name !== product.name));
     } else {
       setSelectedServices([...selectedServices, { name: product.name, price }]);
     }
   };
 
-  const formatPrice = (price) => {
+  const formatPrice = (price: number): string => {
     return `QAR ${price.toLocaleString()}`;
   };
 
@@ -2598,7 +2746,7 @@ function StepThreeServices({ selectedServices, setSelectedServices, vehicleType,
           {PRODUCT_CATALOG.map((product) => (
             <div
               key={product.name}
-              className={`service-checkbox ${selectedServices.some(s => s.name === product.name) ? 'selected' : ''}`}
+              className={`service-checkbox ${selectedServices.some((s: any) => s.name === product.name) ? 'selected' : ''}`}
               onClick={() => handleToggleService(product)}
             >
               <div className="service-info">
@@ -2620,7 +2768,7 @@ function StepThreeServices({ selectedServices, setSelectedServices, vehicleType,
             value={orderNotes}
             onChange={(e) => setOrderNotes(e.target.value)}
             placeholder="Add any special instructions, notes, or comments for this order..."
-            rows="4"
+            rows={4}
             style={{
               width: '100%',
               padding: '12px',
@@ -2721,12 +2869,26 @@ function StepThreeServices({ selectedServices, setSelectedServices, vehicleType,
   );
 }
 
-function StepFourConfirm({ customerData, vehicleData, orderType, selectedCompletedServices, selectedServices, discountPercent, orderNotes, expectedDeliveryDate, expectedDeliveryTime, onBack, onSubmit }) {
-  const formatPrice = (price) => {
+interface StepFourConfirmProps {
+  customerData: any;
+  vehicleData: any;
+  orderType: string;
+  selectedCompletedServices: any[];
+  selectedServices: any[];
+  discountPercent: number;
+  orderNotes: string;
+  expectedDeliveryDate: string;
+  expectedDeliveryTime: string;
+  onBack: () => void;
+  onSubmit: () => void;
+}
+
+function StepFourConfirm({ customerData, vehicleData, orderType, selectedCompletedServices, selectedServices, discountPercent, orderNotes, expectedDeliveryDate, expectedDeliveryTime, onBack, onSubmit }: StepFourConfirmProps) {
+  const formatPrice = (price: number): string => {
     return `QAR ${price.toLocaleString()}`;
   };
 
-  const subtotal = selectedServices.reduce((sum, s) => sum + s.price, 0);
+  const subtotal = selectedServices.reduce((sum: number, s: any) => sum + s.price, 0);
   const discount = (subtotal * discountPercent) / 100;
   const total = subtotal - discount;
   
@@ -2848,7 +3010,7 @@ function StepFourConfirm({ customerData, vehicleData, orderType, selectedComplet
                       </tr>
                     </thead>
                     <tbody>
-                      {originalOrder.services && originalOrder.services.map((service, index) => (
+                      {originalOrder.services && originalOrder.services.map((service: any, index: number) => (
                         <tr key={index} style={{ borderBottom: '1px solid #ddd', backgroundColor: '#fafafa' }}>
                           <td style={{ padding: '12px', color: '#666', fontSize: '14px' }}>{service.name || service}</td>
                           <td style={{ padding: '12px', textAlign: 'right', color: '#999', fontSize: '14px', fontWeight: '500', textDecoration: 'line-through' }}>QAR 0</td>
@@ -2876,7 +3038,7 @@ function StepFourConfirm({ customerData, vehicleData, orderType, selectedComplet
                         </tr>
                       </thead>
                       <tbody>
-                        {selectedServices.map((service, index) => (
+                        {selectedServices.map((service: any, index: number) => (
                           <tr key={index} style={{ borderBottom: '1px solid #eee' }}>
                             <td style={{ padding: '12px', color: '#333', fontSize: '14px' }}>{service.name}</td>
                             <td style={{ padding: '12px', textAlign: 'right', color: '#333', fontSize: '14px', fontWeight: '500' }}>{formatPrice(service.price)}</td>
@@ -2977,7 +3139,11 @@ function StepFourConfirm({ customerData, vehicleData, orderType, selectedComplet
 // DETAIL CARDS
 // ============================================
 
-function JobOrderSummaryCard({ order }) {
+interface OrderCardProps {
+  order: any;
+}
+
+function JobOrderSummaryCard({ order }: OrderCardProps) {
   return (
     <div className="epm-detail-card">
       <h3><i className="fas fa-info-circle"></i> Job Order Summary</h3>
@@ -3019,10 +3185,10 @@ function JobOrderSummaryCard({ order }) {
   );
 }
 
-function RoadmapCard({ order }) {
+function RoadmapCard({ order }: OrderCardProps) {
   if (!order.roadmap || order.roadmap.length === 0) return null;
 
-  const formatStepStatus = (status) => {
+  const formatStepStatus = (status: string): string => {
     switch (status) {
       case 'New': return 'pim-status-new';
       case 'Completed': return 'pim-status-completed';
@@ -3033,7 +3199,7 @@ function RoadmapCard({ order }) {
     }
   };
 
-  const getStepStatusClass = (stepStatus) => {
+  const getStepStatusClass = (stepStatus: string): string => {
     switch (stepStatus) {
       case 'Completed': return 'pim-step-completed';
       case 'Active': return 'pim-step-active';
@@ -3045,7 +3211,7 @@ function RoadmapCard({ order }) {
     }
   };
 
-  const getStepIcon = (stepStatus) => {
+  const getStepIcon = (stepStatus: string): string => {
     switch (stepStatus) {
       case 'Completed': return 'fas fa-check-circle';
       case 'Active': return 'fas fa-play-circle';
@@ -3062,7 +3228,7 @@ function RoadmapCard({ order }) {
       <h3><i className="fas fa-map-signs"></i> Job Order Roadmap</h3>
       <div className="pim-roadmap-container">
         <div className="pim-roadmap-steps">
-          {order.roadmap.map((step, idx) => (
+          {order.roadmap.map((step: any, idx: number) => (
             <div key={idx} className={`pim-roadmap-step ${getStepStatusClass(step.stepStatus)}`}>
               <div className="pim-step-icon">
                 <i className={getStepIcon(step.stepStatus)}></i>
@@ -3095,7 +3261,7 @@ function RoadmapCard({ order }) {
   );
 }
 
-function InspectionSummaryCard({ order }) {
+function InspectionSummaryCard({ order }: OrderCardProps) {
   if (!order.inspectionResult) return null;
 
   return (
@@ -3127,7 +3293,7 @@ function InspectionSummaryCard({ order }) {
   );
 }
 
-function CustomerDetailsCard({ order }) {
+function CustomerDetailsCard({ order }: OrderCardProps) {
   return (
     <div className="pim-detail-card">
       <h3><i className="fas fa-user"></i> Customer Information</h3>
@@ -3173,7 +3339,7 @@ function CustomerDetailsCard({ order }) {
   );
 }
 
-function VehicleDetailsCard({ order }) {
+function VehicleDetailsCard({ order }: OrderCardProps) {
   return (
     <div className="pim-detail-card">
       <h3><i className="fas fa-car"></i> Vehicle Information</h3>
@@ -3223,7 +3389,12 @@ function VehicleDetailsCard({ order }) {
   );
 }
 
-function ServicesCard({ order, onAddService }) {
+interface ServicesCardProps {
+  order: any;
+  onAddService: () => void;
+}
+
+function ServicesCard({ order, onAddService }: ServicesCardProps) {
   const referenceServices = order.orderType === 'Service Order'
     ? (order.serviceOrderReference?.services || [])
     : [];
@@ -3243,7 +3414,7 @@ function ServicesCard({ order, onAddService }) {
       </div>
       <div className="pim-services-list">
         {combinedServices.length > 0 ? (
-          combinedServices.map((service, idx) => (
+          combinedServices.map((service: any, idx: number) => (
             <div key={idx} className="pim-service-item">
               <div className="pim-service-header">
                 <span className="pim-service-name">{service.name}</span>
@@ -3298,7 +3469,7 @@ function ServicesCard({ order, onAddService }) {
   );
 }
 
-const formatServiceStatus = (status) => {
+const formatServiceStatus = (status: string): string => {
   switch (status) {
     case 'Completed': return 'pim-status-completed';
     case 'InProgress': return 'pim-status-inprogress';
@@ -3311,7 +3482,7 @@ const formatServiceStatus = (status) => {
   }
 };
 
-function DeliveryQualityCheckCard({ order }) {
+function DeliveryQualityCheckCard({ order }: OrderCardProps) {
   if (!order.deliveryQualityCheck) return null;
 
   return (
@@ -3339,7 +3510,7 @@ function DeliveryQualityCheckCard({ order }) {
   );
 }
 
-function CustomerNotesCard({ order }) {
+function CustomerNotesCard({ order }: OrderCardProps) {
   return (
     <div className="epm-detail-card" style={{ backgroundColor: '#fffbea', borderLeft: '4px solid #f59e0b' }}>
       <h3><i className="fas fa-comment-dots"></i> Customer Notes</h3>
@@ -3350,12 +3521,12 @@ function CustomerNotesCard({ order }) {
   );
 }
 
-function QualityCheckListCard({ order }) {
+function QualityCheckListCard({ order }: OrderCardProps) {
   const services = order.orderType === 'Service Order'
     ? [...(order.serviceOrderReference?.services || []), ...(Array.isArray(order.services) ? order.services : [])]
     : (Array.isArray(order.services) ? order.services : []);
 
-  const getStoredResult = (serviceName, index) => {
+  const getStoredResult = (serviceName: string, index: number): any => {
     const storedResults = order.qualityCheckResults;
     if (!storedResults) return null;
     if (Array.isArray(storedResults)) {
@@ -3367,7 +3538,7 @@ function QualityCheckListCard({ order }) {
     return null;
   };
 
-  const getQualityCheckResult = (service, index) => {
+  const getQualityCheckResult = (service: any, index: number): any => {
     if (service && typeof service === 'object') {
       return service.qualityCheckResult || service.qcResult || service.qcStatus || service.qualityStatus || null;
     }
@@ -3380,7 +3551,7 @@ function QualityCheckListCard({ order }) {
       <h3><i className="fas fa-clipboard-check"></i> Quality Check List</h3>
       <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
         {services.length > 0 ? (
-          services.map((service, idx) => {
+          services.map((service: any, idx: number) => {
             const serviceName = typeof service === 'string' ? service : service.name;
             const result = getQualityCheckResult(service, idx) || 'Not Evaluated';
             const isPass = result === 'Pass';
@@ -3432,7 +3603,7 @@ function QualityCheckListCard({ order }) {
   );
 }
 
-function BillingCard({ order }) {
+function BillingCard({ order }: OrderCardProps) {
   return (
     <div className="epm-detail-card">
       <h3><i className="fas fa-receipt"></i> Billing & Invoices</h3>
@@ -3506,7 +3677,7 @@ function BillingCard({ order }) {
             <i className="fas fa-file-invoice" style={{ color: '#3b82f6' }}></i>
             Invoice Details ({order.billing.invoices.length})
           </div>
-          {order.billing.invoices.map((invoice, idx) => (
+          {order.billing.invoices.map((invoice: any, idx: number) => (
             <div key={idx} className="epm-invoice-item" style={{ 
               background: 'linear-gradient(to right, #ffffff, #fafbfc)',
               border: '1px solid #e2e8f0',
@@ -3565,7 +3736,7 @@ function BillingCard({ order }) {
                 }}>
                   <i className="fas fa-list-ul"></i> Services Included:
                 </div>
-                {invoice.services?.map((service, sidx) => (
+                {invoice.services?.map((service: any, sidx: number) => (
                   <div key={sidx} className="epm-service-in-invoice" style={{ 
                     padding: '8px 0 8px 15px',
                     fontSize: '14px',
@@ -3587,7 +3758,7 @@ function BillingCard({ order }) {
   );
 }
 
-function DocumentsCard({ order }) {
+function DocumentsCard({ order }: OrderCardProps) {
   const documents = Array.isArray(order.documents) ? order.documents : []
 
   if (documents.length === 0) return null;
@@ -3596,7 +3767,7 @@ function DocumentsCard({ order }) {
     <div className="pim-detail-card">
       <h3><i className="fas fa-folder-open"></i> Documents</h3>
       <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-        {documents.map((doc, idx) => (
+        {documents.map((doc: any, idx: number) => (
           <div key={idx} style={{
             padding: '15px',
             border: '1px solid #e5e7eb',
@@ -3668,7 +3839,7 @@ function DocumentsCard({ order }) {
 
 }
 
-function PaymentActivityLogCard({ order }) {
+function PaymentActivityLogCard({ order }: OrderCardProps) {
   if (!order.paymentActivityLog || order.paymentActivityLog.length === 0) return null;
 
   return (
@@ -3702,7 +3873,7 @@ function PaymentActivityLogCard({ order }) {
   );
 }
 
-function ExitPermitDetailsCard({ order }) {
+function ExitPermitDetailsCard({ order }: OrderCardProps) {
   const permitId = order.exitPermit?.permitId || 'N/A';
   const createDate = order.exitPermit?.createDate || 'N/A';
   const nextServiceDate = order.exitPermit?.nextServiceDate || 'N/A';
@@ -3751,7 +3922,7 @@ function ExitPermitDetailsCard({ order }) {
 // UTILITY FUNCTIONS
 // ============================================
 
-function getWorkStatusClass(status) {
+function getWorkStatusClass(status: string): string {
   const statusMap = {
     'New Request': 'status-new-request',
     'Inspection': 'status-inspection',
@@ -3761,32 +3932,22 @@ function getWorkStatusClass(status) {
     'Completed': 'status-completed',
     'Cancelled': 'status-cancelled'
   };
-  return statusMap[status] || 'status-inprogress';
+  return statusMap[status as keyof typeof statusMap] || 'status-inprogress';
 }
 
-function getPaymentStatusClass(status) {
+function getPaymentStatusClass(status: string): string {
   if (status === 'Fully Paid') return 'payment-full';
   if (status === 'Partially Paid') return 'payment-partial';
   return 'payment-unpaid';
 }
 
-function getPaymentMethodClass(method) {
+function getPaymentMethodClass(method: string): string {
   if (!method) return '';
   const normalized = method.toLowerCase();
   if (normalized.includes('cash')) return 'epm-payment-method-cash';
   if (normalized.includes('card')) return 'epm-payment-method-card';
   if (normalized.includes('transfer')) return 'epm-payment-method-transfer';
   return 'epm-payment-method-card';
-}
-
-function getServiceStatusClass(status) {
-  const statusMap = {
-    'Completed': 'status-completed',
-    'InProgress': 'status-inprogress',
-    'Pending Approval': 'status-pending-approval',
-    'New': 'status-new'
-  };
-  return statusMap[status] || 'status-new';
 }
 
 export default JobOrderManagement;
