@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react'
-import { Amplify } from 'aws-amplify'
 import amplifyOutputs from '../../amplify_outputs.json'
 import { getCurrentUser as getSystemUser, clearCurrentUser } from './userService.ts'
 import { getRolePermissionsForUser, hasModuleAccess, hasOptionAccess } from './roleAccess.ts'
+import { authService } from './authService'
 import Login from './Login'
 import JobOrderManagement from './JobOrderManagement'
 import PaymentInvoiceManagement from './PaymentInvoiceManagement'
@@ -24,13 +24,7 @@ import Overview from './Overview'
 import PurchaseModule from './PurchaseModule'
 import './App.css'
 
-// Configure Amplify using generated outputs
-try {
-  Amplify.configure(amplifyOutputs)
-} catch (err) {
-  const error = err instanceof Error ? err : new Error(String(err))
-  console.warn('Amplify config warning:', error.message)
-}
+console.log('✅ App.tsx: Amplify configuration loaded:', amplifyOutputs.auth?.user_pool_id ? 'AWS Cognito configured' : 'No auth configured')
 
 function App() {
   const [user, setUser] = useState<any>(null)
@@ -55,30 +49,81 @@ function App() {
 
   const checkUser = async () => {
     try {
-      // Check if user is logged in via our user service
-      console.log('Checking current user...')
+      // First, check if user is logged in via our local user service
+      console.log('🔍 Checking current user from local service...')
       const currentUser = getSystemUser()
-      console.log('Current user:', currentUser)
-      setUser(currentUser)
+      
+      if (currentUser) {
+        console.log('✅ Local user found:', currentUser.email)
+        setUser(currentUser)
+        
+        // Also initialize Amplify auth in background (optional)
+        try {
+          const amplifyUser = await authService.initializeAuth()
+          if (amplifyUser) {
+            console.log('✅ Amplify auth initialized')
+          }
+        } catch (error) {
+          console.log('ℹ️ Amplify auth not available (using local auth):', error)
+        }
+      } else {
+        console.log('ℹ️ No local user found, checking Amplify auth...')
+        
+        // Try to get Amplify user (with timeout to prevent hanging)
+        try {
+          const amplifyUser = await Promise.race([
+            authService.initializeAuth(),
+            new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 3000))
+          ])
+          
+          if (amplifyUser) {
+            console.log('✅ Amplify user found:', amplifyUser.email)
+            // Map Amplify user to local format
+            setUser({
+              id: amplifyUser.userId,
+              email: amplifyUser.email,
+              name: `${amplifyUser.firstName || ''} ${amplifyUser.lastName || ''}`.trim(),
+            })
+          } else {
+            console.log('ℹ️ No authenticated user found')
+            setUser(null)
+          }
+        } catch (error) {
+          console.log('ℹ️ Amplify auth not available:', error)
+          setUser(null)
+        }
+      }
     } catch (err) {
-      console.log('User not logged in', err)
+      console.log('ℹ️ User check complete - no user logged in')
       setUser(null)
     } finally {
       setLoading(false)
-      console.log('Loading complete')
+      console.log('✅ Loading complete')
     }
   }
 
   const handleLoginSuccess = (loggedInUser: any): void => {
+    console.log('✅ Login successful:', loggedInUser.email)
     setUser(loggedInUser)
   }
 
   const handleLogout = async () => {
     try {
+      // Clear local user
       clearCurrentUser()
+      
+      // Also sign out from Amplify
+      try {
+        await authService.signOut()
+        console.log('✅ Amplify auth signed out')
+      } catch (error) {
+        console.log('ℹ️ Amplify sign out not applicable')
+      }
+      
       setUser(null)
+      console.log('✅ User logged out')
     } catch (err) {
-      console.error('Logout failed:', err)
+      console.error('❌ Logout failed:', err)
     }
   }
 
