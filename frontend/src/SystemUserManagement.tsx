@@ -8,7 +8,7 @@ import {
   updateUser as updateUserInService,
   deleteUser as deleteUserFromService,
   initializeUsers,
-  sendUserNotification
+  generatePasswordResetToken
 } from './userService.ts'
 
 const initialUsers = [
@@ -597,7 +597,6 @@ export default function SystemUserManagement() {
       return
     }
 
-    const tempPassword = generateTempPassword()
     const newUser = {
       id: String(users.length + 1),
       employeeId: getNextEmployeeId(),
@@ -610,9 +609,9 @@ export default function SystemUserManagement() {
       status: 'active',
       dashboardAccess: 'allowed',
       createdDate: new Date().toISOString().slice(0, 10),
-      tempPassword,
+      tempPassword: null,
       mustChangePassword: true,
-      password: tempPassword,
+      password: null,
       description: '',
     }
 
@@ -621,11 +620,15 @@ export default function SystemUserManagement() {
     if (result.success) {
       loadUsers() // Reload users from service
       closeCreateForm()
-      const notificationMessage =
-        `Your account has been created. Use ${email} as your username. ` +
-        `Temporary password: ${tempPassword}. You will be asked to change it on first login.`
-      sendUserNotification(email, notificationMessage)
-      showNotification('User created and notification queued successfully!', false)
+      
+      // Send password reset link to new user
+      const resetResult = generatePasswordResetToken(email)
+      if (resetResult.success) {
+        showNotification('User created successfully! Password setup link has been sent to their email.', false)
+        console.log('Password setup link:', resetResult.resetLink)
+      } else {
+        showNotification('User created but failed to send password setup link', true)
+      }
     } else {
       showNotification('Failed to create user', true)
     }
@@ -694,17 +697,19 @@ export default function SystemUserManagement() {
   }
 
   const resetPassword = (userId) => {
-    const password = generateTempPassword()
-    const result = updateUserInService(userId, { 
-      tempPassword: password,
-      mustChangePassword: true,
-      password: password // Update actual password as well
-    })
+    const user = users.find(u => u.id === userId)
+    if (!user) {
+      showNotification('User not found', true)
+      return
+    }
+
+    const result = generatePasswordResetToken(user.email)
     if (result.success) {
-      loadUsers()
-      showNotification('Temporary password generated successfully!', false)
+      showNotification(`Password reset link has been sent to ${user.email}`, false)
+      // For development/testing, you can console.log the reset link
+      console.log('Reset Link:', result.resetLink)
     } else {
-      showNotification('Failed to reset password', true)
+      showNotification(result.message || 'Failed to send reset link', true)
     }
   }
 
@@ -740,23 +745,6 @@ export default function SystemUserManagement() {
     } else {
       showNotification('Failed to update dashboard access', true)
     }
-  }
-
-  const copyToClipboard = (text) => {
-    if (!text) return
-    navigator.clipboard.writeText(text).then(
-      () => showNotification('Password copied to clipboard!', false),
-      () => showNotification('Failed to copy password', true)
-    )
-  }
-
-  const generateTempPassword = () => {
-    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%'
-    let password = ''
-    for (let i = 0; i < 10; i += 1) {
-      password += chars.charAt(Math.floor(Math.random() * chars.length))
-    }
-    return password
   }
 
   const departmentRoles = useMemo(() => {
@@ -890,7 +878,7 @@ export default function SystemUserManagement() {
                         </span>
                       </td>
                       <td>
-                        <PermissionGate moduleId="user" optionId="user_actions">
+                        <PermissionGate moduleId="system" optionId="system_systemuser">
                           <div className="action-dropdown-container">
                             <button
                               className={`btn-action-dropdown ${
@@ -936,7 +924,7 @@ export default function SystemUserManagement() {
 
             {activeDropdown && typeof document !== 'undefined' &&
               createPortal(
-                <PermissionGate moduleId="user" optionId="user_actions">
+                <PermissionGate moduleId="system" optionId="system_systemuser">
                   <div
                     className="action-dropdown-menu show action-dropdown-menu-fixed"
                     style={{
@@ -1125,31 +1113,16 @@ export default function SystemUserManagement() {
               <div className="reset-password-section">
                 <div className="reset-password-container">
                   <div className="reset-password-info">
-                    <h4>Reset User Password</h4>
-                    <p>Generate a temporary password for the user.</p>
+                    <h4>Send Password Reset Link</h4>
+                    <p>Send a secure password reset link to the user's email address. The link will expire in 1 hour.</p>
                   </div>
                   <button
                     className="btn-reset-password"
                     onClick={() => resetPassword(detailsUser.id)}
                   >
-                    <i className="fas fa-key"></i> Reset Password
+                    <i className="fas fa-envelope"></i> Send Reset Link
                   </button>
                 </div>
-                {detailsUser.tempPassword && (
-                  <div className="temp-password-display">
-                    <div className="temp-password-box">
-                      <div className="temp-password-value">
-                        {detailsUser.tempPassword}
-                      </div>
-                      <button
-                        className="btn-copy-password"
-                        onClick={() => copyToClipboard(detailsUser.tempPassword)}
-                      >
-                        <i className="fas fa-copy"></i> Copy
-                      </button>
-                    </div>
-                  </div>
-                )}
               </div>
             </div>
           </div>

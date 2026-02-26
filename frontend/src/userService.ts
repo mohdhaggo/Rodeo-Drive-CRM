@@ -677,6 +677,121 @@ export const getUsersForDropdown = () => {
   }));
 };
 
+// Password Reset Token Management
+const RESET_TOKENS_KEY = 'rodeo_crm_reset_tokens';
+
+const getResetTokens = () => {
+  const stored = localStorage.getItem(RESET_TOKENS_KEY);
+  if (!stored) return {};
+  try {
+    return JSON.parse(stored);
+  } catch {
+    return {};
+  }
+};
+
+const saveResetTokens = (tokens) => {
+  localStorage.setItem(RESET_TOKENS_KEY, JSON.stringify(tokens));
+};
+
+export const generatePasswordResetToken = (email) => {
+  const user = getUserByEmail(email);
+  if (!user) {
+    return { success: false, message: 'User not found' };
+  }
+
+  // Generate a secure token
+  const token = `${Date.now()}-${Math.random().toString(36).substring(2, 15)}${Math.random().toString(36).substring(2, 15)}`;
+  const tokens = getResetTokens();
+  
+  // Store token with expiration (1 hour)
+  tokens[token] = {
+    email: email.toLowerCase(),
+    userId: user.id,
+    expiresAt: Date.now() + (60 * 60 * 1000), // 1 hour
+    used: false
+  };
+  
+  saveResetTokens(tokens);
+  
+  // Generate reset link
+  const resetLink = `${window.location.origin}/reset-password?token=${token}`;
+  
+  // Send notification (simulates email)
+  sendUserNotification(
+    email,
+    `Password Reset Request: Click this link to reset your password: ${resetLink}\n\nThis link will expire in 1 hour.\n\nIf you didn't request this, please ignore this message.`
+  );
+  
+  return { 
+    success: true, 
+    message: 'Password reset link has been sent to the user\'s email',
+    resetLink // For development/testing purposes
+  };
+};
+
+export const verifyResetToken = (token) => {
+  const tokens = getResetTokens();
+  const tokenData = tokens[token];
+  
+  if (!tokenData) {
+    return { valid: false, message: 'Invalid reset token' };
+  }
+  
+  if (tokenData.used) {
+    return { valid: false, message: 'This reset link has already been used' };
+  }
+  
+  if (Date.now() > tokenData.expiresAt) {
+    return { valid: false, message: 'This reset link has expired' };
+  }
+  
+  return { 
+    valid: true, 
+    email: tokenData.email,
+    userId: tokenData.userId 
+  };
+};
+
+export const resetPasswordWithToken = (token, newPassword, confirmPassword) => {
+  if (!newPassword || newPassword.length < 8) {
+    return { success: false, message: 'Password must be at least 8 characters long' };
+  }
+  
+  if (newPassword !== confirmPassword) {
+    return { success: false, message: 'Passwords do not match' };
+  }
+  
+  const verification = verifyResetToken(token);
+  if (!verification.valid) {
+    return { success: false, message: verification.message };
+  }
+  
+  // Update user password
+  const result = updateUser(verification.userId, {
+    password: newPassword,
+    tempPassword: null,
+    mustChangePassword: false
+  });
+  
+  if (result.success) {
+    // Mark token as used
+    const tokens = getResetTokens();
+    tokens[token].used = true;
+    saveResetTokens(tokens);
+    
+    // Send confirmation notification
+    sendUserNotification(
+      verification.email,
+      'Your password has been successfully reset. You can now login with your new password.'
+    );
+    
+    return { success: true, message: 'Password has been reset successfully' };
+  }
+  
+  return { success: false, message: 'Failed to update password' };
+};
+
 export default {
   initializeUsers,
   getAllUsers,
@@ -695,4 +810,7 @@ export default {
   addUser,
   deleteUser,
   getUsersForDropdown,
+  generatePasswordResetToken,
+  verifyResetToken,
+  resetPasswordWithToken,
 };

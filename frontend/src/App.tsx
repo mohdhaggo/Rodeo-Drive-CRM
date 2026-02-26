@@ -4,6 +4,7 @@ import { getCurrentUser as getSystemUser, clearCurrentUser } from './userService
 import { getRolePermissionsForUser, hasModuleAccess, hasOptionAccess } from './roleAccess.ts'
 import { authService, type AuthUser } from './authService'
 import Login from './Login'
+import PasswordReset from './PasswordReset'
 import JobOrderManagement from './JobOrderManagement'
 import PaymentInvoiceManagement from './PaymentInvoiceManagement'
 import ExitPermitManagement from './ExitPermitManagement'
@@ -27,6 +28,14 @@ import './App.css'
 console.log('✅ App.tsx: Amplify configuration loaded:', amplifyOutputs.auth?.user_pool_id ? 'AWS Cognito configured' : 'No auth configured')
 
 function App() {
+  // Check if this is the password reset page
+  const params = new URLSearchParams(window.location.search)
+  const isResetPage = window.location.pathname === '/reset-password' || params.has('token')
+  
+  if (isResetPage) {
+    return <PasswordReset />
+  }
+
   const [user, setUser] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [activeSection, setActiveSection] = useState('Overview')
