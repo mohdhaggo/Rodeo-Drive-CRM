@@ -1320,6 +1320,547 @@ export const serviceExecutionService = {
   },
 };
 
+// ==================== Contact Management ====================
+export const contactService = {
+  async getAll() {
+    try {
+      const { data } = await client.models.Contact.list();
+      return data || [];
+    } catch (error) {
+      console.error('Error fetching contacts:', error);
+      return [];
+    }
+  },
+
+  async getByCustomerId(customerId: string) {
+    try {
+      const { data } = await client.models.Contact.list({
+        filter: { customerId: { eq: customerId } },
+      });
+      return data || [];
+    } catch (error) {
+      console.error('Error fetching contacts for customer:', error);
+      return [];
+    }
+  },
+
+  async create(input: { firstName: string; lastName: string; email: string; phone?: string; customerId: string }) {
+    try {
+      const { data } = await client.models.Contact.create(input);
+      return data;
+    } catch (error) {
+      console.error('Error creating contact:', error);
+      throw error;
+    }
+  },
+
+  async update(id: string, input: Partial<{ firstName: string; lastName: string; email: string; phone: string }>) {
+    try {
+      const { data } = await client.models.Contact.update({ id, ...input });
+      return data;
+    } catch (error) {
+      console.error('Error updating contact:', error);
+      throw error;
+    }
+  },
+
+  async delete(id: string) {
+    try {
+      const { data } = await client.models.Contact.delete({ id });
+      return data;
+    } catch (error) {
+      console.error('Error deleting contact:', error);
+      throw error;
+    }
+  },
+};
+
+// ==================== Invoice Management ====================
+export const invoiceService = {
+  async getAll() {
+    try {
+      const { data } = await client.models.Invoice.list();
+      return data || [];
+    } catch (error) {
+      console.error('Error fetching invoices:', error);
+      return [];
+    }
+  },
+
+  async getByJobOrderId(jobOrderId: string) {
+    try {
+      const { data } = await client.models.Invoice.list({
+        filter: { jobOrderId: { eq: jobOrderId } },
+      });
+      return data?.[0] || null;
+    } catch (error) {
+      console.error('Error fetching invoice for job order:', error);
+      return null;
+    }
+  },
+
+  async create(input: {
+    invoiceNumber: string;
+    jobOrderId: string;
+    customerId: string;
+    invoiceDate: Date;
+    dueDate?: Date;
+    subtotal: number;
+    taxAmount?: number;
+    totalAmount: number;
+    status?: string;
+    notes?: string;
+  }) {
+    try {
+      const { invoiceDate, dueDate, ...rest } = input;
+      const createData: any = {
+        ...rest,
+        invoiceDate: invoiceDate.toISOString(),
+        status: input.status || 'Draft',
+      };
+      if (dueDate) {
+        createData.dueDate = dueDate.toISOString();
+      }
+      const { data } = await client.models.Invoice.create(createData);
+      return data;
+    } catch (error) {
+      console.error('Error creating invoice:', error);
+      throw error;
+    }
+  },
+
+  async update(id: string, input: Partial<any>) {
+    try {
+      const { data } = await client.models.Invoice.update({ id, ...input });
+      return data;
+    } catch (error) {
+      console.error('Error updating invoice:', error);
+      throw error;
+    }
+  },
+};
+
+// ==================== Supplier Management ====================
+export const supplierService = {
+  async getAll() {
+    try {
+      const { data } = await client.models.Supplier.list();
+      return data || [];
+    } catch (error) {
+      console.error('Error fetching suppliers:', error);
+      return [];
+    }
+  },
+
+  async create(input: any) {
+    try {
+      const { data } = await client.models.Supplier.create(input);
+      return data;
+    } catch (error) {
+      console.error('Error creating supplier:', error);
+      throw error;
+    }
+  },
+
+  async update(id: string, input: Partial<any>) {
+    try {
+      const { data } = await client.models.Supplier.update({ id, ...input });
+      return data;
+    } catch (error) {
+      console.error('Error updating supplier:', error);
+      throw error;
+    }
+  },
+};
+
+// ==================== Approval Requests ====================
+export const approvalRequestService = {
+  async getAll() {
+    try {
+      const { data } = await client.models.ApprovalRequest.list();
+      return data || [];
+    } catch (error) {
+      console.error('Error fetching approval requests:', error);
+      return [];
+    }
+  },
+
+  async getByApprover(approverUserId: string) {
+    try {
+      const { data } = await client.models.ApprovalRequest.list({
+        filter: { approverUserId: { eq: approverUserId } },
+      });
+      return data || [];
+    } catch (error) {
+      console.error('Error fetching pending approvals:', error);
+      return [];
+    }
+  },
+
+  async create(input: any) {
+    try {
+      const { requestDate, responseDate, dueDate, ...rest } = input;
+      const createData: any = {
+        ...rest,
+        requestDate: requestDate?.toISOString() || new Date().toISOString(),
+      };
+      if (responseDate) createData.responseDate = responseDate.toISOString();
+      if (dueDate) createData.dueDate = dueDate.toISOString();
+      const { data } = await client.models.ApprovalRequest.create(createData);
+      return data;
+    } catch (error) {
+      console.error('Error creating approval request:', error);
+      throw error;
+    }
+  },
+
+  async update(id: string, input: Partial<any>) {
+    try {
+      const { data } = await client.models.ApprovalRequest.update({ id, ...input });
+      return data;
+    } catch (error) {
+      console.error('Error updating approval request:', error);
+      throw error;
+    }
+  },
+};
+
+// ==================== Service Approval ====================
+export const serviceApprovalRequestService = {
+  async getAll() {
+    try {
+      const { data } = await client.models.ServiceApprovalRequest.list();
+      return data || [];
+    } catch (error) {
+      console.error('Error fetching service approvals:', error);
+      return [];
+    }
+  },
+
+  async getByJobOrderId(jobOrderId: string) {
+    try {
+      const { data } = await client.models.ServiceApprovalRequest.list({
+        filter: { jobOrderId: { eq: jobOrderId } },
+      });
+      return data || [];
+    } catch (error) {
+      console.error('Error fetching service approvals for job order:', error);
+      return [];
+    }
+  },
+
+  async create(input: any) {
+    try {
+      const { requestDate, approvalDate, ...rest } = input;
+      const createData: any = {
+        ...rest,
+        requestDate: requestDate?.toISOString() || new Date().toISOString(),
+      };
+      if (approvalDate) createData.approvalDate = approvalDate.toISOString();
+      const { data } = await client.models.ServiceApprovalRequest.create(createData);
+      return data;
+    } catch (error) {
+      console.error('Error creating service approval:', error);
+      throw error;
+    }
+  },
+
+  async update(id: string, input: Partial<any>) {
+    try {
+      const { data } = await client.models.ServiceApprovalRequest.update({ id, ...input });
+      return data;
+    } catch (error) {
+      console.error('Error updating service approval:', error);
+      throw error;
+    }
+  },
+};
+
+// ==================== Quotation Management ====================
+export const quotationService = {
+  async getAll() {
+    try {
+      const { data } = await client.models.Quotation.list();
+      return data || [];
+    } catch (error) {
+      console.error('Error fetching quotations:', error);
+      return [];
+    }
+  },
+
+  async getByCustomerId(customerId: string) {
+    try {
+      const { data } = await client.models.Quotation.list({
+        filter: { customerId: { eq: customerId } },
+      });
+      return data || [];
+    } catch (error) {
+      console.error('Error fetching quotations for customer:', error);
+      return [];
+    }
+  },
+
+  async create(input: any) {
+    try {
+      const { validUntil, ...rest } = input;
+      const createData: any = rest;
+      if (validUntil) createData.validUntil = validUntil.toISOString();
+      const { data } = await client.models.Quotation.create(createData);
+      return data;
+    } catch (error) {
+      console.error('Error creating quotation:', error);
+      throw error;
+    }
+  },
+
+  async update(id: string, input: Partial<any>) {
+    try {
+      const { data } = await client.models.Quotation.update({ id, ...input });
+      return data;
+    } catch (error) {
+      console.error('Error updating quotation:', error);
+      throw error;
+    }
+  },
+};
+
+// ==================== Activity Log ====================
+export const activityLogService = {
+  async getAll() {
+    try {
+      const { data } = await client.models.ActivityLog.list();
+      return data || [];
+    } catch (error) {
+      console.error('Error fetching activity logs:', error);
+      return [];
+    }
+  },
+
+  async getByUserId(userId: string) {
+    try {
+      const { data } = await client.models.ActivityLog.list({
+        filter: { userId: { eq: userId } },
+      });
+      return data || [];
+    } catch (error) {
+      console.error('Error fetching logs for user:', error);
+      return [];
+    }
+  },
+
+  async log(input: any) {
+    try {
+      const { data } = await client.models.ActivityLog.create(input);
+      return data;
+    } catch (error) {
+      console.error('Error logging activity:', error);
+      throw error;
+    }
+  },
+};
+
+// ==================== Work Log ====================
+export const workLogService = {
+  async getAll() {
+    try {
+      const { data } = await client.models.WorkLog.list();
+      return data || [];
+    } catch (error) {
+      console.error('Error fetching work logs:', error);
+      return [];
+    }
+  },
+
+  async getByJobOrderId(jobOrderId: string) {
+    try {
+      const { data } = await client.models.WorkLog.list({
+        filter: { jobOrderId: { eq: jobOrderId } },
+      });
+      return data || [];
+    } catch (error) {
+      console.error('Error fetching work logs for job order:', error);
+      return [];
+    }
+  },
+
+  async create(input: any) {
+    try {
+      const { startTime, endTime, ...rest } = input;
+      const createData: any = {
+        ...rest,
+        startTime: startTime.toISOString(),
+      };
+      if (endTime) {
+        createData.endTime = endTime.toISOString();
+        // Calculate duration in hours
+        const start = new Date(startTime);
+        const end = new Date(endTime);
+        createData.duration = (end.getTime() - start.getTime()) / (1000 * 60 * 60);
+      }
+      const { data } = await client.models.WorkLog.create(createData);
+      return data;
+    } catch (error) {
+      console.error('Error creating work log:', error);
+      throw error;
+    }
+  },
+
+  async update(id: string, input: Partial<any>) {
+    try {
+      const { data } = await client.models.WorkLog.update({ id, ...input });
+      return data;
+    } catch (error) {
+      console.error('Error updating work log:', error);
+      throw error;
+    }
+  },
+};
+
+// ==================== Notifications ====================
+export const notificationService = {
+  async getAll() {
+    try {
+      const { data } = await client.models.Notification.list();
+      return data || [];
+    } catch (error) {
+      console.error('Error fetching notifications:', error);
+      return [];
+    }
+  },
+
+  async getByUserId(userId: string) {
+    try {
+      const { data } = await client.models.Notification.list({
+        filter: { userId: { eq: userId } },
+      });
+      return data || [];
+    } catch (error) {
+      console.error('Error fetching notifications for user:', error);
+      return [];
+    }
+  },
+
+  async getUnread(userId: string) {
+    try {
+      const { data } = await client.models.Notification.list({
+        filter: { userId: { eq: userId }, isRead: { eq: false } },
+      });
+      return data || [];
+    } catch (error) {
+      console.error('Error fetching unread notifications:', error);
+      return [];
+    }
+  },
+
+  async create(input: any) {
+    try {
+      const { expiresAt, readAt, ...rest } = input;
+      const createData: any = {
+        ...rest,
+        isRead: false,
+      };
+      if (expiresAt) createData.expiresAt = expiresAt.toISOString();
+      const { data } = await client.models.Notification.create(createData);
+      return data;
+    } catch (error) {
+      console.error('Error creating notification:', error);
+      throw error;
+    }
+  },
+
+  async markAsRead(id: string) {
+    try {
+      const { data } = await client.models.Notification.update({
+        id,
+        isRead: true,
+        readAt: new Date().toISOString(),
+      });
+      return data;
+    } catch (error) {
+      console.error('Error marking notification as read:', error);
+      throw error;
+    }
+  },
+};
+
+// ==================== Sales Approval ====================
+export const salesApprovalService = {
+  async getAll() {
+    try {
+      const { data } = await client.models.SalesApproval.list();
+      return data || [];
+    } catch (error) {
+      console.error('Error fetching sales approvals:', error);
+      return [];
+    }
+  },
+
+  async getByLeadId(leadId: string) {
+    try {
+      const { data } = await client.models.SalesApproval.list({
+        filter: { leadId: { eq: leadId } },
+      });
+      return data || [];
+    } catch (error) {
+      console.error('Error fetching approvals for lead:', error);
+      return [];
+    }
+  },
+
+  async create(input: any) {
+    try {
+      const { data } = await client.models.SalesApproval.create(input);
+      return data;
+    } catch (error) {
+      console.error('Error creating sales approval:', error);
+      throw error;
+    }
+  },
+
+  async update(id: string, input: Partial<any>) {
+    try {
+      const { data } = await client.models.SalesApproval.update({ id, ...input });
+      return data;
+    } catch (error) {
+      console.error('Error updating sales approval:', error);
+      throw error;
+    }
+  },
+};
+
+// ==================== Company Management ====================
+export const companyService = {
+  async getAll() {
+    try {
+      const { data } = await client.models.Company.list();
+      return data || [];
+    } catch (error) {
+      console.error('Error fetching companies:', error);
+      return [];
+    }
+  },
+
+  async create(input: any) {
+    try {
+      const { data } = await client.models.Company.create(input);
+      return data;
+    } catch (error) {
+      console.error('Error creating company:', error);
+      throw error;
+    }
+  },
+
+  async update(id: string, input: Partial<any>) {
+    try {
+      const { data } = await client.models.Company.update({ id, ...input });
+      return data;
+    } catch (error) {
+      console.error('Error updating company:', error);
+      throw error;
+    }
+  },
+};
+
 // ==================== UTILITY FUNCTIONS ====================
 
 /**
@@ -1368,31 +1909,50 @@ export default {
   roleService,
   userService,
   permissionService,
-  
+
   // Customer Management
   customerService,
+  contactService,
   vehicleService,
-  
+
   // Job Order Management
   jobOrderService,
   serviceRequestService,
   additionalServiceRequestService,
   paymentService,
   exitPermitService,
-  
+
   // Inspection & Quality
   inspectionService,
   qualityCheckService,
-  
+
   // Sales Management
   salesLeadService,
-  
+  salesApprovalService,
+
   // Product Management
   productService,
-  
+  quotationService,
+
   // Purchase Management
   purchaseOrderService,
-  
+  supplierService,
+
   // Service Execution
   serviceExecutionService,
+
+  // Invoice Management
+  invoiceService,
+
+  // Approvals & Workflows
+  approvalRequestService,
+  serviceApprovalRequestService,
+
+  // Activity & Notifications
+  activityLogService,
+  workLogService,
+  notificationService,
+
+  // Company Management
+  companyService,
 };
