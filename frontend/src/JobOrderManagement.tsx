@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import './JobOrderManagement.css';
 import { getCustomers, getStoredJobOrders } from './demoData';
+import { jobOrderService } from './amplifyService';
 import SuccessPopup from './SuccessPopup';
 import PermissionGate from './PermissionGate';
 import AddServiceScreen from './AddServiceScreen';
@@ -57,15 +58,38 @@ function JobOrderManagement({ currentUser, navigationData, onClearNavigation, on
 
   // Initialize demo data on mount
   useEffect(() => {
-    const demoJobOrders = getStoredJobOrders();
-    setDemoOrders(demoJobOrders);
+    const loadJobOrders = async () => {
+      try {
+        const amplifyJobOrders = await jobOrderService.getAll();
+        console.log('✅ Loaded job orders from Amplify:', amplifyJobOrders);
+        setDemoOrders(amplifyJobOrders || []);
+      } catch (error) {
+        console.error('❌ Error loading job orders from Amplify:', error);
+        // Fall back to localStorage
+        const demoJobOrders = getStoredJobOrders();
+        setDemoOrders(demoJobOrders);
+      }
+    };
+    
+    loadJobOrders();
   }, []);
 
-  // Reload data from localStorage when returning to main screen
+  // Reload data from Amplify when returning to main screen
   useEffect(() => {
     if (screenState === 'main') {
-      const refreshedOrders = getStoredJobOrders();
-      setDemoOrders(refreshedOrders);
+      const loadJobOrders = async () => {
+        try {
+          const amplifyJobOrders = await jobOrderService.getAll();
+          console.log('✅ Reloaded job orders from Amplify');
+          setDemoOrders(amplifyJobOrders || []);
+        } catch (error) {
+          console.error('Error reloading job orders:', error);
+          const refreshedOrders = getStoredJobOrders();
+          setDemoOrders(refreshedOrders);
+        }
+      };
+      
+      loadJobOrders();
     }
   }, [screenState]);
 

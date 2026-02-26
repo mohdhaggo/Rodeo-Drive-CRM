@@ -1,13 +1,96 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import './CustomerManagement.css';
 import { getCustomers, getStoredJobOrders } from './demoData';
+import { customerService, vehicleService } from './amplifyService';
 import PermissionGate from './PermissionGate';
 
-const buildCompletedServiceCounts = (orders, customers) => {
-  const customerCounts = {};
-  const vehicleCounts = {};
-  const customerByNameMobile = {};
+// Types
+interface Customer {
+  id: string;
+  name: string;
+  mobile: string;
+  email?: string;
+  address?: string | null;
+  registeredVehiclesCount: number;
+  completedServicesCount: number;
+  customerSince: string;
+  vehicles?: Vehicle[];
+}
+
+interface Vehicle {
+  vehicleId: string;
+  make: string;
+  model: string;
+  year: number;
+  vehicleType?: string;
+  color: string;
+  plateNumber: string;
+  vin?: string;
+  completedServices?: number;
+}
+
+interface JobOrder {
+  workStatus?: string;
+  customerDetails?: {
+    name?: string;
+    mobile?: string;
+    customerId?: string;
+    id?: string;
+  };
+  customerName?: string;
+  mobile?: string;
+  customerId?: string;
+  customer?: {
+    id?: string;
+    customerId?: string;
+  };
+  vehicleDetails?: {
+    vehicleId?: string;
+    id?: string;
+  };
+}
+
+interface AlertState {
+  isOpen: boolean;
+  title: string;
+  message: string;
+  type: 'success' | 'error' | 'warning' | 'info';
+  showCancel: boolean;
+  onClose?: () => void;
+  onConfirm?: () => void;
+}
+
+interface FormData {
+  name: string;
+  mobile: string;
+  email: string;
+  address: string;
+}
+
+interface VehicleFormData {
+  make: string;
+  model: string;
+  year: number;
+  type: string;
+  color: string;
+  plate: string;
+  vin: string;
+}
+
+interface FormErrors {
+  name?: string;
+  mobile?: string;
+  email?: string;
+  address?: string;
+  vehicle?: string;
+}
+
+// Utility function to build completed service counts
+const buildCompletedServiceCounts = (orders: JobOrder[], customers: Customer[]) => {
+  const customerCounts: Record<string, number> = {};
+  const vehicleCounts: Record<string, number> = {};
+  const customerByNameMobile: Record<string, string> = {};
 
   (customers || []).forEach((customer) => {
     const nameKey = (customer.name || '').trim().toLowerCase();
@@ -43,10 +126,28 @@ const buildCompletedServiceCounts = (orders, customers) => {
 };
 
 // Alert Popup Component
-const AlertPopup = ({ isOpen, title, message, type, onClose, showCancel, onConfirm }) => {
+interface AlertPopupProps {
+  isOpen: boolean;
+  title: string;
+  message: string;
+  type: 'success' | 'error' | 'warning' | 'info';
+  onClose: () => void;
+  showCancel?: boolean;
+  onConfirm?: () => void;
+}
+
+const AlertPopup: React.FC<AlertPopupProps> = ({ 
+  isOpen, 
+  title, 
+  message, 
+  type, 
+  onClose, 
+  showCancel = false, 
+  onConfirm 
+}) => {
   if (!isOpen) return null;
 
-  const getIcon = () => {
+  const getIcon = (): string => {
     switch (type) {
       case 'success': return 'fas fa-check-circle';
       case 'error': return 'fas fa-exclamation-circle';
@@ -56,8 +157,8 @@ const AlertPopup = ({ isOpen, title, message, type, onClose, showCancel, onConfi
   };
 
   return (
-    <div className={`alert-popup-overlay show`}>
-      <div className={`alert-popup alert-${type}`}>
+    <div className="alert-popup-overlay show" onClick={onClose}>
+      <div className={`alert-popup alert-${type}`} onClick={(e) => e.stopPropagation()}>
         <div className="alert-popup-header">
           <div className="alert-popup-title">
             <i className={getIcon()}></i>
@@ -83,18 +184,38 @@ const AlertPopup = ({ isOpen, title, message, type, onClose, showCancel, onConfi
 };
 
 // Modal Component
-const Modal = ({ isOpen, title, icon, children, onClose, onSave, isEdit = false, saving = false }) => {
+interface ModalProps {
+  isOpen: boolean;
+  title: string;
+  icon: string;
+  children: React.ReactNode;
+  onClose: () => void;
+  onSave: () => void;
+  isEdit?: boolean;
+  saving?: boolean;
+}
+
+const Modal: React.FC<ModalProps> = ({ 
+  isOpen, 
+  title, 
+  icon, 
+  children, 
+  onClose, 
+  onSave, 
+  isEdit = false, 
+  saving = false 
+}) => {
   if (!isOpen) return null;
   if (typeof document === 'undefined') return null;
 
   return createPortal(
-    <div className="modal-overlay show">
-      <div className="modal">
+    <div className="modal-overlay show" onClick={onClose}>
+      <div className="modal" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
           <h3>
             <i className={icon}></i> {title}
           </h3>
-          <button className="btn-close-modal" onClick={onClose}>
+          <button className="btn-close-modal" onClick={onClose} aria-label="Close modal">
             <i className="fas fa-times"></i>
           </button>
         </div>
@@ -102,7 +223,12 @@ const Modal = ({ isOpen, title, icon, children, onClose, onSave, isEdit = false,
           {children}
         </div>
         <div className="modal-footer">
-          <button className="btn-save" onClick={onSave} disabled={saving}>
+          <button 
+            className="btn-save" 
+            onClick={onSave} 
+            disabled={saving}
+            aria-label={saving ? 'Saving...' : (isEdit ? 'Save Changes' : 'Add Customer')}
+          >
             <i className="fas fa-save"></i> {saving ? 'Saving...' : (isEdit ? 'Save Changes' : 'Add Customer')}
           </button>
           <button className="btn-cancel" onClick={onClose} disabled={saving}>
@@ -116,7 +242,31 @@ const Modal = ({ isOpen, title, icon, children, onClose, onSave, isEdit = false,
 };
 
 // Form Field Component
-const FormField = ({ label, id, type = 'text', value, onChange, error, placeholder, required = false, disabled = false, options = null }) => {
+interface FormFieldProps {
+  label: string;
+  id: string;
+  type?: string;
+  value: string | number;
+  onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => void;
+  error?: string;
+  placeholder?: string;
+  required?: boolean;
+  disabled?: boolean;
+  options?: Array<string | { value: string; label: string }>;
+}
+
+const FormField: React.FC<FormFieldProps> = ({ 
+  label, 
+  id, 
+  type = 'text', 
+  value, 
+  onChange, 
+  error, 
+  placeholder, 
+  required = false, 
+  disabled = false, 
+  options = null 
+}) => {
   const isSelect = type === 'select';
 
   return (
@@ -135,7 +285,7 @@ const FormField = ({ label, id, type = 'text', value, onChange, error, placehold
           disabled={disabled}
           required={required}
         >
-          {options && options.map(opt => {
+          {options && options.map((opt) => {
             const optValue = typeof opt === 'object' ? opt.value : opt;
             const optLabel = typeof opt === 'object' ? opt.label : opt;
             return (
@@ -161,15 +311,34 @@ const FormField = ({ label, id, type = 'text', value, onChange, error, placehold
 };
 
 // Table Component
-const CustomersTable = ({ data, onViewDetails, onEdit, onDelete, currentPage, pageSize, searchQuery }) => {
-  const [activeDropdown, setActiveDropdown] = useState(null);
-  const [activeDropdownCustomer, setActiveDropdownCustomer] = useState(null);
+interface CustomersTableProps {
+  data: Customer[];
+  onViewDetails: (id: string) => void;
+  onEdit: (id: string) => void;
+  onDelete: (customer: Customer | string) => void;
+  currentPage: number;
+  pageSize: number;
+  searchQuery: string;
+}
+
+const CustomersTable: React.FC<CustomersTableProps> = ({ 
+  data, 
+  onViewDetails, 
+  onEdit, 
+  onDelete, 
+  currentPage: _, // eslint-disable-line @typescript-eslint/no-unused-vars
+  pageSize: __, // eslint-disable-line @typescript-eslint/no-unused-vars
+  searchQuery: ___ // eslint-disable-line @typescript-eslint/no-unused-vars
+}) => {
+  const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
+  const [activeDropdownCustomer, setActiveDropdownCustomer] = useState<Customer | null>(null);
   const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0 });
 
   useEffect(() => {
-    const handleClickOutside = (event) => {
-      const isDropdownButton = event.target.closest('.btn-action-dropdown');
-      const isDropdownMenu = event.target.closest('.action-dropdown-menu');
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as HTMLElement;
+      const isDropdownButton = target.closest('.btn-action-dropdown');
+      const isDropdownMenu = target.closest('.action-dropdown-menu');
       if (!isDropdownButton && !isDropdownMenu) {
         setActiveDropdown(null);
         setActiveDropdownCustomer(null);
@@ -224,6 +393,7 @@ const CustomersTable = ({ data, onViewDetails, onEdit, onDelete, currentPage, pa
                       type="button"
                       className={`btn-action-dropdown ${activeDropdown === customer.id ? 'active' : ''}`}
                       onClick={(e) => {
+                        e.stopPropagation();
                         const isActive = activeDropdown === customer.id;
                         if (isActive) {
                           setActiveDropdown(null);
@@ -240,6 +410,7 @@ const CustomersTable = ({ data, onViewDetails, onEdit, onDelete, currentPage, pa
                         setActiveDropdown(customer.id);
                         setActiveDropdownCustomer(customer);
                       }}
+                      aria-label={`Actions for ${customer.name}`}
                     >
                       <i className="fas fa-cogs"></i> Actions <i className="fas fa-chevron-down"></i>
                     </button>
@@ -255,18 +426,44 @@ const CustomersTable = ({ data, onViewDetails, onEdit, onDelete, currentPage, pa
           <div
             className="action-dropdown-menu show action-dropdown-menu-fixed"
             onMouseDown={(e) => e.stopPropagation()}
-            onClick={(e) => e.stopPropagation()}
             style={{ top: `${dropdownPosition.top}px`, left: `${dropdownPosition.left}px` }}
           >
-            <button type="button" className="dropdown-item view" onClick={() => { onViewDetails(activeDropdown); setActiveDropdown(null); setActiveDropdownCustomer(null); }}>
+            <button 
+              type="button" 
+              className="dropdown-item view" 
+              onClick={() => { 
+                onViewDetails(activeDropdown); 
+                setActiveDropdown(null); 
+                setActiveDropdownCustomer(null); 
+              }}
+            >
               <i className="fas fa-eye"></i> View Details
             </button>
             <div className="dropdown-divider"></div>
-            <button type="button" className="dropdown-item edit" onClick={() => { onEdit(activeDropdown); setActiveDropdown(null); setActiveDropdownCustomer(null); }}>
+            <button 
+              type="button" 
+              className="dropdown-item edit" 
+              onClick={() => { 
+                onEdit(activeDropdown); 
+                setActiveDropdown(null); 
+                setActiveDropdownCustomer(null); 
+              }}
+            >
               <i className="fas fa-edit"></i> Edit Customer
             </button>
             <div className="dropdown-divider"></div>
-            <button type="button" className="dropdown-item delete" onClick={(e) => { e.stopPropagation(); const cust = activeDropdownCustomer || data.find(c => c.id === activeDropdown); onDelete(cust || activeDropdown); setActiveDropdown(null); setActiveDropdownCustomer(null); }}>
+            <button 
+              type="button" 
+              className="dropdown-item delete" 
+              onClick={() => { 
+                const cust = activeDropdownCustomer || data.find(c => c.id === activeDropdown); 
+                if (cust) {
+                  onDelete(cust); 
+                }
+                setActiveDropdown(null); 
+                setActiveDropdownCustomer(null); 
+              }}
+            >
               <i className="fas fa-trash"></i> Delete Customer
             </button>
           </div>
@@ -278,16 +475,35 @@ const CustomersTable = ({ data, onViewDetails, onEdit, onDelete, currentPage, pa
 };
 
 // Details View Component
-const DetailsView = ({ customer, onClose, onEdit, onAddVehicle, onDeleteVehicle, onViewVehicleDetails, getVehicleCompletedCount }) => {
-  const [activeVehicleDropdown, setActiveVehicleDropdown] = useState(null);
-  const [vehicleDropdownPosition, setVehicleDropdownPosition] = useState({ top: 0, left: 0, width: 0 });
-  const [deleteVehicle, setDeleteVehicle] = useState(null);
+interface DetailsViewProps {
+  customer: Customer;
+  onClose: () => void;
+  onEdit: (id: string) => void;
+  onAddVehicle: (customerId: string) => void;
+  onDeleteVehicle: (customerId: string, vehicleId: string) => void;
+  onViewVehicleDetails: (customerId: string, vehicle: Vehicle) => void;
+  getVehicleCompletedCount: (vehicleId: string) => number;
+}
+
+const DetailsView: React.FC<DetailsViewProps> = ({ 
+  customer, 
+  onClose, 
+  onEdit, 
+  onAddVehicle, 
+  onDeleteVehicle, 
+  onViewVehicleDetails, 
+  getVehicleCompletedCount 
+}) => {
+  const [activeVehicleDropdown, setActiveVehicleDropdown] = useState<string | null>(null);
+  const [vehicleDropdownPosition, setVehicleDropdownPosition] = useState({ top: 0, left: 0 });
+  const [deleteVehicle, setDeleteVehicle] = useState<Vehicle | null>(null);
 
   // Close dropdown when clicking outside
   useEffect(() => {
-    const handleClickOutside = (event) => {
-      const isDropdownButton = event.target.closest('.btn-action-dropdown');
-      const isDropdownMenu = event.target.closest('.action-dropdown-menu');
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as HTMLElement;
+      const isDropdownButton = target.closest('.btn-action-dropdown');
+      const isDropdownMenu = target.closest('.action-dropdown-menu');
       
       if (!isDropdownButton && !isDropdownMenu) {
         setActiveVehicleDropdown(null);
@@ -393,7 +609,7 @@ const DetailsView = ({ customer, onClose, onEdit, onAddVehicle, onDeleteVehicle,
                 </thead>
                 <tbody>
                   {customer.vehicles && customer.vehicles.length > 0 ? (
-                    customer.vehicles.map((vehicle, index) => (
+                    customer.vehicles.map((vehicle) => (
                       <tr key={vehicle.vehicleId}>
                         <td>{vehicle.vehicleId}</td>
                         <td>{vehicle.make}</td>
@@ -409,6 +625,7 @@ const DetailsView = ({ customer, onClose, onEdit, onAddVehicle, onDeleteVehicle,
                             <button
                               className={`btn-action-dropdown ${activeVehicleDropdown === vehicle.vehicleId ? 'active' : ''}`}
                               onClick={(e) => {
+                                e.stopPropagation();
                                 const isActive = activeVehicleDropdown === vehicle.vehicleId;
                                 if (isActive) {
                                   setActiveVehicleDropdown(null);
@@ -420,13 +637,10 @@ const DetailsView = ({ customer, onClose, onEdit, onAddVehicle, onDeleteVehicle,
                                 const spaceBelow = window.innerHeight - rect.bottom;
                                 const top = spaceBelow < menuHeight ? rect.top - menuHeight - 6 : rect.bottom + 6;
                                 const left = Math.max(8, Math.min(rect.right - menuWidth, window.innerWidth - menuWidth - 8));
-                                setVehicleDropdownPosition({
-                                  top,
-                                  left,
-                                  width: rect.width
-                                });
+                                setVehicleDropdownPosition({ top, left });
                                 setActiveVehicleDropdown(vehicle.vehicleId);
                               }}
+                              aria-label={`Actions for ${vehicle.make} ${vehicle.model}`}
                             >
                               <i className="fas fa-cogs"></i> Actions <i className="fas fa-chevron-down"></i>
                             </button>
@@ -436,7 +650,7 @@ const DetailsView = ({ customer, onClose, onEdit, onAddVehicle, onDeleteVehicle,
                     ))
                   ) : (
                     <tr>
-                      <td colSpan="10" style={{ textAlign: 'center', padding: '30px' }}>
+                      <td colSpan={10} style={{ textAlign: 'center', padding: '30px' }}>
                         No vehicles registered
                       </td>
                     </tr>
@@ -453,7 +667,6 @@ const DetailsView = ({ customer, onClose, onEdit, onAddVehicle, onDeleteVehicle,
           <div
             className="action-dropdown-menu show action-dropdown-menu-fixed"
             onMouseDown={(e) => e.stopPropagation()}
-            onClick={(e) => e.stopPropagation()}
             style={{
               top: `${vehicleDropdownPosition.top}px`,
               left: `${vehicleDropdownPosition.left}px`
@@ -474,8 +687,7 @@ const DetailsView = ({ customer, onClose, onEdit, onAddVehicle, onDeleteVehicle,
             <div className="dropdown-divider"></div>
             <button
               className="dropdown-item delete"
-              onClick={(e) => {
-                e.stopPropagation();
+              onClick={() => {
                 const vehicle = customer.vehicles?.find(v => v.vehicleId === activeVehicleDropdown);
                 if (vehicle) {
                   setDeleteVehicle(vehicle);
@@ -525,52 +737,111 @@ const DetailsView = ({ customer, onClose, onEdit, onAddVehicle, onDeleteVehicle,
 };
 
 // Main Component
-export default function CustomerManagement({ onNavigate, returnToCustomer }) {
-  // Load initial customers from demo data and localStorage
-  const [customers, setCustomers] = useState(() => {
-    const demoCustomers = getCustomers();
-    const savedCustomers = JSON.parse(localStorage.getItem('jobOrderCustomers') || '[]');
-    // Merge saved customers with demo customers (avoiding duplicates)
-    const allCustomers = [...demoCustomers];
-    savedCustomers.forEach(saved => {
-      if (!allCustomers.some(customer => customer.id === saved.id)) {
-        allCustomers.push(saved);
-      }
-    });
-    return allCustomers;
-  });
+interface CustomerManagementProps {
+  onNavigate?: (module: string, params?: any) => void;
+  returnToCustomer?: string | null;
+}
+
+const CustomerManagement: React.FC<CustomerManagementProps> = ({ onNavigate, returnToCustomer }) => {
+  // Load initial customers from Amplify backend
+  const [customers, setCustomers] = useState<Customer[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
-  const [searchResults, setSearchResults] = useState(customers);
+  const [searchResults, setSearchResults] = useState<Customer[]>(customers);
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(20);
-  const [selectedCustomer, setSelectedCustomer] = useState(null);
-  const [viewMode, setViewMode] = useState('list'); // 'list' or 'details'
-  const [jobOrders, setJobOrders] = useState(() => getStoredJobOrders());
+  const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
+  const [viewMode, setViewMode] = useState<'list' | 'details'>('list');
+  const [jobOrders, setJobOrders] = useState<JobOrder[]>(() => getStoredJobOrders() || []);
   const [handledReturnToCustomer, setHandledReturnToCustomer] = useState(false);
-  const customersRef = useRef(customers);
+  const customersRef = useRef<Customer[]>(customers);
+
+  // Load customers from Amplify on component mount
+  useEffect(() => {
+    const loadCustomers = async () => {
+      try {
+        const amplifyCustomers = await customerService.getAll();
+        console.log('✅ Loaded customers from Amplify:', amplifyCustomers);
+        
+        // Map Amplify data to Customer interface
+        const mappedCustomers = (amplifyCustomers || []).map((cust: any): Customer => {
+          const vehicles: Vehicle[] = (cust.vehicles || []).map((v: any) => ({
+            vehicleId: v.id,
+            make: v.make,
+            model: v.model,
+            year: parseInt(v.year) || new Date().getFullYear(),
+            vehicleType: v.vehicleType || '',
+            color: v.color || '',
+            plateNumber: v.plateNumber || '',
+            vin: v.vin || '',
+            completedServices: v.jobOrders?.filter((jo: any) => jo.workStatus === 'Completed').length || 0
+          }));
+          
+          return {
+            id: cust.id,
+            name: cust.name,
+            email: cust.email,
+            mobile: cust.mobile || '',
+            address: cust.address || null,
+            registeredVehiclesCount: vehicles.length,
+            completedServicesCount: cust.jobOrders?.filter((jo: any) => jo.workStatus === 'Completed').length || 0,
+            customerSince: cust.createdAt ? new Date(cust.createdAt).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' }) : new Date().toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' }),
+            vehicles: vehicles
+          };
+        });
+        
+        // Also merge with any locally saved customers that might not be in the cloud yet
+        const savedCustomers = JSON.parse(localStorage.getItem('jobOrderCustomers') || '[]') as Customer[];
+        const allCustomers: Customer[] = [...mappedCustomers];
+        savedCustomers.forEach((saved: Customer) => {
+          if (!allCustomers.some(customer => customer.id === saved.id)) {
+            allCustomers.push(saved);
+          }
+        });
+        
+        setCustomers(allCustomers);
+      } catch (error) {
+        console.error('❌ Error loading customers from Amplify:', error);
+        // Fall back to demo data if Amplify fails
+        const demoCustomersRaw = getCustomers() || [];
+        const savedCustomers = JSON.parse(localStorage.getItem('jobOrderCustomers') || '[]') as Customer[];
+        const allCustomers: Customer[] = [...demoCustomersRaw as unknown as Customer[], ...savedCustomers];
+        setCustomers(allCustomers);
+      }
+    };
+    
+    loadCustomers();
+  }, []);
 
   // Modal states
   const [showAddCustomerModal, setShowAddCustomerModal] = useState(false);
   const [showEditCustomerModal, setShowEditCustomerModal] = useState(false);
   const [showAddVehicleModal, setShowAddVehicleModal] = useState(false);
-  const [editingCustomerId, setEditingCustomerId] = useState(null);
-  const [addVehicleCustomerId, setAddVehicleCustomerId] = useState(null);
-  const [deleteCustomer, setDeleteCustomer] = useState(null);
+  const [editingCustomerId, setEditingCustomerId] = useState<string | null>(null);
+  const [addVehicleCustomerId, setAddVehicleCustomerId] = useState<string | null>(null);
+  const [deleteCustomer, setDeleteCustomer] = useState<Customer | null>(null);
   const [showDuplicateWarning, setShowDuplicateWarning] = useState(false);
-  const [pendingCustomer, setPendingCustomer] = useState(null);
+  const [pendingCustomer, setPendingCustomer] = useState<Customer | null>(null);
   const [saving, setSaving] = useState(false);
 
   // Alert state
-  const [alert, setAlert] = useState({ isOpen: false, title: '', message: '', type: 'info', showCancel: false });
+  const [alert, setAlert] = useState<AlertState>({ 
+    isOpen: false, 
+    title: '', 
+    message: '', 
+    type: 'info', 
+    showCancel: false 
+  });
 
   // Form states
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<FormData>({
     name: '', mobile: '', email: '', address: ''
   });
-  const [vehicleData, setVehicleData] = useState({
+  
+  const [vehicleData, setVehicleData] = useState<VehicleFormData>({
     make: '', model: '', year: new Date().getFullYear(), type: '', color: '', plate: '', vin: ''
   });
-  const [formErrors, setFormErrors] = useState({});
+  
+  const [formErrors, setFormErrors] = useState<FormErrors>({});
 
   const handleCancelDelete = () => {
     setDeleteCustomer(null);
@@ -599,55 +870,59 @@ export default function CustomerManagement({ onNavigate, returnToCustomer }) {
   }, [customers]);
 
   const refreshCompletedServiceCounts = useCallback(() => {
-    const jobOrders = getStoredJobOrders();
-    const currentCustomers = customersRef.current || [];
-    const { customerCounts, vehicleCounts } = buildCompletedServiceCounts(jobOrders, currentCustomers);
+    try {
+      const jobOrders = getStoredJobOrders() || [];
+      const currentCustomers = customersRef.current || [];
+      const { customerCounts, vehicleCounts } = buildCompletedServiceCounts(jobOrders, currentCustomers);
 
-    const updatedCustomers = currentCustomers.map((customer) => {
-      const updatedVehicles = (customer.vehicles || []).map((vehicle) => {
-        const updatedCount = vehicleCounts[vehicle.vehicleId];
-        if (updatedCount === undefined) return vehicle;
-        return { ...vehicle, completedServices: updatedCount };
+      const updatedCustomers = currentCustomers.map((customer) => {
+        const updatedVehicles = (customer.vehicles || []).map((vehicle) => {
+          const updatedCount = vehicleCounts[vehicle.vehicleId];
+          if (updatedCount === undefined) return vehicle;
+          return { ...vehicle, completedServices: updatedCount };
+        });
+
+        const completedServicesCount = customerCounts[customer.id];
+
+        return {
+          ...customer,
+          vehicles: updatedVehicles,
+          registeredVehiclesCount: updatedVehicles.length || customer.registeredVehiclesCount || 0,
+          completedServicesCount: completedServicesCount !== undefined
+            ? completedServicesCount
+            : customer.completedServicesCount || 0
+        };
       });
 
-      const completedServicesCount = customerCounts[customer.id];
+      setCustomers(updatedCustomers);
 
-      return {
-        ...customer,
-        vehicles: updatedVehicles,
-        registeredVehiclesCount: updatedVehicles.length || customer.registeredVehiclesCount || 0,
-        completedServicesCount: completedServicesCount !== undefined
-          ? completedServicesCount
-          : customer.completedServicesCount || 0
-      };
-    });
+      if (typeof localStorage === 'undefined') return;
+      const savedCustomers = JSON.parse(localStorage.getItem('jobOrderCustomers') || '[]');
+      if (savedCustomers.length === 0) return;
 
-    setCustomers(updatedCustomers);
+      const updatedSaved = savedCustomers.map((customer: Customer) => {
+        const updatedVehicles = (customer.vehicles || []).map((vehicle) => {
+          const updatedCount = vehicleCounts[vehicle.vehicleId];
+          if (updatedCount === undefined) return vehicle;
+          return { ...vehicle, completedServices: updatedCount };
+        });
 
-    if (typeof localStorage === 'undefined') return;
-    const savedCustomers = JSON.parse(localStorage.getItem('jobOrderCustomers') || '[]');
-    if (savedCustomers.length === 0) return;
+        const completedServicesCount = customerCounts[customer.id];
 
-    const updatedSaved = savedCustomers.map((customer) => {
-      const updatedVehicles = (customer.vehicles || []).map((vehicle) => {
-        const updatedCount = vehicleCounts[vehicle.vehicleId];
-        if (updatedCount === undefined) return vehicle;
-        return { ...vehicle, completedServices: updatedCount };
+        return {
+          ...customer,
+          vehicles: updatedVehicles,
+          registeredVehiclesCount: updatedVehicles.length || customer.registeredVehiclesCount || 0,
+          completedServicesCount: completedServicesCount !== undefined
+            ? completedServicesCount
+            : customer.completedServicesCount || 0
+        };
       });
 
-      const completedServicesCount = customerCounts[customer.id];
-
-      return {
-        ...customer,
-        vehicles: updatedVehicles,
-        registeredVehiclesCount: updatedVehicles.length || customer.registeredVehiclesCount || 0,
-        completedServicesCount: completedServicesCount !== undefined
-          ? completedServicesCount
-          : customer.completedServicesCount || 0
-      };
-    });
-
-    localStorage.setItem('jobOrderCustomers', JSON.stringify(updatedSaved));
+      localStorage.setItem('jobOrderCustomers', JSON.stringify(updatedSaved));
+    } catch (error) {
+      console.error('Error refreshing service counts:', error);
+    }
   }, []);
 
   useEffect(() => {
@@ -657,23 +932,23 @@ export default function CustomerManagement({ onNavigate, returnToCustomer }) {
   useEffect(() => {
     const handleCompletedServicesUpdate = () => {
       refreshCompletedServiceCounts();
-      setJobOrders(getStoredJobOrders());
+      setJobOrders(getStoredJobOrders() || []);
     };
 
     window.addEventListener('completed-services-updated', handleCompletedServicesUpdate);
     return () => window.removeEventListener('completed-services-updated', handleCompletedServicesUpdate);
   }, [refreshCompletedServiceCounts]);
 
-  const getVehicleCompletedCount = useCallback((vehicleId) => {
+  const getVehicleCompletedCount = useCallback((vehicleId: string): number => {
     if (!vehicleId) return 0;
     return jobOrders.filter(order =>
       order.vehicleDetails?.vehicleId === vehicleId &&
-      order.workStatus === 'Completed'
+      order.workStatus?.toLowerCase() === 'completed'
     ).length;
   }, [jobOrders]);
 
   // Search function
-  const performSmartSearch = useCallback((query) => {
+  const performSmartSearch = useCallback((query: string): Customer[] => {
     if (!query.trim()) {
       return customers;
     }
@@ -686,7 +961,7 @@ export default function CustomerManagement({ onNavigate, returnToCustomer }) {
         customer.id.toLowerCase().includes(term) ||
         customer.name.toLowerCase().includes(term) ||
         customer.mobile.toLowerCase().includes(term) ||
-        customer.email.toLowerCase().includes(term)
+        (customer.email || '').toLowerCase().includes(term)
       );
     });
 
@@ -706,7 +981,7 @@ export default function CustomerManagement({ onNavigate, returnToCustomer }) {
   }, [customers, selectedCustomer]);
 
   // Handle search input
-  const handleSearch = (e) => {
+  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     const query = e.target.value;
     setSearchQuery(query);
     setSearchResults(performSmartSearch(query));
@@ -714,11 +989,14 @@ export default function CustomerManagement({ onNavigate, returnToCustomer }) {
   };
 
   // Pagination
-  const totalPages = Math.ceil(searchResults.length / pageSize);
-  const paginatedData = searchResults.slice((currentPage - 1) * pageSize, currentPage * pageSize);
+  const totalPages = useMemo(() => Math.ceil(searchResults.length / pageSize), [searchResults.length, pageSize]);
+  const paginatedData = useMemo(() => 
+    searchResults.slice((currentPage - 1) * pageSize, currentPage * pageSize), 
+    [searchResults, currentPage, pageSize]
+  );
 
   // Show alert
-  const showAlert = (title, message, type = 'info', showCancel = false) => {
+  const showAlert = (title: string, message: string, type: AlertState['type'] = 'info', showCancel = false): Promise<boolean> => {
     return new Promise((resolve) => {
       setAlert({
         isOpen: true,
@@ -739,148 +1017,257 @@ export default function CustomerManagement({ onNavigate, returnToCustomer }) {
   };
 
   // Customer management functions
-  const handleAddCustomer = async () => {
-    if (saving) return; // Prevent multiple clicks
+  const validateCustomerForm = (): boolean => {
+    const errors: FormErrors = {};
     
-    if (!formData.name.trim() || !formData.mobile.trim()) {
-      setFormErrors({ name: !formData.name.trim() ? 'Name required' : '', mobile: !formData.mobile.trim() ? 'Mobile required' : '' });
+    if (!formData.name.trim()) {
+      errors.name = 'Name is required';
+    }
+    
+    if (!formData.mobile.trim()) {
+      errors.mobile = 'Mobile number is required';
+    } else if (!/^\d{10,}$/.test(formData.mobile.replace(/\D/g, ''))) {
+      errors.mobile = 'Please enter a valid mobile number';
+    }
+    
+    if (formData.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+      errors.email = 'Please enter a valid email address';
+    }
+    
+    setFormErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
+  const handleAddCustomer = async () => {
+    if (saving) return;
+    
+    if (!validateCustomerForm()) {
       return;
     }
 
     setSaving(true);
 
-    // Check if customer with same name or mobile already exists - check localStorage directly
-    const demoCustomers = getCustomers();
-    const savedCustomers = JSON.parse(localStorage.getItem('jobOrderCustomers') || '[]');
-    const allCustomers = [...demoCustomers, ...savedCustomers];
-    
-    const existingCustomer = allCustomers.find(
-      customer => 
-        customer.mobile.toLowerCase() === formData.mobile.toLowerCase() ||
-        customer.name.toLowerCase() === formData.name.toLowerCase()
-    );
-
-    const newCustomer = {
-      id: `CUST-2023-${String(Math.floor(Math.random() * 10000)).padStart(5, '0')}`,
-      name: formData.name,
-      mobile: formData.mobile,
-      email: formData.email,
-      address: formData.address,
-      registeredVehiclesCount: 0,
-      completedServicesCount: 0,
-      customerSince: new Date().toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' }),
-      vehicles: []
-    };
-
-    if (existingCustomer) {
-      // Show warning dialog
-      setPendingCustomer(newCustomer);
-      setShowDuplicateWarning(true);
-      setSaving(false);
-    } else {
-      // Save customer directly if no duplicate
-      const updatedCustomers = [newCustomer, ...customers];
-      setCustomers(updatedCustomers);
-      setSearchResults(prev => [newCustomer, ...prev]);
-      
-      // Persist to localStorage with final check
-      const currentSaved = JSON.parse(localStorage.getItem('jobOrderCustomers') || '[]');
-      // Final check if customer was just added
-      const alreadySaved = currentSaved.find(c => 
-        c.mobile.toLowerCase() === formData.mobile.toLowerCase() ||
-        c.name.toLowerCase() === formData.name.toLowerCase()
+    try {
+      // Check if customer with same name or mobile already exists in local state
+      const existingCustomer = customers.find(
+        customer => 
+          customer.mobile.toLowerCase() === formData.mobile.toLowerCase() ||
+          customer.name.toLowerCase() === formData.name.toLowerCase()
       );
-      if (!alreadySaved) {
-        currentSaved.push(newCustomer);
-        localStorage.setItem('jobOrderCustomers', JSON.stringify(currentSaved));
+
+      const newCustomer: Customer = {
+        id: `CUST-${new Date().getFullYear()}-${String(Math.floor(Math.random() * 10000)).padStart(5, '0')}`,
+        name: formData.name.trim(),
+        mobile: formData.mobile.trim(),
+        email: formData.email.trim(),
+        address: formData.address.trim(),
+        registeredVehiclesCount: 0,
+        completedServicesCount: 0,
+        customerSince: new Date().toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' }),
+        vehicles: []
+      };
+
+      if (existingCustomer) {
+        setPendingCustomer(newCustomer);
+        setShowDuplicateWarning(true);
+        setSaving(false);
+      } else {
+        // Save customer to Amplify backend
+        try {
+          const createdCustomer = await customerService.create({
+            name: newCustomer.name,
+            mobile: newCustomer.mobile,
+            email: newCustomer.email || undefined,
+            address: newCustomer.address || undefined,
+            status: 'active'
+          });
+          
+          if (!createdCustomer) {
+            throw new Error('Failed to create customer');
+          }
+          
+          console.log('✅ Customer created in Amplify:', createdCustomer);
+          
+          // Map the response back to Customer interface
+          const mappedCustomer: Customer = {
+            id: createdCustomer.id,
+            name: createdCustomer.name,
+            mobile: createdCustomer.mobile || '',
+            email: createdCustomer.email || undefined,
+            address: createdCustomer.address || null,
+            registeredVehiclesCount: 0,
+            completedServicesCount: 0,
+            customerSince: new Date().toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' }),
+            vehicles: []
+          };
+          
+          const updatedCustomers = [mappedCustomer, ...customers];
+          setCustomers(updatedCustomers);
+          setSearchResults(prev => [mappedCustomer, ...prev]);
+          
+          setShowAddCustomerModal(false);
+          setFormData({ name: '', mobile: '', email: '', address: '' });
+          setFormErrors({});
+          setSaving(false);
+          await showAlert('Success', `Customer "${mappedCustomer.name}" added successfully!`, 'success');
+        } catch (error) {
+          console.error('Error creating customer in Amplify:', error);
+          // Fall back to local storage if Amplify fails
+          const updatedCustomers = [newCustomer, ...customers];
+          setCustomers(updatedCustomers);
+          setSearchResults(prev => [newCustomer, ...prev]);
+          
+          const currentSaved = JSON.parse(localStorage.getItem('jobOrderCustomers') || '[]');
+          currentSaved.push(newCustomer);
+          localStorage.setItem('jobOrderCustomers', JSON.stringify(currentSaved));
+          
+          setShowAddCustomerModal(false);
+          setFormData({ name: '', mobile: '', email: '', address: '' });
+          setFormErrors({});
+          setSaving(false);
+          await showAlert('Success', `Customer "${newCustomer.name}" added successfully (offline)!`, 'success');
+        }
       }
-      
-      setShowAddCustomerModal(false);
-      setFormData({ name: '', mobile: '', email: '', address: '' });
-      setFormErrors({});
+    } catch (error) {
+      console.error('Error adding customer:', error);
       setSaving(false);
-      await showAlert('Success', `Customer "${newCustomer.name}" added successfully!`, 'success');
+      await showAlert('Error', 'Failed to add customer. Please try again.', 'error');
     }
   };
 
   const handleConfirmDuplicate = async () => {
     if (pendingCustomer && !saving) {
       setSaving(true);
-      const updatedCustomers = [pendingCustomer, ...customers];
-      setCustomers(updatedCustomers);
-      setSearchResults(prev => [pendingCustomer, ...prev]);
-      
-      // Persist to localStorage despite duplicate
-      const savedCustomers = JSON.parse(localStorage.getItem('jobOrderCustomers') || '[]');
-      // Check if this exact customer was already added (prevent double save)
-      const alreadySaved = savedCustomers.find(c => c.id === pendingCustomer.id);
-      if (!alreadySaved) {
-        savedCustomers.push(pendingCustomer);
-        localStorage.setItem('jobOrderCustomers', JSON.stringify(savedCustomers));
+      try {
+        // Try to save to Amplify, but allow duplicate
+        try {
+          const createdCustomer = await customerService.create({
+            name: pendingCustomer.name,
+            mobile: pendingCustomer.mobile,
+            email: pendingCustomer.email || undefined,
+            address: pendingCustomer.address || undefined,
+            status: 'active'
+          });
+          
+          if (createdCustomer) {
+            const mappedCustomer: Customer = {
+              id: createdCustomer.id,
+              name: createdCustomer.name,
+              mobile: createdCustomer.mobile || '',
+              email: createdCustomer.email || undefined,
+              address: createdCustomer.address || null,
+              registeredVehiclesCount: 0,
+              completedServicesCount: 0,
+              customerSince: new Date().toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' }),
+              vehicles: []
+            };
+            
+            const updatedCustomers = [mappedCustomer, ...customers];
+            setCustomers(updatedCustomers);
+            setSearchResults(prev => [mappedCustomer, ...prev]);
+          } else {
+            throw new Error('Failed to create customer');
+          }
+        } catch (error) {
+          console.error('Error creating customer in Amplify:', error);
+          // Fall back to local storage
+          const updatedCustomers = [pendingCustomer, ...customers];
+          setCustomers(updatedCustomers);
+          setSearchResults(prev => [pendingCustomer, ...prev]);
+          
+          const savedCustomers = JSON.parse(localStorage.getItem('jobOrderCustomers') || '[]');
+          savedCustomers.push(pendingCustomer);
+          localStorage.setItem('jobOrderCustomers', JSON.stringify(savedCustomers));
+        }
+        
+        setShowAddCustomerModal(false);
+        setFormData({ name: '', mobile: '', email: '', address: '' });
+        setFormErrors({});
+        setShowDuplicateWarning(false);
+        setPendingCustomer(null);
+        setSaving(false);
+        await showAlert('Success', `Customer "${pendingCustomer.name}" added successfully!`, 'success');
+      } catch (error) {
+        console.error('Error adding duplicate customer:', error);
+        setSaving(false);
+        await showAlert('Error', 'Failed to add customer. Please try again.', 'error');
       }
-      
-      setShowAddCustomerModal(false);
-      setFormData({ name: '', mobile: '', email: '', address: '' });
-      setFormErrors({});
-      setShowDuplicateWarning(false);
-      setPendingCustomer(null);
-      setSaving(false);
-      await showAlert('Success', `Customer "${pendingCustomer.name}" added successfully!`, 'success');
     }
   };
 
   const handleCancelDuplicate = () => {
     setShowDuplicateWarning(false);
     setPendingCustomer(null);
+    setSaving(false);
   };
 
-  const handleEditCustomer = (customerId) => {
+  const handleEditCustomer = (customerId: string) => {
     const customer = customers.find(c => c.id === customerId);
     if (customer) {
       setEditingCustomerId(customerId);
-      setFormData({ name: customer.name, mobile: customer.mobile, email: customer.email, address: customer.address || '' });
+      setFormData({ 
+        name: customer.name, 
+        mobile: customer.mobile, 
+        email: customer.email || '', 
+        address: customer.address || '' 
+      });
       setShowEditCustomerModal(true);
       setFormErrors({});
     }
   };
 
   const handleSaveCustomer = async () => {
-    if (!formData.name.trim() || !formData.mobile.trim()) {
-      setFormErrors({ name: !formData.name.trim() ? 'Name required' : '', mobile: !formData.mobile.trim() ? 'Mobile required' : '' });
+    if (!validateCustomerForm()) {
       return;
     }
 
-    // Update in component state
-    setCustomers(prev => prev.map(c => c.id === editingCustomerId ? { ...c, ...formData } : c));
-    setSearchResults(prev => prev.map(c => c.id === editingCustomerId ? { ...c, ...formData } : c));
-    if (selectedCustomer?.id === editingCustomerId) {
-      setSelectedCustomer(prev => ({ ...prev, ...formData }));
+    try {
+      // Try to update in Amplify backend
+      try {
+        await customerService.update(editingCustomerId || '', {
+          name: formData.name,
+          mobile: formData.mobile,
+          email: formData.email || undefined,
+          address: formData.address || undefined
+        });
+        console.log('✅ Customer updated in Amplify');
+      } catch (error) {
+        console.error('Error updating customer in Amplify:', error);
+        // Fall back to local update
+      }
+      
+      // Update in component state
+      setCustomers(prev => prev.map(c => c.id === editingCustomerId ? { ...c, ...formData } : c));
+      setSearchResults(prev => prev.map(c => c.id === editingCustomerId ? { ...c, ...formData } : c));
+      
+      if (selectedCustomer?.id === editingCustomerId) {
+        setSelectedCustomer(prev => prev ? { ...prev, ...formData } : null);
+      }
+      
+      // Update in localStorage if it's a saved customer
+      const savedCustomers = JSON.parse(localStorage.getItem('jobOrderCustomers') || '[]');
+      const customerIndex = savedCustomers.findIndex((c: Customer) => c.id === editingCustomerId);
+      if (customerIndex !== -1) {
+        savedCustomers[customerIndex] = { ...savedCustomers[customerIndex], ...formData };
+        localStorage.setItem('jobOrderCustomers', JSON.stringify(savedCustomers));
+      }
+      
+      setShowEditCustomerModal(false);
+      setFormData({ name: '', mobile: '', email: '', address: '' });
+      setFormErrors({});
+      await showAlert('Success', 'Customer updated successfully!', 'success');
+    } catch (error) {
+      console.error('Error saving customer:', error);
+      await showAlert('Error', 'Failed to update customer. Please try again.', 'error');
     }
-    
-    // Update in localStorage if it's a saved customer
-    const savedCustomers = JSON.parse(localStorage.getItem('jobOrderCustomers') || '[]');
-    const customerIndex = savedCustomers.findIndex(c => c.id === editingCustomerId);
-    if (customerIndex !== -1) {
-      // Customer exists in localStorage, update it
-      savedCustomers[customerIndex] = { ...savedCustomers[customerIndex], ...formData };
-      localStorage.setItem('jobOrderCustomers', JSON.stringify(savedCustomers));
-    }
-    
-    setShowEditCustomerModal(false);
-    setFormData({ name: '', mobile: '', email: '', address: '' });
-    setFormErrors({});
-    await showAlert('Success', 'Customer updated successfully!', 'success');
   };
 
-  const handleDeleteCustomer = async (customerOrId) => {
-    console.log('handleDeleteCustomer called with:', customerOrId);
+  const handleDeleteCustomer = (customerOrId: Customer | string) => {
     const customer = typeof customerOrId === 'object'
       ? customerOrId
       : customers.find(c => c.id === customerOrId);
 
-    console.log('Customer found:', customer);
     if (customer) {
-      console.log('Setting deleteCustomer state to:', customer);
       setDeleteCustomer(customer);
     }
   };
@@ -891,21 +1278,29 @@ export default function CustomerManagement({ onNavigate, returnToCustomer }) {
     try {
       const customerToDelete = deleteCustomer;
       
+      // Try to delete from Amplify backend
+      try {
+        await customerService.delete(customerToDelete.id);
+        console.log('✅ Customer deleted from Amplify');
+      } catch (error) {
+        console.error('Error deleting customer from Amplify:', error);
+        // Fall back to local deletion
+      }
+      
       // Remove from component state
       setCustomers(prev => prev.filter(c => c.id !== customerToDelete.id));
       setSearchResults(prev => prev.filter(c => c.id !== customerToDelete.id));
       
-      // Remove from localStorage if it was a saved customer (not a demo customer)
+      // Remove from localStorage if it was a saved customer
       const savedCustomers = JSON.parse(localStorage.getItem('jobOrderCustomers') || '[]');
-      const updatedSaved = savedCustomers.filter(c => c.id !== customerToDelete.id);
+      const updatedSaved = savedCustomers.filter((c: Customer) => c.id !== customerToDelete.id);
       if (savedCustomers.length !== updatedSaved.length) {
-        // Customer was in localStorage, save the updated list
         localStorage.setItem('jobOrderCustomers', JSON.stringify(updatedSaved));
       }
 
-      // Remove any vehicles owned by this customer from Vehicle Management storage
+      // Remove any vehicles owned by this customer
       const vehicleManagementVehicles = JSON.parse(localStorage.getItem('vehicleManagementVehicles') || '[]');
-      const updatedVehicles = vehicleManagementVehicles.filter(v => v.customerId !== customerToDelete.id);
+      const updatedVehicles = vehicleManagementVehicles.filter((v: any) => v.customerId !== customerToDelete.id);
       if (vehicleManagementVehicles.length !== updatedVehicles.length) {
         localStorage.setItem('vehicleManagementVehicles', JSON.stringify(updatedVehicles));
       }
@@ -915,10 +1310,7 @@ export default function CustomerManagement({ onNavigate, returnToCustomer }) {
         setSelectedCustomer(null);
       }
       
-      // Close modal before showing alert
       handleCancelDelete();
-      
-      // Show success message
       await showAlert('Success', 'Customer deleted successfully!', 'success');
     } catch (error) {
       console.error('Error deleting customer:', error);
@@ -927,143 +1319,189 @@ export default function CustomerManagement({ onNavigate, returnToCustomer }) {
     }
   };
 
-  // Vehicle management
+  const validateVehicleForm = (): boolean => {
+    const errors: FormErrors = {};
+    
+    if (!vehicleData.make.trim()) {
+      errors.vehicle = 'Make is required';
+    } else if (!vehicleData.model.trim()) {
+      errors.vehicle = 'Model is required';
+    } else if (!vehicleData.type) {
+      errors.vehicle = 'Vehicle type is required';
+    } else if (!vehicleData.color.trim()) {
+      errors.vehicle = 'Color is required';
+    } else if (!vehicleData.plate.trim()) {
+      errors.vehicle = 'Plate number is required';
+    }
+    
+    setFormErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
   const handleAddVehicle = async () => {
-    if (!vehicleData.make.trim() || !vehicleData.model.trim() || !vehicleData.type) {
-      setFormErrors({ vehicle: 'All required fields must be filled' });
+    if (!validateVehicleForm()) {
       return;
     }
 
-    const newVehicle = {
-      vehicleId: `VEH-${String(Math.random()).substring(2, 8)}`,
-      make: vehicleData.make,
-      model: vehicleData.model,
-      year: vehicleData.year,
-      vehicleType: vehicleData.type,
-      color: vehicleData.color,
-      plateNumber: vehicleData.plate,
-      vin: vehicleData.vin,
-      completedServices: 0
-    };
+    try {
+      const newVehicle: Vehicle = {
+        vehicleId: `VEH-${Date.now().toString().slice(-8)}`,
+        make: vehicleData.make.trim(),
+        model: vehicleData.model.trim(),
+        year: Number(vehicleData.year),
+        vehicleType: vehicleData.type,
+        color: vehicleData.color.trim(),
+        plateNumber: vehicleData.plate.trim(),
+        vin: vehicleData.vin.trim() || undefined,
+        completedServices: 0
+      };
 
-    // Update in component state
-    setCustomers(prev => prev.map(c => {
-      if (c.id === addVehicleCustomerId) {
-        return {
-          ...c,
-          vehicles: [...(c.vehicles || []), newVehicle],
-          registeredVehiclesCount: (c.vehicles || []).length + 1
-        };
+      // Try to create vehicle in Amplify
+      try {
+        await vehicleService.create({
+          customerId: addVehicleCustomerId || '',
+          make: newVehicle.make,
+          model: newVehicle.model,
+          year: newVehicle.year.toString(),
+          color: newVehicle.color || undefined,
+          plateNumber: newVehicle.plateNumber || undefined,
+          vin: newVehicle.vin || undefined,
+          vehicleType: newVehicle.vehicleType || undefined,
+          status: 'active'
+        });
+        console.log('✅ Vehicle created in Amplify');
+      } catch (error) {
+        console.error('Error creating vehicle in Amplify:', error);
+        // Fall back to local storage
       }
-      return c;
-    }));
 
-    // Update in localStorage if it's a saved customer
-    const savedCustomers = JSON.parse(localStorage.getItem('jobOrderCustomers') || '[]');
-    const customerIndex = savedCustomers.findIndex(c => c.id === addVehicleCustomerId);
-    if (customerIndex !== -1) {
-      savedCustomers[customerIndex].vehicles = [...(savedCustomers[customerIndex].vehicles || []), newVehicle];
-      savedCustomers[customerIndex].registeredVehiclesCount = savedCustomers[customerIndex].vehicles.length;
-      localStorage.setItem('jobOrderCustomers', JSON.stringify(savedCustomers));
-    }
+      // Update in component state
+      setCustomers(prev => prev.map(c => {
+        if (c.id === addVehicleCustomerId) {
+          return {
+            ...c,
+            vehicles: [...(c.vehicles || []), newVehicle],
+            registeredVehiclesCount: (c.vehicles?.length || 0) + 1
+          };
+        }
+        return c;
+      }));
 
-    // Also add to Vehicle Management's localStorage
-    const customer = customers.find(c => c.id === addVehicleCustomerId);
-    if (customer) {
-      const vehicleManagementVehicle = {
-        vehicleId: newVehicle.vehicleId,
-        ownedBy: customer.name,
-        customerId: customer.id,
-        make: newVehicle.make,
-        model: newVehicle.model,
-        year: newVehicle.year,
-        color: newVehicle.color,
-        plateNumber: newVehicle.plateNumber,
-        completedServices: 0,
-        customerDetails: {
-          customerId: customer.id,
-          name: customer.name,
-          email: customer.email,
-          mobile: customer.mobile,
-          address: customer.address || null,
-          registeredVehiclesCount: (customer.vehicles || []).length + 1,
-          registeredVehicles: `${(customer.vehicles || []).length + 1} vehicle${(customer.vehicles || []).length + 1 !== 1 ? 's' : ''}`,
-          completedServicesCount: customer.completedServicesCount || 0,
-          customerSince: customer.customerSince
-        },
-        vehicleDetails: {
+      // Update in localStorage if it's a saved customer
+      const savedCustomers = JSON.parse(localStorage.getItem('jobOrderCustomers') || '[]');
+      const customerIndex = savedCustomers.findIndex((c: Customer) => c.id === addVehicleCustomerId);
+      if (customerIndex !== -1) {
+        savedCustomers[customerIndex].vehicles = [...(savedCustomers[customerIndex].vehicles || []), newVehicle];
+        savedCustomers[customerIndex].registeredVehiclesCount = savedCustomers[customerIndex].vehicles.length;
+        localStorage.setItem('jobOrderCustomers', JSON.stringify(savedCustomers));
+      }
+
+      // Also add to Vehicle Management's localStorage
+      const customer = customers.find(c => c.id === addVehicleCustomerId);
+      if (customer) {
+        const vehicleManagementVehicle = {
           vehicleId: newVehicle.vehicleId,
           ownedBy: customer.name,
+          customerId: customer.id,
           make: newVehicle.make,
           model: newVehicle.model,
           year: newVehicle.year,
           color: newVehicle.color,
           plateNumber: newVehicle.plateNumber,
-          vin: newVehicle.vin || '',
-          registrationDate: new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }),
-          type: newVehicle.vehicleType,
-          lastServiceDate: null
-        },
-        services: []
-      };
-      
-      const vehicleManagementVehicles = JSON.parse(localStorage.getItem('vehicleManagementVehicles') || '[]');
-      vehicleManagementVehicles.push(vehicleManagementVehicle);
-      localStorage.setItem('vehicleManagementVehicles', JSON.stringify(vehicleManagementVehicles));
-    }
-
-    if (selectedCustomer?.id === addVehicleCustomerId) {
-      const updatedCustomer = customers.find(c => c.id === addVehicleCustomerId);
-      if (updatedCustomer) {
-        setSelectedCustomer(updatedCustomer);
-      }
-    }
-
-    setShowAddVehicleModal(false);
-    setVehicleData({ make: '', model: '', year: new Date().getFullYear(), type: '', color: '', plate: '', vin: '' });
-    setFormErrors({});
-    await showAlert('Success', 'Vehicle added successfully!', 'success');
-  };
-
-  const handleDeleteVehicle = async (customerId, vehicleId) => {
-    // Update in component state
-    setCustomers(prev => prev.map(c => {
-      if (c.id === customerId) {
-        return {
-          ...c,
-          vehicles: c.vehicles.filter(v => v.vehicleId !== vehicleId),
-          registeredVehiclesCount: (c.vehicles || []).length - 1
+          completedServices: 0,
+          customerDetails: {
+            customerId: customer.id,
+            name: customer.name,
+            email: customer.email,
+            mobile: customer.mobile,
+            address: customer.address || null,
+            registeredVehiclesCount: (customer.vehicles?.length || 0) + 1,
+            registeredVehicles: `${(customer.vehicles?.length || 0) + 1} vehicle${(customer.vehicles?.length || 0) + 1 !== 1 ? 's' : ''}`,
+            completedServicesCount: customer.completedServicesCount || 0,
+            customerSince: customer.customerSince
+          },
+          vehicleDetails: {
+            vehicleId: newVehicle.vehicleId,
+            ownedBy: customer.name,
+            make: newVehicle.make,
+            model: newVehicle.model,
+            year: newVehicle.year,
+            color: newVehicle.color,
+            plateNumber: newVehicle.plateNumber,
+            vin: newVehicle.vin || '',
+            registrationDate: new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }),
+            type: newVehicle.vehicleType,
+            lastServiceDate: null
+          },
+          services: []
         };
+        
+        const vehicleManagementVehicles = JSON.parse(localStorage.getItem('vehicleManagementVehicles') || '[]');
+        vehicleManagementVehicles.push(vehicleManagementVehicle);
+        localStorage.setItem('vehicleManagementVehicles', JSON.stringify(vehicleManagementVehicles));
       }
-      return c;
-    }));
 
-    // Update in localStorage if it's a saved customer
-    const savedCustomers = JSON.parse(localStorage.getItem('jobOrderCustomers') || '[]');
-    const customerIndex = savedCustomers.findIndex(c => c.id === customerId);
-    if (customerIndex !== -1) {
-      savedCustomers[customerIndex].vehicles = savedCustomers[customerIndex].vehicles.filter(v => v.vehicleId !== vehicleId);
-      savedCustomers[customerIndex].registeredVehiclesCount = savedCustomers[customerIndex].vehicles.length;
-      localStorage.setItem('jobOrderCustomers', JSON.stringify(savedCustomers));
-    }
-
-    // Also remove from Vehicle Management's localStorage
-    const vehicleManagementVehicles = JSON.parse(localStorage.getItem('vehicleManagementVehicles') || '[]');
-    const filteredVehicles = vehicleManagementVehicles.filter(v => v.vehicleId !== vehicleId);
-    if (vehicleManagementVehicles.length !== filteredVehicles.length) {
-      localStorage.setItem('vehicleManagementVehicles', JSON.stringify(filteredVehicles));
-    }
-
-    if (selectedCustomer?.id === customerId) {
-      const updatedCustomer = customers.find(c => c.id === customerId);
-      if (updatedCustomer) {
-        setSelectedCustomer(updatedCustomer);
+      if (selectedCustomer?.id === addVehicleCustomerId) {
+        const updatedCustomer = customers.find(c => c.id === addVehicleCustomerId);
+        if (updatedCustomer) {
+          setSelectedCustomer(updatedCustomer);
+        }
       }
+
+      setShowAddVehicleModal(false);
+      setVehicleData({ make: '', model: '', year: new Date().getFullYear(), type: '', color: '', plate: '', vin: '' });
+      setFormErrors({});
+      await showAlert('Success', 'Vehicle added successfully!', 'success');
+    } catch (error) {
+      console.error('Error adding vehicle:', error);
+      await showAlert('Error', 'Failed to add vehicle. Please try again.', 'error');
     }
-    await showAlert('Success', 'Vehicle deleted successfully!', 'success');
   };
 
-  const openDetailsView = (customerId) => {
+  const handleDeleteVehicle = async (customerId: string, vehicleId: string) => {
+    try {
+      // Update in component state
+      setCustomers(prev => prev.map(c => {
+        if (c.id === customerId) {
+          return {
+            ...c,
+            vehicles: c.vehicles?.filter(v => v.vehicleId !== vehicleId) || [],
+            registeredVehiclesCount: (c.vehicles?.length || 0) - 1
+          };
+        }
+        return c;
+      }));
+
+      // Update in localStorage if it's a saved customer
+      const savedCustomers = JSON.parse(localStorage.getItem('jobOrderCustomers') || '[]');
+      const customerIndex = savedCustomers.findIndex((c: Customer) => c.id === customerId);
+      if (customerIndex !== -1) {
+        savedCustomers[customerIndex].vehicles = savedCustomers[customerIndex].vehicles?.filter((v: Vehicle) => v.vehicleId !== vehicleId) || [];
+        savedCustomers[customerIndex].registeredVehiclesCount = savedCustomers[customerIndex].vehicles.length;
+        localStorage.setItem('jobOrderCustomers', JSON.stringify(savedCustomers));
+      }
+
+      // Also remove from Vehicle Management's localStorage
+      const vehicleManagementVehicles = JSON.parse(localStorage.getItem('vehicleManagementVehicles') || '[]');
+      const filteredVehicles = vehicleManagementVehicles.filter((v: any) => v.vehicleId !== vehicleId);
+      if (vehicleManagementVehicles.length !== filteredVehicles.length) {
+        localStorage.setItem('vehicleManagementVehicles', JSON.stringify(filteredVehicles));
+      }
+
+      if (selectedCustomer?.id === customerId) {
+        const updatedCustomer = customers.find(c => c.id === customerId);
+        if (updatedCustomer) {
+          setSelectedCustomer(updatedCustomer);
+        }
+      }
+      await showAlert('Success', 'Vehicle deleted successfully!', 'success');
+    } catch (error) {
+      console.error('Error deleting vehicle:', error);
+      await showAlert('Error', 'Failed to delete vehicle. Please try again.', 'error');
+    }
+  };
+
+  const openDetailsView = (customerId: string) => {
     const customer = customers.find(c => c.id === customerId);
     if (customer) {
       setSelectedCustomer(customer);
@@ -1071,16 +1509,15 @@ export default function CustomerManagement({ onNavigate, returnToCustomer }) {
     }
   };
 
-  const handleViewVehicleDetails = async (customerId, vehicle) => {
+  const handleViewVehicleDetails = (customerId: string, vehicle: Vehicle) => {
     // Get customer details
     const customer = customers.find(c => c.id === customerId);
     
     if (onNavigate) {
-      // Navigate directly to Vehicle Management with complete vehicle and customer details
       onNavigate('Vehicles Management', {
         openDetails: true,
         source: 'Customers Management',
-        returnToCustomer: customerId, // Store which customer to return to
+        returnToCustomer: customerId,
         vehicle: {
           vehicleId: vehicle.vehicleId,
           make: vehicle.make,
@@ -1113,7 +1550,17 @@ export default function CustomerManagement({ onNavigate, returnToCustomer }) {
     setHandledReturnToCustomer(true);
   };
 
-  console.log('CustomerManagement render - viewMode:', viewMode, 'selectedCustomer:', selectedCustomer);
+  const vehicleTypeOptions = [
+    { value: '', label: 'Select type' },
+    { value: 'SUV', label: 'SUV' },
+    { value: 'Sedan', label: 'Sedan' },
+    { value: 'Hatchback', label: 'Hatchback' },
+    { value: 'Coupe', label: 'Coupe' },
+    { value: 'Convertible', label: 'Convertible' },
+    { value: 'Truck', label: 'Truck' },
+    { value: 'Van', label: 'Van' },
+    { value: 'Motorcycle', label: 'Motorcycle' }
+  ];
 
   if (viewMode === 'details' && selectedCustomer) {
     return (
@@ -1131,20 +1578,20 @@ export default function CustomerManagement({ onNavigate, returnToCustomer }) {
           onViewVehicleDetails={handleViewVehicleDetails}
         />
 
-        {/* Modals need to be rendered even in details view */}
+        {/* Edit Modal */}
         <Modal
           isOpen={showEditCustomerModal}
-          title={editingCustomerId ? 'Edit Customer' : 'Add New Customer'}
-          icon="fas fa-user"
+          title="Edit Customer"
+          icon="fas fa-user-edit"
           onClose={() => setShowEditCustomerModal(false)}
           onSave={handleSaveCustomer}
-          isEdit={editingCustomerId !== null}
+          isEdit
         >
-          <form className="modal-form">
+          <form className="modal-form" onSubmit={(e) => e.preventDefault()}>
             <FormField
               label="Customer Name"
               id="editCustomerName"
-              placeholder="Enter customer name"
+              placeholder="Enter customer full name"
               value={formData.name}
               onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
               error={formErrors.name}
@@ -1153,6 +1600,7 @@ export default function CustomerManagement({ onNavigate, returnToCustomer }) {
             <FormField
               label="Mobile Number"
               id="editCustomerMobile"
+              type="tel"
               placeholder="Enter mobile number"
               value={formData.mobile}
               onChange={(e) => setFormData(prev => ({ ...prev, mobile: e.target.value }))}
@@ -1162,6 +1610,7 @@ export default function CustomerManagement({ onNavigate, returnToCustomer }) {
             <FormField
               label="Email Address"
               id="editCustomerEmail"
+              type="email"
               placeholder="Enter email address"
               value={formData.email}
               onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
@@ -1178,28 +1627,18 @@ export default function CustomerManagement({ onNavigate, returnToCustomer }) {
           </form>
         </Modal>
 
+        {/* Add Vehicle Modal */}
         <Modal
           isOpen={showAddVehicleModal}
           title="Add New Vehicle"
           icon="fas fa-car"
-          onClose={() => setShowAddVehicleModal(false)}
+          onClose={() => {
+            setShowAddVehicleModal(false);
+            setFormErrors({});
+          }}
           onSave={handleAddVehicle}
         >
-          <form className="modal-form">
-            <div className="form-group">
-              <label htmlFor="vehicleCustomerId">
-                Customer ID
-                <span className="verified-badge"><i className="fas fa-check-circle"></i> Verified</span>
-              </label>
-              <input
-                type="text"
-                id="vehicleCustomerId"
-                className="form-control"
-                value={addVehicleCustomerId || ''}
-                disabled
-                readOnly
-              />
-            </div>
+          <form className="modal-form" onSubmit={(e) => e.preventDefault()}>
             <FormField
               label="Make"
               id="vehicleMake"
@@ -1220,29 +1659,18 @@ export default function CustomerManagement({ onNavigate, returnToCustomer }) {
             <FormField
               label="Year"
               id="vehicleYear"
-              type="select"
+              type="number"
               value={vehicleData.year}
-              onChange={(e) => setVehicleData(prev => ({ ...prev, year: e.target.value }))}
-              options={Array.from({ length: 30 }, (_, i) => {
-                const year = new Date().getFullYear() - i;
-                return { value: year, label: year };
-              })}
+              onChange={(e) => setVehicleData(prev => ({ ...prev, year: parseInt(e.target.value) || new Date().getFullYear() }))}
               required
             />
             <FormField
-              label="Type"
+              label="Vehicle Type"
               id="vehicleType"
               type="select"
               value={vehicleData.type}
               onChange={(e) => setVehicleData(prev => ({ ...prev, type: e.target.value }))}
-              options={[
-                { value: '', label: 'Select type' },
-                { value: 'Sedan', label: 'Sedan' },
-                { value: 'SUV', label: 'SUV' },
-                { value: 'Truck', label: 'Truck' },
-                { value: 'Hatchback', label: 'Hatchback' },
-                { value: 'Coupe', label: 'Coupe' }
-              ]}
+              options={vehicleTypeOptions}
               required
             />
             <FormField
@@ -1277,7 +1705,7 @@ export default function CustomerManagement({ onNavigate, returnToCustomer }) {
           title={alert.title}
           message={alert.message}
           type={alert.type}
-          onClose={alert.onClose}
+          onClose={alert.onClose || (() => setAlert(prev => ({ ...prev, isOpen: false })))}
           showCancel={alert.showCancel}
           onConfirm={alert.onConfirm}
         />
@@ -1422,11 +1850,14 @@ export default function CustomerManagement({ onNavigate, returnToCustomer }) {
         isOpen={showAddCustomerModal}
         title="Add New Customer"
         icon="fas fa-user-plus"
-        onClose={() => setShowAddCustomerModal(false)}
+        onClose={() => {
+          setShowAddCustomerModal(false);
+          setFormErrors({});
+        }}
         onSave={handleAddCustomer}
         saving={saving}
       >
-        <form className="modal-form">
+        <form className="modal-form" onSubmit={(e) => e.preventDefault()}>
           <FormField
             label="Customer Name"
             id="newCustomerName"
@@ -1470,11 +1901,14 @@ export default function CustomerManagement({ onNavigate, returnToCustomer }) {
         isOpen={showEditCustomerModal}
         title="Edit Customer"
         icon="fas fa-user-edit"
-        onClose={() => setShowEditCustomerModal(false)}
+        onClose={() => {
+          setShowEditCustomerModal(false);
+          setFormErrors({});
+        }}
         onSave={handleSaveCustomer}
         isEdit
       >
-        <form className="modal-form">
+        <form className="modal-form" onSubmit={(e) => e.preventDefault()}>
           <FormField
             label="Customer Name"
             id="editCustomerName"
@@ -1518,10 +1952,13 @@ export default function CustomerManagement({ onNavigate, returnToCustomer }) {
         isOpen={showAddVehicleModal}
         title="Add New Vehicle"
         icon="fas fa-car"
-        onClose={() => setShowAddVehicleModal(false)}
+        onClose={() => {
+          setShowAddVehicleModal(false);
+          setFormErrors({});
+        }}
         onSave={handleAddVehicle}
       >
-        <form className="modal-form">
+        <form className="modal-form" onSubmit={(e) => e.preventDefault()}>
           <FormField
             label="Make"
             id="vehicleMake"
@@ -1544,7 +1981,7 @@ export default function CustomerManagement({ onNavigate, returnToCustomer }) {
             id="vehicleYear"
             type="number"
             value={vehicleData.year}
-            onChange={(e) => setVehicleData(prev => ({ ...prev, year: e.target.value }))}
+            onChange={(e) => setVehicleData(prev => ({ ...prev, year: parseInt(e.target.value) || new Date().getFullYear() }))}
             required
           />
           <FormField
@@ -1553,7 +1990,7 @@ export default function CustomerManagement({ onNavigate, returnToCustomer }) {
             type="select"
             value={vehicleData.type}
             onChange={(e) => setVehicleData(prev => ({ ...prev, type: e.target.value }))}
-            options={['SUV', 'Sedan', 'Hatchback', 'Coupe', 'Convertible', 'Truck', 'Van', 'Motorcycle']}
+            options={vehicleTypeOptions}
             required
           />
           <FormField
@@ -1588,7 +2025,7 @@ export default function CustomerManagement({ onNavigate, returnToCustomer }) {
         title={alert.title}
         message={alert.message}
         type={alert.type}
-        onClose={alert.onClose}
+        onClose={alert.onClose || (() => setAlert(prev => ({ ...prev, isOpen: false })))}
         showCancel={alert.showCancel}
         onConfirm={alert.onConfirm}
       />
@@ -1625,8 +2062,8 @@ export default function CustomerManagement({ onNavigate, returnToCustomer }) {
 
       {/* Duplicate Customer Warning Dialog */}
       {showDuplicateWarning && (
-        <div className="warning-dialog-overlay">
-          <div className="warning-dialog">
+        <div className="warning-dialog-overlay" onClick={handleCancelDuplicate}>
+          <div className="warning-dialog" onClick={(e) => e.stopPropagation()}>
             <div className="warning-dialog-header">
               <i className="fas fa-exclamation-circle"></i>
               <span>Duplicate Customer Warning</span>
@@ -1641,12 +2078,14 @@ export default function CustomerManagement({ onNavigate, returnToCustomer }) {
               <button 
                 className="btn btn-danger" 
                 onClick={handleConfirmDuplicate}
+                disabled={saving}
               >
                 <i className="fas fa-check"></i> Yes, Save Anyway
               </button>
               <button 
                 className="btn btn-secondary" 
                 onClick={handleCancelDuplicate}
+                disabled={saving}
               >
                 <i className="fas fa-times"></i> No, Cancel
               </button>
@@ -1656,4 +2095,6 @@ export default function CustomerManagement({ onNavigate, returnToCustomer }) {
       )}
     </div>
   );
-}
+};
+
+export default CustomerManagement;

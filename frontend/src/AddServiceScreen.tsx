@@ -1,21 +1,32 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import PermissionGate from './PermissionGate';
+
+interface Service {
+  name: string;
+  price: number;
+}
+
+interface Product {
+  name: string;
+  suvPrice: number;
+  sedanPrice: number;
+}
 
 interface AddServiceScreenProps {
   order: any;
   onClose: () => void;
   onSubmit: (data: any) => void;
-  products?: any[];
+  products?: Product[];
   moduleId?: string;
   permissionId?: string;
 }
 
 function AddServiceScreen({ order, onClose, onSubmit, products = [], moduleId = 'joborder', permissionId = 'joborder_pricesummary' }: AddServiceScreenProps) {
-  const [selectedServices, setSelectedServices] = useState([]);
-  const [discountPercent, setDiscountPercent] = useState(0);
+  const [selectedServices, setSelectedServices] = useState<Service[]>([]);
+  const [discountPercent, setDiscountPercent] = useState<number>(0);
   const vehicleType = order?.vehicleDetails?.type || 'SUV';
 
-  const handleToggleService = (product) => {
+  const handleToggleService = (product: Product) => {
     const price = vehicleType === 'SUV' ? product.suvPrice : product.sedanPrice;
     if (selectedServices.some(s => s.name === product.name)) {
       setSelectedServices(selectedServices.filter(s => s.name !== product.name));
@@ -24,7 +35,7 @@ function AddServiceScreen({ order, onClose, onSubmit, products = [], moduleId = 
     }
   };
 
-  const formatPrice = (price) => `QAR ${price.toLocaleString()}`;
+  const formatPrice = (price: number) => `QAR ${price.toLocaleString()}`;
   const subtotal = selectedServices.reduce((sum, s) => sum + s.price, 0);
   const discount = (subtotal * discountPercent) / 100;
   const total = subtotal - discount;

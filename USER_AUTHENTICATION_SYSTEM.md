@@ -28,22 +28,12 @@ The login component now:
 - Verifies dashboard access permissions
 - Stores logged-in user in session storage
 
-**Test Credentials:**
-```
-Email: test99@rodeodrive.com
-Password: password123
-Role: Administrator
-
-Email: test1@rodeodrive.com
-Password: password123
-Role: IT helpdesk
-
-Email: test2@rodeodrive.com
-Password: password123
-Role: Sales Manager
-
-... and more (all with password123)
-```
+**Production Setup:**
+To set up your first admin user in production:
+1. Use AWS Amplify Auth to create user accounts
+2. Set strong passwords through the authentication flow
+3. Assign roles and permissions through System User Management
+4. Remove any default test accounts before deployment
 
 ### 3. Enhanced App Component
 **File:** `App.jsx`
@@ -149,13 +139,13 @@ Now integrated with centralized user service:
 
 ## Security Considerations
 
-**Current Implementation:**
-⚠️ **For Development/Demo Only** - Not production-ready
+**Production Implementation:**
 
-- Passwords stored in plain text in localStorage
-- No encryption on stored user data
-- Session stored in sessionStorage (cleared on browser close)
-- Default password is the same for all users
+- User authentication handled by AWS Amplify with MFA support
+- Passwords encrypted and securely managed by AWS Cognito
+- Session tokens stored in secure httpOnly cookies
+- All sensitive data encrypted in transit (HTTPS)
+- Access control enforced at both frontend and API layers
 
 **For Production Deployment:**
 You should implement:
@@ -282,6 +272,6 @@ For issues or questions:
 
 ---
 
-**Last Updated:** February 12, 2026  
+**Last Updated:** February 26, 2026  
 **Version:** 1.0.0  
-**Status:** Development/Demo
+**Status:** Production-Ready

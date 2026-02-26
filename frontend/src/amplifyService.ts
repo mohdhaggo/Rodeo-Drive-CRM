@@ -257,7 +257,115 @@ export const permissionService = {
   },
 };
 
+// ==================== ADMIN SETUP ====================
+
+export const adminSetupService = {
+  async setupAdminUser(input: {
+    email: string;
+    firstName: string;
+    lastName: string;
+  }) {
+    try {
+      console.log('Setting up admin user...', input);
+
+      // Step 1: Create or get Admin Department
+      let department = (await client.models.Department.list({
+        filter: { name: { eq: 'Administration' } },
+      })).data?.[0];
+
+      if (!department) {
+        const result = await client.models.Department.create({
+          name: 'Administration',
+          description: 'System Administration Department',
+          status: 'active',
+        });
+        if (result.data) {
+          department = result.data;
+        } else {
+          throw new Error('Failed to create Department');
+        }
+      }
+
+      console.log('✅ Department ready:', department?.id);
+
+      // Step 2: Create or get Admin Role
+      let role = (await client.models.Role.list({
+        filter: { name: { eq: 'Administrator' } },
+      })).data?.[0];
+
+      if (!role) {
+        const result = await client.models.Role.create({
+          name: 'Administrator',
+          description: 'Full system access with all permissions',
+          departmentId: department?.id,
+          status: 'active',
+        });
+        if (result.data) {
+          role = result.data;
+        } else {
+          throw new Error('Failed to create Role');
+        }
+      }
+
+      console.log('✅ Role ready:', role?.id);
+
+      // Step 3: Create User
+      const userResult = await client.models.User.create({
+        firstName: input.firstName,
+        lastName: input.lastName,
+        email: input.email,
+        departmentId: department?.id || '',
+        roleId: role?.id || '',
+        status: 'active',
+      });
+      const user = userResult.data;
+
+      console.log('✅ User created:', user?.id);
+
+      // Step 4: Create Full Permissions for Admin Role
+      const modules = [
+        'overview',
+        'joborder',
+        'customer',
+        'vehicle',
+        'payment',
+        'inspection',
+        'exit-permit',
+        'quality-check',
+        'sales-leads',
+        'purchase',
+        'reports',
+      ];
+
+      for (const moduleName of modules) {
+        await client.models.Permission.create({
+          roleId: role?.id || '',
+          moduleName: moduleName,
+          canRead: true,
+          canCreate: true,
+          canUpdate: true,
+          canDelete: true,
+        });
+      }
+
+      console.log('✅ All permissions created for admin role');
+
+      return {
+        success: true,
+        user,
+        role,
+        department,
+        message: `Admin user ${input.email} created successfully with full access`,
+      };
+    } catch (error) {
+      console.error('Error setting up admin user:', error);
+      throw error;
+    }
+  },
+};
+
 // ==================== CUSTOMER MANAGEMENT ====================
+
 
 // Customer Operations
 export const customerService = {

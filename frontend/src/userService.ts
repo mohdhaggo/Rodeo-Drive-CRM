@@ -3,6 +3,53 @@
 const STORAGE_KEY = 'rodeo_crm_users';
 const SESSION_KEY = 'rodeo_crm_current_user';
 const NOTIFICATIONS_KEY = 'rodeo_crm_user_notifications';
+const LOGIN_ATTEMPTS_KEY = 'rodeo_crm_login_attempts';
+const MAX_LOGIN_ATTEMPTS = 3;
+
+const getLoginAttempts = () => {
+  const stored = localStorage.getItem(LOGIN_ATTEMPTS_KEY);
+  if (!stored) {
+    return {};
+  }
+
+  try {
+    return JSON.parse(stored);
+  } catch (error) {
+    console.warn('Failed to parse login attempts. Resetting.', error);
+    localStorage.removeItem(LOGIN_ATTEMPTS_KEY);
+    return {};
+  }
+};
+
+const saveLoginAttempts = (attempts) => {
+  localStorage.setItem(LOGIN_ATTEMPTS_KEY, JSON.stringify(attempts));
+};
+
+const getAttemptEntry = (email) => {
+  const attempts = getLoginAttempts();
+  return attempts[email] || { count: 0, locked: false };
+};
+
+const recordFailedLogin = (email) => {
+  const attempts = getLoginAttempts();
+  const entry = attempts[email] || { count: 0, locked: false };
+
+  entry.count += 1;
+  if (entry.count >= MAX_LOGIN_ATTEMPTS) {
+    entry.locked = true;
+  }
+
+  attempts[email] = entry;
+  saveLoginAttempts(attempts);
+
+  return entry;
+};
+
+const resetLoginAttempts = (email) => {
+  const attempts = getLoginAttempts();
+  attempts[email] = { count: 0, locked: false };
+  saveLoginAttempts(attempts);
+};
 
 // Initial system users - can be extended with more users
 const initialUsers = [
@@ -459,10 +506,16 @@ export const markNotificationsRead = (email) => {
 
 // Validate user credentials
 export const validateCredentials = (email, password) => {
-  const user = getUserByEmail(email);
+  const normalizedEmail = String(email || '').toLowerCase();
+  const user = getUserByEmail(normalizedEmail);
   
   if (!user) {
-    return { success: false, error: 'User not found' };
+    return { success: false, error: 'Incorrect email/password' };
+  }
+
+  const attemptEntry = getAttemptEntry(normalizedEmail);
+  if (attemptEntry.locked) {
+    return { success: false, error: 'Account locked. Contact your administrator.' };
   }
   
   if (user.status !== 'active') {
@@ -475,11 +528,17 @@ export const validateCredentials = (email, password) => {
   
   // In production, compare hashed passwords
   if (user.password !== password) {
-    return { success: false, error: 'Invalid password' };
+    const updatedAttempt = recordFailedLogin(normalizedEmail);
+    if (updatedAttempt.locked) {
+      return { success: false, error: 'Account locked. Contact your administrator.' };
+    }
+    return { success: false, error: 'Incorrect email/password' };
   }
   
   // Don't return the password in the user object
   const { password: _, ...userWithoutPassword } = user;
+  resetLoginAttempts(normalizedEmail);
+
   return {
     success: true,
     user: userWithoutPassword,
@@ -563,17 +622,24 @@ export const updateUser = (userId, updates) => {
 };
 
 export const updateUserPassword = (email, newPassword) => {
-  const user = getUserByEmail(email);
+  const normalizedEmail = String(email || '').toLowerCase();
+  const user = getUserByEmail(normalizedEmail);
   if (!user) {
     return { success: false, error: 'User not found' };
   }
 
-  return updateUser(user.id, {
+  const updateResult = updateUser(user.id, {
     password: newPassword,
     tempPassword: null,
     mustChangePassword: false,
     passwordUpdatedAt: new Date().toISOString()
   });
+
+  if (updateResult.success) {
+    resetLoginAttempts(normalizedEmail);
+  }
+
+  return updateResult;
 };
 
 // Add new user

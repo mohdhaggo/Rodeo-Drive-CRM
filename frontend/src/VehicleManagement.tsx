@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { createPortal } from 'react-dom'
 import './VehicleManagement.css'
 import { getVehicles, getStoredJobOrders } from './demoData'
+import { vehicleService } from './amplifyService'
 import PermissionGate from './PermissionGate'
 
 // Demo data generator functions (kept for backward compatibility but not used)
@@ -167,18 +168,8 @@ const VehicleManagement = ({ navigationData, onClearNavigation, onNavigateBack, 
         setVehicles(allVehicles);
     }, []);
     // Load vehicles from demo data and localStorage
-    const [vehicles, setVehicles] = useState(() => {
-        const demoVehicles = getVehicles();
-        const savedVehicles = JSON.parse(localStorage.getItem('vehicleManagementVehicles') || '[]');
-        // Merge: demo vehicles + saved vehicles (avoiding duplicates)
-        const allVehicles = [...demoVehicles];
-        savedVehicles.forEach(saved => {
-            if (!allVehicles.some(v => v.vehicleId === saved.vehicleId)) {
-                allVehicles.push(saved);
-            }
-        });
-        return allVehicles;
-    });
+    const [vehicles, setVehicles] = useState([]);
+    const [isLoadingVehicles, setIsLoadingVehicles] = useState(true);
     const [jobOrders, setJobOrders] = useState(() => getStoredJobOrders())
     const [searchQuery, setSearchQuery] = useState('')
     const [searchResults, setSearchResults] = useState([])
@@ -194,6 +185,75 @@ const VehicleManagement = ({ navigationData, onClearNavigation, onNavigateBack, 
     const [addVerifiedCustomer, setAddVerifiedCustomer] = useState(null)
     const [navigationSource, setNavigationSource] = useState(null)
     const [returnToCustomerId, setReturnToCustomerId] = useState(null)
+
+    // Load vehicles from Amplify on component mount
+    useEffect(() => {
+        const loadVehicles = async () => {
+            try {
+                setIsLoadingVehicles(true);
+                const amplifyVehicles = await vehicleService.getAll();
+                console.log('✅ Loaded vehicles from Amplify:', amplifyVehicles);
+                
+                // Map Amplify data to vehicle interface
+                const mappedVehicles = (amplifyVehicles || []).map((v: any) => ({
+                    vehicleId: v.id,
+                    ownedBy: v.customer?.name || 'Unknown',
+                    customerId: v.customerId,
+                    make: v.make,
+                    model: v.model,
+                    year: v.year,
+                    color: v.color || '',
+                    plateNumber: v.plateNumber || '',
+                    completedServices: v.jobOrders?.filter((jo: any) => jo.workStatus === 'Completed').length || 0,
+                    customerDetails: {
+                        customerId: v.customerId,
+                        name: v.customer?.name || 'Unknown',
+                        email: v.customer?.email || '',
+                        mobile: v.customer?.mobile || '',
+                        address: v.customer?.address || null,
+                    },
+                    vehicleDetails: {
+                        vehicleId: v.id,
+                        ownedBy: v.customer?.name || 'Unknown',
+                        make: v.make,
+                        model: v.model,
+                        year: v.year,
+                        color: v.color || '',
+                        plateNumber: v.plateNumber || '',
+                        vin: v.vin || '',
+                        type: v.vehicleType || '',
+                    }
+                }));
+                
+                // Merge with locally saved vehicles
+                const savedVehicles = JSON.parse(localStorage.getItem('vehicleManagementVehicles') || '[]');
+                const allVehicles = [...mappedVehicles];
+                savedVehicles.forEach((saved: any) => {
+                    if (!allVehicles.some(v => v.vehicleId === saved.vehicleId)) {
+                        allVehicles.push(saved);
+                    }
+                });
+                
+                setVehicles(allVehicles);
+            } catch (error) {
+                console.error('❌ Error loading vehicles from Amplify:', error);
+                // Fall back to demo data
+                const demoVehicles = getVehicles();
+                const savedVehicles = JSON.parse(localStorage.getItem('vehicleManagementVehicles') || '[]');
+                const allVehicles = [...demoVehicles];
+                savedVehicles.forEach(saved => {
+                    if (!allVehicles.some(v => v.vehicleId === saved.vehicleId)) {
+                        allVehicles.push(saved);
+                    }
+                });
+                setVehicles(allVehicles);
+            } finally {
+                setIsLoadingVehicles(false);
+            }
+        };
+        
+        loadVehicles();
+    }, []);
 
     // Close dropdown when clicking outside
     useEffect(() => {
