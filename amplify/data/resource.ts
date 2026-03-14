@@ -69,6 +69,7 @@ const schema = a.schema({
     vehicles: a.hasMany('Vehicle', 'customerId'),
     jobOrders: a.hasMany('JobOrder', 'customerId'),
     contacts: a.hasMany('Contact', 'customerId'),
+    salesLeads: a.hasMany('SalesLead', 'customerId'),
   }).authorization((allow) => [allow.authenticated()]),
 
   Contact: a.model({
