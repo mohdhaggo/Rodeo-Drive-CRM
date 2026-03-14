@@ -41,6 +41,8 @@ const schema = a.schema({
     status: a.enum(['active', 'inactive', 'on_leave']),
     createdAt: a.datetime(),
     updatedAt: a.datetime(),
+    activityLogs: a.hasMany('ActivityLog', 'userId'),
+    notifications: a.hasMany('Notification', 'userId'),
   }).authorization((allow) => [allow.authenticated()]),
 
   Permission: a.model({
@@ -70,6 +72,8 @@ const schema = a.schema({
     jobOrders: a.hasMany('JobOrder', 'customerId'),
     contacts: a.hasMany('Contact', 'customerId'),
     salesLeads: a.hasMany('SalesLead', 'customerId'),
+    invoices: a.hasMany('Invoice', 'customerId'),
+    quotations: a.hasMany('Quotation', 'customerId'),
   }).authorization((allow) => [allow.authenticated()]),
 
   Contact: a.model({
@@ -124,6 +128,9 @@ const schema = a.schema({
     qualityChecks: a.hasMany('QualityCheck', 'jobOrderId'),
     inspections: a.hasMany('Inspection', 'jobOrderId'),
     additionalServiceRequests: a.hasMany('AdditionalServiceRequest', 'jobOrderId'),
+    invoices: a.hasMany('Invoice', 'jobOrderId'),
+    serviceApprovalRequests: a.hasMany('ServiceApprovalRequest', 'jobOrderId'),
+    workLogs: a.hasMany('WorkLog', 'jobOrderId'),
     createdAt: a.datetime(),
     updatedAt: a.datetime(),
   }).authorization((allow) => [allow.authenticated()]),
