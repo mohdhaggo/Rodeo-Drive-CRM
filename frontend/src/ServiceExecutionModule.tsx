@@ -6,10 +6,11 @@ import ServiceSummaryCard from './ServiceSummaryCard';
 import AddServiceScreen from './AddServiceScreen';
 import { PRODUCT_CATALOG } from './productCatalog.ts';
 import PermissionGate from './PermissionGate';
-import { useApprovalRequests } from './ApprovalRequestsContext.tsx';
+import { useApprovalRequests } from './approvalRequestsStore.ts';
 import { getTechnicians, getSupervisorsAndManagers } from './userService.ts';
 import SuccessPopup from './SuccessPopup';
 import { useRolePermissions, hasOptionAccess } from './roleAccess.ts';
+import { clampDiscountPercent, getDiscountAllowance } from './discountLimits';
 
 // Helper function to normalize service fields for compatibility
 const normalizeServices = (services: any) => {
@@ -461,12 +462,21 @@ const ServiceExecutionModule = ({ currentUser }: { currentUser: any }) => {
       const invoiceNumber = `INV-${year}-${String(Math.floor(Math.random() * 1000000)).padStart(6, '0')}`;
       const billId = (currentDetailsJob as any).billing?.billId || `BILL-${year}-${String(Math.floor(Math.random() * 1000000)).padStart(6, '0')}`;
 
-      const subtotal = selectedServices.reduce((sum: number, s: any) => sum + (s.price || 0), 0);
-      const discount = (subtotal * (discountPercent || 0)) / 100;
-      const netAmount = subtotal - discount;
-
       const existingTotal = parseAmount((currentDetailsJob as any).billing?.totalAmount);
       const existingDiscount = parseAmount((currentDetailsJob as any).billing?.discount);
+      const subtotal = selectedServices.reduce((sum: number, s: any) => sum + (s.price || 0), 0);
+      const tabPrefix = getTabPrefix();
+      const addServiceDiscountAllowance = getDiscountAllowance({
+        optionId: `${tabPrefix}_discount_percent`,
+        totalAmount: existingTotal + subtotal,
+        existingDiscountAmount: existingDiscount,
+        currentDiscountBaseAmount: subtotal,
+        fallbackPercent: 100,
+      });
+      const safeDiscountPercent = clampDiscountPercent(discountPercent || 0, addServiceDiscountAllowance.maxAdditionalPercent);
+      const discount = (subtotal * safeDiscountPercent) / 100;
+      const netAmount = subtotal - discount;
+
       const existingNet = parseAmount((currentDetailsJob as any).billing?.netAmount);
       const existingPaid = parseAmount((currentDetailsJob as any).billing?.amountPaid);
 
@@ -743,6 +753,11 @@ const ServiceExecutionModule = ({ currentUser }: { currentUser: any }) => {
               products={PRODUCT_CATALOG as any}
               moduleId="serviceexec"
               permissionId={`${getTabPrefix()}_pricesummary`}
+              servicePriceOptionId={`${getTabPrefix()}_serviceprice`}
+              serviceDiscountOptionId={`${getTabPrefix()}_servicediscount`}
+              discountOptionId={`${getTabPrefix()}_discount_percent`}
+              existingTotalAmount={parseAmount((currentDetailsJob as any)?.billing?.totalAmount)}
+              existingDiscountAmount={parseAmount((currentDetailsJob as any)?.billing?.discount)}
             />
           </div>
         );

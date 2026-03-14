@@ -1,12 +1,10 @@
-import { useState } from 'react'
 import './PurchaseModule.css'
 
 interface PurchaseModuleProps {
   currentUser: any
 }
 
-const PurchaseModule = ({ currentUser }: PurchaseModuleProps) => {
-  const [step, setStep] = useState<number>(1)
+const PurchaseModule = ({ currentUser: _currentUser }: PurchaseModuleProps) => {
 
   return (
     <div className="form-container">

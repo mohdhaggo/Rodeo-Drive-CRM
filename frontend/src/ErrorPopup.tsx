@@ -1,14 +1,20 @@
-import React, { useEffect } from 'react';
+import { useEffect, type MouseEvent } from 'react';
 import './ErrorPopup.css';
 
-const ErrorPopup = ({ 
-  isVisible, 
-  onClose, 
+interface ErrorPopupProps {
+  isVisible: boolean;
+  onClose: () => void;
+  message?: string;
+}
+
+const ErrorPopup = ({
+  isVisible,
+  onClose,
   message = "An error occurred. Please try again.",
-}) => {
+}: ErrorPopupProps) => {
   // Close popup on Escape key press
   useEffect(() => {
-    const handleEscape = (event) => {
+    const handleEscape = (event: KeyboardEvent) => {
       if (event.key === 'Escape' && isVisible) {
         onClose();
       }
@@ -36,7 +42,7 @@ const ErrorPopup = ({
 
   if (!isVisible) return null;
 
-  const handleOverlayClick = (e) => {
+  const handleOverlayClick = (e: MouseEvent<HTMLDivElement>) => {
     if (e.target === e.currentTarget) {
       onClose();
     }

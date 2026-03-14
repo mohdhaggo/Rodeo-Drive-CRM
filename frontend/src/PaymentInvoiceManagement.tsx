@@ -1,12 +1,38 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
+import type { ChangeEvent } from 'react';
 import { createPortal } from 'react-dom';
 import './PaymentInvoiceManagement.css';
 import { getStoredJobOrders } from './demoData';
 import SuccessPopup from './SuccessPopup';
 import ErrorPopup from './ErrorPopup';
 import PermissionGate from './PermissionGate';
+import { clampDiscountAmount, getDiscountAllowance, parseCurrencyValue } from './discountLimits';
 
-export default function PaymentInvoiceManagement({ currentUser }) {
+type PaymentInvoiceManagementProps = {
+  currentUser: any;
+};
+
+type PaymentFormState = {
+  orderId: string;
+  netAmount: number;
+  amountPaid: number;
+  discount: string;
+  amountToPay: string;
+  paymentMethod: string;
+  transferProof: string | ArrayBuffer | null;
+  transferProofName: string;
+  balance: number;
+};
+
+type RefundFormState = {
+  orderId: string;
+  paidAmount: number;
+  refundType: 'Full Refund' | 'Partial Refund';
+  refundAmount: number;
+  maxRefundAmount: number;
+};
+
+export default function PaymentInvoiceManagement({ currentUser }: PaymentInvoiceManagementProps) {
   // Complete demo data with full details
   const createCompleteJobOrders = () => {
     const baseOrders = [
@@ -482,16 +508,19 @@ export default function PaymentInvoiceManagement({ currentUser }) {
   };
 
   // State management
-  const [allOrders, setAllOrders] = useState([]);
+  const [allOrders, setAllOrders] = useState<any[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
-  const [searchResults, setSearchResults] = useState([]);
+  const [searchResults, setSearchResults] = useState<any[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(20);
   const [showDetailsScreen, setShowDetailsScreen] = useState(false);
-  const [selectedOrder, setSelectedOrder] = useState(null);
+  const [selectedOrder, setSelectedOrder] = useState<any | null>(null);
   const [showPaymentPopup, setShowPaymentPopup] = useState(false);
-  const [currentPaymentOrder, setCurrentPaymentOrder] = useState(null);
-  const [paymentForm, setPaymentForm] = useState({
+  const [currentPaymentOrder, setCurrentPaymentOrder] = useState<any | null>(null);
+  const [paymentForm, setPaymentForm] = useState<PaymentFormState>({
+    orderId: '',
+    netAmount: 0,
+    amountPaid: 0,
     discount: '0',
     amountToPay: '',
     paymentMethod: '',
@@ -499,16 +528,19 @@ export default function PaymentInvoiceManagement({ currentUser }) {
     transferProofName: '',
     balance: 0
   });
+  const [paymentDiscountLimit, setPaymentDiscountLimit] = useState(0);
+  const [paymentDiscountRolePercent, setPaymentDiscountRolePercent] = useState(0);
+  const [initialPaymentDiscount, setInitialPaymentDiscount] = useState(0);
   const [showCancelConfirmation, setShowCancelConfirmation] = useState(false);
-  const [cancelOrderId, setCancelOrderId] = useState(null);
-  const [submittedOrderId, setSubmittedOrderId] = useState(null);
+  const [cancelOrderId, setCancelOrderId] = useState<string | null>(null);
+  const [submittedOrderId, setSubmittedOrderId] = useState<string | null>(null);
   const [lastAction, setLastAction] = useState('cancel');
   const [showErrorPopup, setShowErrorPopup] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
-  const [activeDropdown, setActiveDropdown] = useState(null);
+  const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
   const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0 });
   const [showRefundPopup, setShowRefundPopup] = useState(false);
-  const [refundForm, setRefundForm] = useState({
+  const [refundForm, setRefundForm] = useState<RefundFormState>({
     orderId: '',
     paidAmount: 0,
     refundType: 'Full Refund',
@@ -531,9 +563,14 @@ export default function PaymentInvoiceManagement({ currentUser }) {
 
   // Close dropdown when clicking outside
   useEffect(() => {
-    const handleClickOutside = (event) => {
-      const isDropdownButton = event.target.closest('.btn-action-dropdown');
-      const isDropdownMenu = event.target.closest('.action-dropdown-menu');
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as HTMLElement | null;
+      if (!target) {
+        return;
+      }
+
+      const isDropdownButton = target.closest('.btn-action-dropdown');
+      const isDropdownMenu = target.closest('.action-dropdown-menu');
       
       if (!isDropdownButton && !isDropdownMenu) {
         setActiveDropdown(null);
@@ -550,13 +587,14 @@ export default function PaymentInvoiceManagement({ currentUser }) {
 
   useEffect(() => {
     const orders = getStoredJobOrders();
-    setAllOrders(orders);
+    const normalizedOrders = orders.length > 0 ? orders : createCompleteJobOrders();
+    setAllOrders(normalizedOrders);
   }, []);
 
   // Handle search and filtering based on Work Status and Payment Status
   useEffect(() => {
-    const filterOrders = (orders) => {
-      return orders.filter(order => {
+    const filterOrders = (orders: any[]) => {
+      return orders.filter((order: any) => {
         // If work status is Cancelled, only show if payment is Partially Paid or Fully Paid
         if (order.workStatus === 'Cancelled') {
           return order.paymentStatus === 'Partially Paid' || order.paymentStatus === 'Fully Paid';
@@ -572,7 +610,7 @@ export default function PaymentInvoiceManagement({ currentUser }) {
       setSearchResults(filterOrders(allOrders));
     } else {
       const query = searchQuery.toLowerCase();
-      const results = filterOrders(allOrders).filter(order => {
+      const results = filterOrders(allOrders).filter((order: any) => {
         return (
           order.id.toLowerCase().includes(query) ||
           order.orderType.toLowerCase().includes(query) ||
@@ -594,23 +632,42 @@ export default function PaymentInvoiceManagement({ currentUser }) {
     if (selectedOrder) {
       const updatedOrder = allOrders.find(o => o.id === selectedOrder.id);
       if (updatedOrder) {
-        setSelectedOrder(updatedOrder);
+        setSelectedOrder(updatedOrder ?? null);
       }
     }
-  }, [allOrders]);
-
-  const openDetailsView = (orderId) => {
-    const order = allOrders.find(o => o.id === orderId);
-    setSelectedOrder(order);
-    setShowDetailsScreen(true);
-  };
+  }, [allOrders, selectedOrder]);
 
   const closeDetailsView = () => {
     setShowDetailsScreen(false);
     setSelectedOrder(null);
   };
 
-  const openPaymentPopup = (orderId) => {
+  const getPaymentDiscountMeta = (order: any, existingDiscountOverride: number | string | null = null) => {
+    const totalAmount = parseCurrencyValue(order?.billing?.totalAmount);
+    const existingDiscount = existingDiscountOverride === null
+      ? parseCurrencyValue(order?.billing?.discount)
+      : parseCurrencyValue(existingDiscountOverride);
+    const discountAllowance = getDiscountAllowance({
+      optionId: 'payment_discount_percent',
+      totalAmount,
+      existingDiscountAmount: 0,
+      currentDiscountBaseAmount: totalAmount,
+      fallbackPercent: 100,
+    });
+
+    const maxEditableDiscount = Math.max(discountAllowance.roleMaxAmount, existingDiscount);
+
+    return {
+      totalAmount,
+      existingDiscount,
+      roleMaxPercent: discountAllowance.roleMaxPercent,
+      roleMaxAmount: discountAllowance.roleMaxAmount,
+      maxEditableDiscount,
+      remainingAdditionalAmount: Math.max(0, maxEditableDiscount - existingDiscount)
+    };
+  };
+
+  const openPaymentPopup = (orderId: string) => {
     const order = allOrders.find(o => o.id === orderId);
     
     if (!order) {
@@ -624,10 +681,15 @@ export default function PaymentInvoiceManagement({ currentUser }) {
     }
 
     try {
-      const netAmount = parseFloat(order.billing.netAmount.replace(/[^0-9.-]+/g, '')) || 0;
-      const amountPaid = parseFloat(order.billing.amountPaid.replace(/[^0-9.-]+/g, '')) || 0;
-      const discount = parseFloat(order.billing.discount.replace(/[^0-9.-]+/g, '')) || 0;
+      const netAmount = parseCurrencyValue(order.billing.netAmount);
+      const amountPaid = parseCurrencyValue(order.billing.amountPaid);
+      const discount = parseCurrencyValue(order.billing.discount);
       const balance = netAmount - amountPaid - discount;
+      const discountMeta = getPaymentDiscountMeta(order, discount);
+
+      setPaymentDiscountLimit(discountMeta.maxEditableDiscount);
+      setPaymentDiscountRolePercent(discountMeta.roleMaxPercent);
+      setInitialPaymentDiscount(discount);
 
       setCurrentPaymentOrder(order);
       setPaymentForm({
@@ -650,33 +712,40 @@ export default function PaymentInvoiceManagement({ currentUser }) {
 
   const closePaymentPopup = () => {
     setShowPaymentPopup(false);
+    setPaymentDiscountLimit(0);
+    setPaymentDiscountRolePercent(0);
+    setInitialPaymentDiscount(0);
     setPaymentForm({
-      discount: '',
+      orderId: '',
+      netAmount: 0,
+      amountPaid: 0,
+      discount: '0',
       amountToPay: '',
       paymentMethod: '',
       transferProof: null,
-      transferProofName: ''
+      transferProofName: '',
+      balance: 0
     });
   };
 
-  const generateBillPDF = (order) => {
+  const generateBillPDF = (order: any) => {
     // Prevent double bill generation
     if (isGeneratingBill) {
       return;
     }
 
     // Get the latest order from localStorage to ensure we have the most current documents
-    const savedOrders = JSON.parse(localStorage.getItem('jobOrders') || '[]');
-    const currentOrder = savedOrders.find(o => o.id === order.id) || order;
+    const savedOrders: any[] = JSON.parse(localStorage.getItem('jobOrders') || '[]');
+    const currentOrder = savedOrders.find((o: any) => o.id === order.id) || order;
     
     console.log('Generating bill for order:', order.id);
     console.log('Current order documents:', currentOrder.documents);
     
     // Check if a bill with identical payment details already exists
-    const existingBills = (currentOrder.documents || []).filter(doc => doc.type === 'Invoice/Bill');
+    const existingBills = (currentOrder.documents || []).filter((doc: any) => doc.type === 'Invoice/Bill');
     console.log('Existing bills found:', existingBills.length);
     
-    const duplicateBill = existingBills.find(bill => {
+    const duplicateBill = existingBills.find((bill: any) => {
       // Compare bill details to detect duplicates
       const billMatch = bill.billDetails && 
              JSON.stringify(bill.billDetails) === JSON.stringify({
@@ -811,7 +880,7 @@ export default function PaymentInvoiceManagement({ currentUser }) {
               </tr>
             </thead>
             <tbody>
-              ${order.services.map(service => `
+              ${order.services.map((service: any) => `
                 <tr>
                   <td>${typeof service === 'string' ? service : (service.name || service)}</td>
                   <td style="text-align: right;">${service.price && service.price > 0 ? 'QAR ' + parseFloat(service.price).toFixed(2) : '-'}</td>
@@ -879,9 +948,14 @@ export default function PaymentInvoiceManagement({ currentUser }) {
     const reader = new FileReader();
     reader.onloadend = () => {
       const billData = reader.result;
+      if (typeof billData !== 'string') {
+        setIsGeneratingBill(false);
+        alert('Unable to generate bill document. Please try again.');
+        return;
+      }
       
       // Save to documents with bill details for duplicate checking
-      const updatedOrders = allOrders.map(o => {
+      const updatedOrders = allOrders.map((o: any) => {
         if (o.id === order.id) {
           const documents = [...(o.documents || [])];
           documents.push({
@@ -896,7 +970,7 @@ export default function PaymentInvoiceManagement({ currentUser }) {
               hour: '2-digit',
               minute: '2-digit'
             }),
-            uploadedBy: currentUser.name,
+            uploadedBy: currentUser?.name || 'System User',
             fileData: billData,
             billReference: order.billing?.billId,
             billDetails: {
@@ -915,9 +989,9 @@ export default function PaymentInvoiceManagement({ currentUser }) {
       localStorage.setItem('jobOrders', JSON.stringify(updatedOrders));
       
       // Update selectedOrder to show new document
-      const updatedSelectedOrder = updatedOrders.find(o => o.id === order.id);
+      const updatedSelectedOrder = updatedOrders.find((o: any) => o.id === order.id);
       if (updatedSelectedOrder) {
-        setSelectedOrder(updatedSelectedOrder);
+        setSelectedOrder(updatedSelectedOrder ?? null);
       }
 
       // Trigger download
@@ -938,39 +1012,16 @@ export default function PaymentInvoiceManagement({ currentUser }) {
     reader.readAsDataURL(blob);
   };
 
-  const downloadLatestBill = (order) => {
-    const billDocs = (order.documents || []).filter(doc => doc.type === 'Invoice/Bill');
-    
-    if (billDocs.length === 0) {
-      // Generate new bill if none exists
-      generateBillPDF(order);
-    } else {
-      // Download the latest bill
-      const latestBill = billDocs[billDocs.length - 1];
-      const link = document.createElement('a');
-      link.href = latestBill.fileData;
-      link.download = latestBill.name;
-      link.click();
-      
-      // Open in new window
-      const printWindow = window.open('', '_blank');
-      fetch(latestBill.fileData)
-        .then(response => response.text())
-        .then(html => {
-          printWindow.document.write(html);
-          printWindow.document.close();
-        });
-    }
-  };
-
-  const handlePaymentChange = (e) => {
+  const handlePaymentChange = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
-    setPaymentForm(prev => {
-      const updated = { ...prev, [name]: value };
+    setPaymentForm((prev: PaymentFormState) => {
+      const updated = { ...prev, [name]: value } as PaymentFormState;
+      const clampedDiscount = clampDiscountAmount(parseFloat(updated.discount) || 0, paymentDiscountLimit);
+      updated.discount = clampedDiscount.toString();
+
       if (name === 'discount' || name === 'amountToPay') {
-        const discount = parseFloat(updated.discount) || 0;
         const amountToPay = parseFloat(updated.amountToPay) || 0;
-        const balance = prev.netAmount - prev.amountPaid - discount - amountToPay;
+        const balance = prev.netAmount - prev.amountPaid - clampedDiscount - amountToPay;
         updated.balance = balance > 0 ? balance : 0;
       }
       // Clear file when payment method changes from Transfer
@@ -982,8 +1033,8 @@ export default function PaymentInvoiceManagement({ currentUser }) {
     });
   };
 
-  const handleFileUpload = (e) => {
-    const file = e.target.files[0];
+  const handleFileUpload = (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
     if (file) {
       // Validate file type
       const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'application/pdf'];
@@ -1001,9 +1052,13 @@ export default function PaymentInvoiceManagement({ currentUser }) {
       
       const reader = new FileReader();
       reader.onloadend = () => {
-        setPaymentForm(prev => ({
+        const transferProof = typeof reader.result === 'string' || reader.result instanceof ArrayBuffer
+          ? reader.result
+          : null;
+
+        setPaymentForm((prev: PaymentFormState) => ({
           ...prev,
-          transferProof: reader.result,
+          transferProof,
           transferProofName: file.name
         }));
       };
@@ -1011,7 +1066,7 @@ export default function PaymentInvoiceManagement({ currentUser }) {
     }
   };
 
-  const handleShowCancelConfirmation = (orderId) => {
+  const handleShowCancelConfirmation = (orderId: string) => {
     setCancelOrderId(orderId);
     setShowCancelConfirmation(true);
   };
@@ -1059,7 +1114,8 @@ export default function PaymentInvoiceManagement({ currentUser }) {
       alert('Please select a payment method.');
       return;
     }
-    if (paymentForm.amountToPay <= 0) {
+    const amountToPayValue = parseFloat(paymentForm.amountToPay);
+    if (!Number.isFinite(amountToPayValue) || amountToPayValue <= 0) {
       alert('Please enter a valid payment amount.');
       return;
     }
@@ -1071,8 +1127,9 @@ export default function PaymentInvoiceManagement({ currentUser }) {
 
     const updatedOrders = allOrders.map(order => {
       if (order.id === paymentForm.orderId) {
-        const discount = parseFloat(paymentForm.discount) || 0;
-        const amountToPay = parseFloat(paymentForm.amountToPay);
+        const paymentDiscountMeta = getPaymentDiscountMeta(order);
+        const discount = clampDiscountAmount(parseFloat(paymentForm.discount) || 0, paymentDiscountMeta.maxEditableDiscount);
+        const amountToPay = amountToPayValue;
         const netAmount = paymentForm.netAmount;
         const totalPaid = paymentForm.amountPaid + amountToPay;
         const adjustedNetAmount = netAmount - discount;
@@ -1099,7 +1156,7 @@ export default function PaymentInvoiceManagement({ currentUser }) {
               hour: '2-digit',
               minute: '2-digit'
             }),
-            uploadedBy: currentUser.name,
+            uploadedBy: currentUser?.name || 'System User',
             fileData: paymentForm.transferProof,
             paymentReference: `Payment #${(order.paymentActivityLog?.length || 0) + 1}`
           });
@@ -1123,7 +1180,7 @@ export default function PaymentInvoiceManagement({ currentUser }) {
               amount: `QAR ${amountToPay.toFixed(2)}`,
               discount: `QAR ${discount.toFixed(2)}`,
               paymentMethod: paymentForm.paymentMethod,
-              cashierName: currentUser.name,
+              cashierName: currentUser?.name || 'System User',
               timestamp: new Date().toLocaleDateString('en-US', {
                 day: 'numeric',
                 month: 'short',
@@ -1144,9 +1201,9 @@ export default function PaymentInvoiceManagement({ currentUser }) {
     localStorage.setItem('jobOrders', JSON.stringify(updatedOrders));
     
     // Update selectedOrder to reflect the new payment
-    const updatedSelectedOrder = updatedOrders.find(o => o.id === paymentForm.orderId);
+    const updatedSelectedOrder = updatedOrders.find((o: any) => o.id === paymentForm.orderId);
     if (updatedSelectedOrder) {
-      setSelectedOrder(updatedSelectedOrder);
+      setSelectedOrder(updatedSelectedOrder ?? null);
     }
     
     const message = paymentForm.paymentMethod === 'Transfer' 
@@ -1158,7 +1215,7 @@ export default function PaymentInvoiceManagement({ currentUser }) {
     setShowSuccessPopup(true);
   };
 
-  const openRefundPopup = (orderId) => {
+  const openRefundPopup = (orderId: string) => {
     const order = allOrders.find(o => o.id === orderId);
     
     if (!order) {
@@ -1193,7 +1250,7 @@ export default function PaymentInvoiceManagement({ currentUser }) {
         maxRefundAmount: amountPaid
       });
       setShowRefundPopup(true);
-    } catch (err) {
+    } catch (err: unknown) {
       alert('Error processing refund request. Please try again.');
       console.error(err);
     }
@@ -1210,10 +1267,10 @@ export default function PaymentInvoiceManagement({ currentUser }) {
     });
   };
 
-  const handleRefundChange = (e) => {
+  const handleRefundChange = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
-    setRefundForm(prev => {
-      const updated = { ...prev, [name]: value };
+    setRefundForm((prev: RefundFormState) => {
+      const updated = { ...prev, [name]: value } as RefundFormState;
       
       if (name === 'refundType') {
         if (value === 'Full Refund') {
@@ -1249,7 +1306,7 @@ export default function PaymentInvoiceManagement({ currentUser }) {
     const updatedOrders = allOrders.map(order => {
       if (order.id === refundForm.orderId) {
         const currentAmountPaid = parseFloat(order.billing.amountPaid.replace(/[^0-9.-]+/g, '')) || 0;
-        const refundAmount = parseFloat(refundForm.refundAmount);
+        const refundAmount = Number(refundForm.refundAmount);
         const newAmountPaid = currentAmountPaid - refundAmount;
         const netAmount = parseFloat(order.billing.netAmount.replace(/[^0-9.-]+/g, '')) || 0;
         const newBalanceDue = netAmount - newAmountPaid;
@@ -1280,7 +1337,7 @@ export default function PaymentInvoiceManagement({ currentUser }) {
               amount: `QAR -${refundAmount.toFixed(2)}`,
               discount: 'QAR 0.00',
               paymentMethod: 'Refund',
-              cashierName: currentUser.name,
+              cashierName: currentUser?.name || 'System User',
               timestamp: new Date().toLocaleDateString('en-US', {
                 day: 'numeric',
                 month: 'short',
@@ -1301,13 +1358,13 @@ export default function PaymentInvoiceManagement({ currentUser }) {
     localStorage.setItem('jobOrders', JSON.stringify(updatedOrders));
     
     // Update selectedOrder to reflect the refund
-    const updatedSelectedOrder = updatedOrders.find(o => o.id === refundForm.orderId);
+    const updatedSelectedOrder = updatedOrders.find((o: any) => o.id === refundForm.orderId);
     if (updatedSelectedOrder) {
-      setSelectedOrder(updatedSelectedOrder);
+      setSelectedOrder(updatedSelectedOrder ?? null);
     }
     
     // Show success message in the refund popup
-    const refundAmount = parseFloat(refundForm.refundAmount).toFixed(2);
+    const refundAmount = Number(refundForm.refundAmount).toFixed(2);
     const isFullRefund = updatedSelectedOrder?.paymentStatus === 'Fully Refunded';
     const successMsg = isFullRefund 
       ? `Full Refund of QAR ${refundAmount} processed successfully!\nOrder has been moved to Exit Permit Module.`
@@ -1317,7 +1374,7 @@ export default function PaymentInvoiceManagement({ currentUser }) {
     setShowSuccessPopup(true);
   };
 
-  const formatWorkStatus = (status) => {
+  const formatWorkStatus = (status: string) => {
     switch (status) {
       case 'New Request': return 'pim-status-new-request';
       case 'Inspection': return 'pim-status-inspection';
@@ -1330,7 +1387,7 @@ export default function PaymentInvoiceManagement({ currentUser }) {
     }
   };
 
-  const formatPaymentStatus = (status) => {
+  const formatPaymentStatus = (status: string) => {
     switch (status) {
       case 'Fully Paid': return 'pim-payment-full';
       case 'Partially Paid': return 'pim-payment-partial';
@@ -1339,11 +1396,11 @@ export default function PaymentInvoiceManagement({ currentUser }) {
     }
   };
 
-  const formatOrderType = (type) => {
+  const formatOrderType = (type: string) => {
     return type === 'New Job Order' ? 'pim-order-type-new-job' : 'pim-order-type-service';
   };
 
-  const getStepStatusClass = (stepStatus) => {
+  const getStepStatusClass = (stepStatus: string) => {
     switch (stepStatus) {
       case 'Completed': return 'pim-step-completed';
       case 'Active': return 'pim-step-active';
@@ -1355,7 +1412,7 @@ export default function PaymentInvoiceManagement({ currentUser }) {
     }
   };
 
-  const getStepIcon = (stepStatus) => {
+  const getStepIcon = (stepStatus: string) => {
     switch (stepStatus) {
       case 'Completed': return 'fas fa-check-circle';
       case 'Active': return 'fas fa-play-circle';
@@ -1367,7 +1424,7 @@ export default function PaymentInvoiceManagement({ currentUser }) {
     }
   };
 
-  const formatStepStatus = (status) => {
+  const formatStepStatus = (status: string) => {
     switch (status) {
       case 'New': return 'pim-status-new';
       case 'Completed': return 'pim-status-completed';
@@ -1378,7 +1435,7 @@ export default function PaymentInvoiceManagement({ currentUser }) {
     }
   };
 
-  const formatServiceStatus = (status) => {
+  const formatServiceStatus = (status: string) => {
     switch (status) {
       case 'Completed': return 'pim-status-completed';
       case 'InProgress': return 'pim-status-inprogress';
@@ -1390,7 +1447,7 @@ export default function PaymentInvoiceManagement({ currentUser }) {
     }
   };
 
-  const getQualityCheckResult = (order, service, index) => {
+  const getQualityCheckResult = (order: any, service: any, index: number) => {
     if (service && typeof service === 'object') {
       return service.qualityCheckResult || service.qcResult || service.qcStatus || service.qualityStatus || null;
     }
@@ -1410,21 +1467,12 @@ export default function PaymentInvoiceManagement({ currentUser }) {
     return null;
   };
 
-  const getAdditionalServiceStatusClass = (status) => {
+  const getAdditionalServiceStatusClass = (status: string) => {
     switch (status) {
       case 'Pending Approval': return 'pim-pending';
       case 'Approved': return 'pim-approved';
       case 'Declined': return 'pim-declined';
       default: return 'pim-pending';
-    }
-  };
-
-  const formatInvoiceStatus = (status) => {
-    switch (status) {
-      case 'Paid': return 'pim-payment-full';
-      case 'Partially Paid': return 'pim-payment-partial';
-      case 'Unpaid': return 'pim-payment-unpaid';
-      default: return 'pim-payment-unpaid';
     }
   };
 
@@ -1494,7 +1542,7 @@ export default function PaymentInvoiceManagement({ currentUser }) {
                 <h3><i className="fas fa-map-signs"></i> Job Order Roadmap</h3>
                 <div className="pim-roadmap-container">
                   <div className="pim-roadmap-steps">
-                    {selectedOrder.roadmap.map((step, idx) => (
+                    {selectedOrder.roadmap.map((step: any, idx: number) => (
                       <div key={idx} className={`pim-roadmap-step ${getStepStatusClass(step.stepStatus)}`}>
                         <div className="pim-step-icon">
                           <i className={getStepIcon(step.stepStatus)}></i>
@@ -1630,7 +1678,7 @@ export default function PaymentInvoiceManagement({ currentUser }) {
                 <div className="pim-detail-card">
                   <h3><i className="fas fa-tasks"></i> Services Summary</h3>
                   <div className="pim-services-list">
-                    {combinedSelectedServices.map((service, idx) => (
+                    {combinedSelectedServices.map((service: any, idx: number) => (
                       <div key={idx} className="pim-service-item">
                         <div className="pim-service-header">
                           <span className="pim-service-name">{typeof service === 'string' ? service : service.name}</span>
@@ -1675,7 +1723,7 @@ export default function PaymentInvoiceManagement({ currentUser }) {
 
             {/* Additional Services Requests */}
             <PermissionGate moduleId="payment" optionId="payment_services">
-              {selectedOrder.additionalServiceRequests && selectedOrder.additionalServiceRequests.map((request, idx) => (
+              {selectedOrder.additionalServiceRequests && selectedOrder.additionalServiceRequests.map((request: any, idx: number) => (
                 <div key={idx} className={`pim-additional-services ${getAdditionalServiceStatusClass(request.status)}`}>
                   <div className="pim-additional-header">
                     Additional Services Request {idx > 0 ? `#${idx + 1}` : ''}
@@ -1729,7 +1777,7 @@ export default function PaymentInvoiceManagement({ currentUser }) {
                 <h3><i className="fas fa-clipboard-check"></i> Quality Check List</h3>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                   {combinedSelectedServices.length > 0 ? (
-                    combinedSelectedServices.map((service, idx) => {
+                    combinedSelectedServices.map((service: any, idx: number) => {
                       const serviceName = typeof service === 'string' ? service : service.name;
                       const result = getQualityCheckResult(selectedOrder, service, idx) || 'Not Evaluated';
                       const isPass = result === 'Pass';
@@ -1904,7 +1952,7 @@ export default function PaymentInvoiceManagement({ currentUser }) {
                     <i className="fas fa-file-invoice" style={{ color: '#3b82f6' }}></i>
                     Invoice Details ({selectedOrder.billing.invoices.length})
                   </div>
-                  {selectedOrder.billing.invoices.map((invoice, idx) => (
+                  {selectedOrder.billing.invoices.map((invoice: any, idx: number) => (
                     <div key={idx} className="epm-invoice-item" style={{ 
                       background: 'linear-gradient(to right, #ffffff, #fafbfc)',
                       border: '1px solid #e2e8f0',
@@ -1964,7 +2012,7 @@ export default function PaymentInvoiceManagement({ currentUser }) {
                           <i className="fas fa-list-ul" style={{ color: '#3b82f6' }}></i>
                           Services Included:
                         </div>
-                        {invoice.services.map((service, sIdx) => (
+                        {invoice.services.map((service: any, sIdx: number) => (
                           <div key={sIdx} className="epm-service-in-invoice">
                             <i className="fas fa-check-circle" style={{ color: '#27ae60', marginRight: '10px' }}></i>
                             {service}
@@ -2058,7 +2106,7 @@ export default function PaymentInvoiceManagement({ currentUser }) {
                 <div className="pim-detail-card">
                   <h3><i className="fas fa-folder-open"></i> Documents</h3>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                    {selectedOrder.documents.map((doc, idx) => (
+                    {selectedOrder.documents.map((doc: any, idx: number) => (
                       <div key={idx} style={{
                         padding: '15px',
                         border: '1px solid #e5e7eb',
@@ -2222,9 +2270,13 @@ export default function PaymentInvoiceManagement({ currentUser }) {
                             value={paymentForm.discount}
                             onChange={handlePaymentChange}
                             min="0"
+                            max={paymentDiscountLimit}
                             step="0.01"
                             style={{ width: '100%', padding: '10px', border: '1px solid #d1d5db', borderRadius: '6px', fontSize: '14px' }}
                           />
+                          <div style={{ marginTop: '6px', fontSize: '12px', color: '#64748b' }}>
+                            Role cap: QAR {paymentDiscountLimit.toFixed(2)} ({paymentDiscountRolePercent.toFixed(2)}% of total). Remaining additional: QAR {Math.max(0, paymentDiscountLimit - initialPaymentDiscount).toFixed(2)}
+                          </div>
                         </div>
                       </PermissionGate>
 

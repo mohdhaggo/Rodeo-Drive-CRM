@@ -1,12 +1,44 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import './SalesLeadManagement.css';
 import PermissionGate from './PermissionGate';
+
+type LeadRecord = {
+  id: string;
+  customerName: string;
+  mobile: string;
+  make: string;
+  model: string;
+  plate: string;
+  source: string;
+  service: string;
+  createdBy: string;
+  assignedTo: string;
+  status: string;
+  created: string;
+};
+
+type ActivityLogItem = {
+  user: string;
+  time: string;
+  text: string;
+  isComment: boolean;
+};
+
+type NewLeadForm = {
+  customerName: string;
+  mobileNumber: string;
+  vehicleMake: string;
+  vehicleModel: string;
+  vehiclePlate: string;
+  leadSource: string;
+  desiredService: string;
+};
 
 const SalesLeadManagement = () => {
   const [showDetailsPage, setShowDetailsPage] = useState(false);
   const [currentLeadId, setCurrentLeadId] = useState('');
   const [showModal, setShowModal] = useState('');
-  const [openDropdown, setOpenDropdown] = useState(null);
+  const [openDropdown, setOpenDropdown] = useState<string | null>(null);
   
   // Search and filter states
   const [searchInput, setSearchInput] = useState('');
@@ -19,7 +51,7 @@ const SalesLeadManagement = () => {
   const [selectedStatus, setSelectedStatus] = useState('Working on it');
   
   // New lead form states
-  const [newLead, setNewLead] = useState({
+  const [newLead, setNewLead] = useState<NewLeadForm>({
     customerName: '',
     mobileNumber: '',
     vehicleMake: '',
@@ -30,7 +62,7 @@ const SalesLeadManagement = () => {
   });
 
   // Sample data - Pending Leads Only
-  const [leads, setLeads] = useState([
+  const [leads, setLeads] = useState<LeadRecord[]>([
     {
       id: "LD-2023-00123",
       customerName: "James Wilson",
@@ -75,7 +107,7 @@ const SalesLeadManagement = () => {
     }
   ]);
 
-  const [activityLogs, setActivityLogs] = useState({
+  const [activityLogs, setActivityLogs] = useState<Record<string, ActivityLogItem[]>>({
     "LD-2023-00123": [
       { user: "Admin", time: "10/25/2023 09:15 AM", text: "Lead created from website inquiry", isComment: false }
     ],
@@ -86,7 +118,7 @@ const SalesLeadManagement = () => {
   });
 
   // Helper functions
-  const getStatusClass = (status) => {
+  const getStatusClass = (status: string) => {
     switch(status) {
       case 'New Lead': return 'status-new';
       case 'Working on it': return 'status-working';
@@ -96,7 +128,7 @@ const SalesLeadManagement = () => {
     }
   };
 
-  const getServiceClass = (service) => {
+  const getServiceClass = (service: string) => {
     switch(service) {
       case 'Packages': return 'service-packages';
       case 'PPF': return 'service-ppf';
@@ -125,14 +157,14 @@ const SalesLeadManagement = () => {
   };
 
   // View lead details
-  const viewLeadDetails = (leadId) => {
+  const viewLeadDetails = (leadId: string) => {
     setCurrentLeadId(leadId);
     setShowDetailsPage(true);
     setOpenDropdown(null);
   };
 
   // Modal handlers
-  const openModal = (modalName) => {
+  const openModal = (modalName: string) => {
     setShowModal(modalName);
     
     if (modalName === 'reassign') {
@@ -301,7 +333,7 @@ const SalesLeadManagement = () => {
             </div>
             
             <div className="slm-activity-log">
-              {(activityLogs[currentLeadId] || []).map((activity, index) => (
+              {(activityLogs[currentLeadId] || []).map((activity: ActivityLogItem, index: number) => (
                 <div key={index} className="slm-activity-item">
                   <div className="slm-activity-header">
                     <strong>{activity.user}</strong>
@@ -386,7 +418,7 @@ const SalesLeadManagement = () => {
             <tbody>
               {getFilteredLeads().length === 0 ? (
                 <tr>
-                  <td colSpan="10" className="slm-no-data">
+                  <td colSpan={10} className="slm-no-data">
                     <i className="fas fa-search"></i>
                     <div>No leads found matching your criteria</div>
                   </td>

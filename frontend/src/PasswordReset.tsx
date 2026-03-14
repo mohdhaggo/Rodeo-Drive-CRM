@@ -64,7 +64,6 @@ function PasswordReset() {
     const hasUpperCase = /[A-Z]/.test(newPassword);
     const hasLowerCase = /[a-z]/.test(newPassword);
     const hasNumber = /[0-9]/.test(newPassword);
-    const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(newPassword);
 
     if (!hasUpperCase || !hasLowerCase || !hasNumber) {
       setMessage('Password must contain at least one uppercase letter, one lowercase letter, and one number');

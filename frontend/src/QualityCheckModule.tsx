@@ -1,10 +1,41 @@
-import { useEffect, useMemo, useState, useRef } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { getStoredJobOrders } from './demoData'
 import SuccessPopup from './SuccessPopup'
 import ConfirmationPopup from './ConfirmationPopup'
 import PermissionGate from './PermissionGate'
 import './QualityCheckModule.css'
+
+type QualityCheckModuleProps = {
+  currentUser?: {
+    name?: string
+  } | null
+}
+
+type QCJob = {
+  id: string
+  createDate: string
+  orderType: string
+  customerName: string
+  mobile: string
+  vehiclePlate: string
+  workStatus: string
+  status: string
+  [key: string]: any
+}
+
+type DetailData = Record<string, any>
+
+type ConfirmationData = {
+  message: string
+  onConfirm: (() => void) | null
+  confirmText: string
+  cancelText: string
+}
+
+type ServiceQCResults = Record<number, string>
+
+type ScreenState = 'main' | 'details'
 
 const defaultDetailData = {
   jobOrderId: 'JO-2026-176638',
@@ -36,7 +67,7 @@ const defaultDetailData = {
   customerNotes: null
 }
 
-const mapOrderToQCJob = (order) => ({
+const mapOrderToQCJob = (order: any): QCJob => ({
   id: order.id,
   createDate: order.jobOrderSummary?.createDate || order.createDate || 'Not specified',
   orderType: order.orderType || 'New Job Order',
@@ -47,37 +78,37 @@ const mapOrderToQCJob = (order) => ({
   status: order.workStatus === 'Quality Check' ? 'Quality Check' : 'Quality Check'
 })
 
-const filterQCOrders = (orders) =>
-  orders.filter((order) => order.workStatus === 'Quality Check')
+const filterQCOrders = (orders: any[]): any[] =>
+  orders.filter((order: any) => order.workStatus === 'Quality Check')
 
-function QualityCheckModule({ currentUser }) {
-  const [jobOrders, setJobOrders] = useState([])
-  const [jobData, setJobData] = useState([])
-  const [filteredJobs, setFilteredJobs] = useState([])
+function QualityCheckModule({ currentUser }: QualityCheckModuleProps) {
+  const [jobOrders, setJobOrders] = useState<any[]>([])
+  const [jobData, setJobData] = useState<QCJob[]>([])
+  const [filteredJobs, setFilteredJobs] = useState<QCJob[]>([])
   const [searchQuery, setSearchQuery] = useState('')
   const [currentPage, setCurrentPage] = useState(1)
   const [pageSize, setPageSize] = useState(20)
-  const [activeJobId, setActiveJobId] = useState(null)
-  const [detailData, setDetailData] = useState(defaultDetailData)
+  const [activeJobId, setActiveJobId] = useState<string | null>(null)
+  const [detailData, setDetailData] = useState<DetailData>(defaultDetailData)
   const [showPopup, setShowPopup] = useState(false)
   const [popupMessage, setPopupMessage] = useState('')
   const [showConfirmation, setShowConfirmation] = useState(false)
-  const [confirmationData, setConfirmationData] = useState({
+  const [confirmationData, _setConfirmationData] = useState<ConfirmationData>({
     message: '',
     onConfirm: null,
     confirmText: 'Yes',
     cancelText: 'No'
   })
-  const [screenState, setScreenState] = useState('main')
+  const [screenState, setScreenState] = useState<ScreenState>('main')
   const [showCancelConfirmation, setShowCancelConfirmation] = useState(false)
-  const [cancelOrderId, setCancelOrderId] = useState(null)
-  const [activeDropdown, setActiveDropdown] = useState(null)
+  const [cancelOrderId, setCancelOrderId] = useState<string | null>(null)
+  const [activeDropdown, setActiveDropdown] = useState<string | null>(null)
   const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0 })
-  const [serviceQCResults, setServiceQCResults] = useState({})
+  const [serviceQCResults, setServiceQCResults] = useState<ServiceQCResults>({})
   const [showQCConfirmation, setShowQCConfirmation] = useState(false)
 
   useEffect(() => {
-    const orders = getStoredJobOrders()
+    const orders = getStoredJobOrders() as any[]
     const qcOrders = filterQCOrders(orders)
     setJobOrders(qcOrders)
     setJobData(qcOrders.map(mapOrderToQCJob))
@@ -91,9 +122,14 @@ function QualityCheckModule({ currentUser }) {
 
   // Close dropdown when clicking outside
   useEffect(() => {
-    const handleClickOutside = (event) => {
-      const isDropdownButton = event.target.closest('.btn-action-dropdown')
-      const isDropdownMenu = event.target.closest('.action-dropdown-menu')
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as HTMLElement | null
+      if (!target) {
+        return
+      }
+
+      const isDropdownButton = target.closest('.btn-action-dropdown')
+      const isDropdownMenu = target.closest('.action-dropdown-menu')
       
       if (!isDropdownButton && !isDropdownMenu) {
         setActiveDropdown(null)
@@ -109,12 +145,12 @@ function QualityCheckModule({ currentUser }) {
   }, [activeDropdown])
 
   const activeJob = useMemo(
-    () => jobData.find((job) => job.id === activeJobId) || null,
+    () => jobData.find((job: QCJob) => job.id === activeJobId) || null,
     [jobData, activeJobId]
   )
 
   const activeOrder = useMemo(
-    () => jobOrders.find((order) => order.id === activeJobId) || null,
+    () => jobOrders.find((order: any) => order.id === activeJobId) || null,
     [jobOrders, activeJobId]
   )
 
@@ -131,7 +167,7 @@ function QualityCheckModule({ currentUser }) {
     }
 
     const query = searchQuery.toLowerCase()
-    const filtered = jobData.filter((job) => {
+    const filtered = jobData.filter((job: QCJob) => {
       return (
         (job.id && job.id.toLowerCase().includes(query)) ||
         (job.createDate && job.createDate.toLowerCase().includes(query)) ||
@@ -150,13 +186,16 @@ function QualityCheckModule({ currentUser }) {
     applySearch()
   }, [searchQuery, jobData])
 
-  const handleShowCancelConfirmation = (orderId) => {
+  const handleShowCancelConfirmation = (orderId: string | null) => {
+    if (!orderId) {
+      return
+    }
     setCancelOrderId(orderId)
     setShowCancelConfirmation(true)
     setActiveDropdown(null)
   }
 
-  const handleOpenDropdown = (e, jobId) => {
+  const handleOpenDropdown = (e: React.MouseEvent<HTMLButtonElement>, jobId: string) => {
     const isActive = activeDropdown === jobId
     if (isActive) {
       setActiveDropdown(null)
@@ -178,8 +217,8 @@ function QualityCheckModule({ currentUser }) {
   const handleCancelOrder = () => {
     if (!cancelOrderId) return
 
-    const storedOrders = JSON.parse(localStorage.getItem('jobOrders') || '[]')
-    const orderToCancel = storedOrders.find(order => order.id === cancelOrderId)
+    const storedOrders: any[] = JSON.parse(localStorage.getItem('jobOrders') || '[]')
+    const orderToCancel = storedOrders.find((order: any) => order.id === cancelOrderId)
     if (!orderToCancel) return
 
     // Check if order is already cancelled
@@ -195,7 +234,7 @@ function QualityCheckModule({ currentUser }) {
       workStatus: 'Cancelled'
     }
 
-    const updatedOrders = storedOrders.map(order =>
+    const updatedOrders = storedOrders.map((order: any) =>
       order.id === cancelOrderId ? cancelledOrder : order
     )
     localStorage.setItem('jobOrders', JSON.stringify(updatedOrders))
@@ -209,7 +248,7 @@ function QualityCheckModule({ currentUser }) {
     setCancelOrderId(null)
   }
 
-  const getQCStepStatusClass = (stepStatus) => {
+  const getQCStepStatusClass = (stepStatus: string) => {
     switch (stepStatus) {
       case 'Completed': return 'qc-step-completed'
       case 'Active': return 'qc-step-active'
@@ -221,7 +260,7 @@ function QualityCheckModule({ currentUser }) {
     }
   }
 
-  const getQCStepIcon = (stepStatus) => {
+  const getQCStepIcon = (stepStatus: string) => {
     switch (stepStatus) {
       case 'Completed': return 'fas fa-check-circle'
       case 'Active': return 'fas fa-play-circle'
@@ -233,7 +272,7 @@ function QualityCheckModule({ currentUser }) {
     }
   }
 
-  const getQCStatusClass = (status) => {
+  const getQCStatusClass = (status: string) => {
     switch (status) {
       case 'Completed': return 'qc-status-completed'
       case 'InProgress': return 'qc-status-inprogress'
@@ -243,14 +282,14 @@ function QualityCheckModule({ currentUser }) {
     }
   }
 
-  const handleServiceQCChange = (serviceIndex, qcResult) => {
-    setServiceQCResults(prev => ({
+  const handleServiceQCChange = (serviceIndex: number, qcResult: string) => {
+    setServiceQCResults((prev: ServiceQCResults) => ({
       ...prev,
       [serviceIndex]: qcResult
     }))
   }
 
-  const combinedServices = detailData.orderType === 'Service Order'
+  const combinedServices: any[] = detailData.orderType === 'Service Order'
     ? [...(detailData.serviceOrderReference?.services || []), ...(detailData.services || [])]
     : (detailData.services || [])
 
@@ -272,7 +311,12 @@ function QualityCheckModule({ currentUser }) {
     return 'Pass'
   }
 
-  const generateQualityCheckPdf = async (order, detailData, activeJob, serviceQCResults) => {
+  const generateQualityCheckPdf = async (
+    order: any,
+    detailData: DetailData,
+    activeJob: QCJob | null,
+    serviceQCResults: ServiceQCResults
+  ) => {
     const orderId = order?.id || detailData?.jobOrderId || 'N/A'
     const overallStatus = calculateOverallStatus()
 
@@ -371,7 +415,7 @@ function QualityCheckModule({ currentUser }) {
     `
 
     // Individual service results
-    combinedServices.forEach((service, idx) => {
+    combinedServices.forEach((service: any, idx: number) => {
       const serviceName = typeof service === 'string' ? service : service.name
       const result = serviceQCResults[idx] || 'Not Evaluated'
       const resultClass = result === 'Pass' 
@@ -413,7 +457,17 @@ function QualityCheckModule({ currentUser }) {
     return `data:text/html;base64,${encoded}`
   }
 
-  const buildQualityCheckReportDocument = async ({ order, detailData, activeJob, serviceQCResults }) => {
+  const buildQualityCheckReportDocument = async ({
+    order,
+    detailData,
+    activeJob,
+    serviceQCResults,
+  }: {
+    order: any
+    detailData: DetailData
+    activeJob: QCJob | null
+    serviceQCResults: ServiceQCResults
+  }) => {
     if (!order) return null
 
     const dataUrl = await generateQualityCheckPdf(order, detailData, activeJob, serviceQCResults)
@@ -433,7 +487,11 @@ function QualityCheckModule({ currentUser }) {
     setShowQCConfirmation(true)
   }
 
-  const viewDetails = (job) => {
+  const viewDetails = (job: QCJob | undefined | null) => {
+    if (!job) {
+      return
+    }
+
     const order = jobOrders.find((item) => item.id === job.id)
     const orderSummary = order?.jobOrderSummary || {}
     const customerDetails = order?.customerDetails || {}
@@ -484,7 +542,7 @@ function QualityCheckModule({ currentUser }) {
     setScreenState('main')
   }
 
-  const getPaymentMethodClass = (method) => {
+  const getPaymentMethodClass = (method: string | null | undefined) => {
     if (!method) return '';
     const normalized = method.toLowerCase();
     if (normalized.includes('cash')) return 'epm-payment-method-cash';
@@ -493,7 +551,7 @@ function QualityCheckModule({ currentUser }) {
     return 'epm-payment-method-card';
   }
 
-  const formatServiceStatus = (status) => {
+  const formatServiceStatus = (status: string) => {
     switch (status) {
       case 'Completed': return 'qc-status-completed'
       case 'InProgress': return 'qc-status-inprogress'
@@ -507,8 +565,8 @@ function QualityCheckModule({ currentUser }) {
   }
 
   const handleApproveQC = async () => {
-    const storedOrders = JSON.parse(localStorage.getItem('jobOrders') || '[]')
-    const targetOrder = storedOrders.find((order) => order.id === activeJobId)
+    const storedOrders: any[] = JSON.parse(localStorage.getItem('jobOrders') || '[]')
+    const targetOrder = storedOrders.find((order: any) => order.id === activeJobId)
     
     // Generate quality check report
     const qualityCheckReport = await buildQualityCheckReportDocument({
@@ -518,10 +576,10 @@ function QualityCheckModule({ currentUser }) {
       serviceQCResults
     })
 
-    const updatedOrders = storedOrders.map((order) => {
+    const updatedOrders = storedOrders.map((order: any) => {
       if (order.id !== activeJobId) return order
       
-      const updatedRoadmap = order.roadmap?.map((step) => {
+      const updatedRoadmap = order.roadmap?.map((step: any) => {
         if (step.step === 'Quality Check') {
           return {
             ...step,
@@ -543,8 +601,8 @@ function QualityCheckModule({ currentUser }) {
       }) || []
 
       // Add quality check report to documents
-      const documents = Array.isArray(order.documents) ? order.documents : []
-      const filteredDocuments = documents.filter((doc) => doc.type !== 'quality-check-report')
+      const documents: any[] = Array.isArray(order.documents) ? order.documents : []
+      const filteredDocuments = documents.filter((doc: any) => doc.type !== 'quality-check-report')
 
       return {
         ...order,
@@ -569,11 +627,11 @@ function QualityCheckModule({ currentUser }) {
   }
 
   const handleRejectQC = async () => {
-    const storedOrders = JSON.parse(localStorage.getItem('jobOrders') || '[]')
-    const updatedOrders = storedOrders.map((order) => {
+    const storedOrders: any[] = JSON.parse(localStorage.getItem('jobOrders') || '[]')
+    const updatedOrders = storedOrders.map((order: any) => {
       if (order.id !== activeJobId) return order
       
-      const updatedRoadmap = order.roadmap?.map((step) => {
+      const updatedRoadmap = order.roadmap?.map((step: any) => {
         if (step.step === 'Quality Check') {
           return {
             ...step,
@@ -867,7 +925,7 @@ function QualityCheckModule({ currentUser }) {
                   <h3><i className="fas fa-map-signs"></i> Job Order Roadmap</h3>
                   <div className="qc-roadmap-container">
                     <div className="qc-roadmap-steps">
-                      {detailData.roadmap.map((step, idx) => (
+                      {detailData.roadmap.map((step: any, idx: number) => (
                         <div key={idx} className={`qc-roadmap-step ${getQCStepStatusClass(step.stepStatus)}`}>
                           <div className="qc-step-icon">
                             <i className={getQCStepIcon(step.stepStatus)}></i>
@@ -1220,7 +1278,7 @@ function QualityCheckModule({ currentUser }) {
                       <i className="fas fa-file-invoice" style={{ color: '#3b82f6' }}></i>
                       Invoice Details ({activeOrder.billing.invoices.length})
                     </div>
-                    {activeOrder.billing.invoices.map((invoice, idx) => (
+                    {activeOrder.billing.invoices.map((invoice: any, idx: number) => (
                       <div key={idx} className="epm-invoice-item" style={{ 
                         background: 'linear-gradient(to right, #ffffff, #fafbfc)',
                         border: '1px solid #e2e8f0',
@@ -1279,7 +1337,7 @@ function QualityCheckModule({ currentUser }) {
                           }}>
                             <i className="fas fa-list-ul"></i> Services Included:
                           </div>
-                          {invoice.services?.map((service, sidx) => (
+                          {invoice.services?.map((service: any, sidx: number) => (
                             <div key={sidx} className="epm-service-in-invoice" style={{ 
                               padding: '8px 0 8px 15px',
                               fontSize: '14px',
@@ -1381,7 +1439,7 @@ function QualityCheckModule({ currentUser }) {
               <PermissionGate moduleId="deliveryqc" optionId="deliveryqc_documents">
                   <h3><i className="fas fa-folder-open"></i> Documents</h3>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                    {activeOrder.documents.map((doc, idx) => (
+                    {activeOrder.documents.map((doc: any, idx: number) => (
                       <div key={idx} style={{
                         padding: '15px',
                         border: '1px solid #e5e7eb',
@@ -1481,7 +1539,7 @@ function QualityCheckModule({ currentUser }) {
           message={confirmationData.message}
           confirmText={confirmationData.confirmText}
           cancelText={confirmationData.cancelText}
-          onConfirm={confirmationData.onConfirm}
+          onConfirm={confirmationData.onConfirm ?? (() => setShowConfirmation(false))}
           onCancel={() => setShowConfirmation(false)}
         />
       )}

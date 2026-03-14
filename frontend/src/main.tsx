@@ -2,21 +2,25 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './App.tsx'
-import { ApprovalRequestsProvider } from './ApprovalRequestsContext.tsx'
 import ErrorBoundary from './ErrorBoundary.tsx'
 
-// Try to configure Amplify if available
-try {
-  const { Amplify } = require('aws-amplify')
-  const amplifyOutputs = require('../../amplify_outputs.json')
-  
-  Amplify.configure(amplifyOutputs)
-  console.log('✅ Amplify configured successfully')
-} catch (err) {
-  const error = err instanceof Error ? err : new Error(String(err))
-  console.warn('⚠️ Amplify not available:', error.message)
-  console.log('ℹ️ App will run with local data only')
+const configureAmplify = async (): Promise<void> => {
+  try {
+    const [{ Amplify }, amplifyOutputsModule] = await Promise.all([
+      import('aws-amplify'),
+      import('../../amplify_outputs.json')
+    ])
+
+    Amplify.configure(amplifyOutputsModule.default)
+    console.log('✅ Amplify configured successfully')
+  } catch (err) {
+    const error = err instanceof Error ? err : new Error(String(err))
+    console.warn('⚠️ Amplify not available:', error.message)
+    console.log('ℹ️ App will run with local data only')
+  }
 }
+
+void configureAmplify()
 
 // Global error handlers
 console.log('🚀 Rodeo Drive CRM starting...')
@@ -39,9 +43,7 @@ if (!rootElement) {
     createRoot(rootElement).render(
       <StrictMode>
         <ErrorBoundary>
-          <ApprovalRequestsProvider>
-            <App />
-          </ApprovalRequestsProvider>
+          <App />
         </ErrorBoundary>
       </StrictMode>,
     )

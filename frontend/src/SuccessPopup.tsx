@@ -1,4 +1,5 @@
-import React, { useEffect, ReactNode } from 'react';
+import { useEffect } from 'react';
+import type { ReactNode, MouseEvent as ReactMouseEvent } from 'react';
 import './SuccessPopup.css';
 
 interface SuccessPopupProps {
@@ -16,7 +17,7 @@ const SuccessPopup = ({
 }: SuccessPopupProps) => {
   // Close popup on Escape key press
   useEffect(() => {
-    const handleEscape = (event) => {
+    const handleEscape = (event: KeyboardEvent) => {
       if (event.key === 'Escape' && isVisible) {
         onClose();
       }
@@ -44,7 +45,7 @@ const SuccessPopup = ({
 
   if (!isVisible) return null;
 
-  const handleOverlayClick = (e) => {
+  const handleOverlayClick = (e: ReactMouseEvent<HTMLDivElement>) => {
     if (e.target === e.currentTarget) {
       onClose();
     }

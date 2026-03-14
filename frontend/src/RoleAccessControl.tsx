@@ -5,7 +5,48 @@ import './RoleAccessControl.css'
 
 const ROLE_STORAGE_KEY = 'department_roles'
 
-const DEFAULT_ROLE_OPTIONS = [
+type RoleOption = {
+  value: string
+  label: string
+}
+
+type DepartmentRole = {
+  id: string | number
+  name: string
+}
+
+type DepartmentRecord = {
+  name: string
+  roles?: DepartmentRole[]
+}
+
+type PermissionOption = {
+  id: string
+  label: string
+  prefix?: string
+  kind?: 'percent'
+  defaultValue?: number
+  children?: PermissionOption[]
+}
+
+type PermissionModuleDefinition = {
+  id: string
+  title: string
+  icon: string
+  category: string
+  options: PermissionOption[]
+}
+
+type PermissionModuleState = {
+  enabled: boolean
+  options: Record<string, boolean>
+}
+
+type PermissionsState = Record<string, PermissionModuleState>
+type ExpandedModulesState = Record<string, boolean>
+type PercentValuesState = Record<string, number | ''>
+
+const DEFAULT_ROLE_OPTIONS: RoleOption[] = [
   { value: 'admin', label: 'Administrator' },
   { value: 'manager', label: 'Service Manager' },
   { value: 'technician', label: 'Service Technician' },
@@ -14,13 +55,13 @@ const DEFAULT_ROLE_OPTIONS = [
   { value: 'viewer', label: 'View Only' },
 ]
 
-const buildRoleOptions = (departments) => {
+const buildRoleOptions = (departments: unknown): RoleOption[] => {
   if (!Array.isArray(departments)) {
     return DEFAULT_ROLE_OPTIONS
   }
 
-  const options = departments.flatMap((dept) =>
-    (dept.roles || []).map((role) => ({
+  const options = departments.flatMap((dept: DepartmentRecord) =>
+    (Array.isArray(dept.roles) ? dept.roles : []).map((role: DepartmentRole) => ({
       value: `role_${role.id}`,
       label: `${role.name} (${dept.name})`,
     }))
@@ -29,7 +70,7 @@ const buildRoleOptions = (departments) => {
   return options.length > 0 ? options : DEFAULT_ROLE_OPTIONS
 }
 
-const loadRoleOptions = () => {
+const loadRoleOptions = (): RoleOption[] => {
   const stored = localStorage.getItem(ROLE_STORAGE_KEY)
   if (!stored) {
     return DEFAULT_ROLE_OPTIONS
@@ -43,7 +84,7 @@ const loadRoleOptions = () => {
   }
 }
 
-const MODULE_DEFINITIONS = [
+const MODULE_DEFINITIONS: PermissionModuleDefinition[] = [
   {
     id: 'overview',
     title: 'Overview Dashboard',
@@ -782,12 +823,14 @@ const MODULE_DEFINITIONS = [
   },
 ]
 
-const buildPercentDefaults = () => {
-  const defaults = {}
-  const walk = (options) => {
-    options.forEach((option) => {
+const PERCENT_STORAGE_PREFIX = 'permissionPercents_'
+
+const buildPercentDefaults = (): Record<string, number> => {
+  const defaults: Record<string, number> = {}
+  const walk = (options: PermissionOption[]) => {
+    options.forEach((option: PermissionOption) => {
       if (option.kind === 'percent') {
-        defaults[option.id] = option.defaultValue
+        defaults[option.id] = option.defaultValue ?? 0
       }
       if (option.children) {
         walk(option.children)
@@ -802,9 +845,51 @@ const buildPercentDefaults = () => {
   return defaults
 }
 
-const collectToggleOptionIds = (options) => {
-  let ids = []
-  options.forEach((option) => {
+const normalizePercentValues = (
+  values: Record<string, unknown> | null | undefined,
+  defaults: Record<string, number>
+): Record<string, number> => {
+  const normalized: Record<string, number> = { ...defaults }
+
+  if (!values || typeof values !== 'object') {
+    return normalized
+  }
+
+  Object.keys(defaults).forEach((optionId) => {
+    const rawValue = values[optionId]
+    if (rawValue === undefined || rawValue === null || rawValue === '') {
+      return
+    }
+
+    const parsed = Number(rawValue)
+    if (Number.isFinite(parsed)) {
+      normalized[optionId] = Math.max(0, Math.min(100, parsed))
+    }
+  })
+
+  return normalized
+}
+
+const loadStoredPercentValues = (role: string): Record<string, number> => {
+  const defaults = buildPercentDefaults()
+  const stored = localStorage.getItem(`${PERCENT_STORAGE_PREFIX}${role}`)
+
+  if (!stored) {
+    return defaults
+  }
+
+  try {
+    const parsed = JSON.parse(stored)
+    return normalizePercentValues(parsed, defaults)
+  } catch (error) {
+    console.warn('Failed to parse stored role percentages:', error)
+    return defaults
+  }
+}
+
+const collectToggleOptionIds = (options: PermissionOption[]): string[] => {
+  let ids: string[] = []
+  options.forEach((option: PermissionOption) => {
     if (option.kind !== 'percent' && option.id) {
       ids.push(option.id)
     }
@@ -815,7 +900,7 @@ const collectToggleOptionIds = (options) => {
   return ids
 }
 
-const applyRoleDefaults = (permissions, role) => {
+const applyRoleDefaults = (permissions: PermissionsState, role: string): void => {
   if (role === 'technician') {
     permissions.joborder.options.joborder_add = false
     permissions.payment.enabled = false
@@ -836,8 +921,8 @@ const applyRoleDefaults = (permissions, role) => {
   }
 }
 
-const buildDefaultPermissions = (role) => {
-  const base = {}
+const buildDefaultPermissions = (role: string): PermissionsState => {
+  const base: PermissionsState = {}
 
   MODULE_DEFINITIONS.forEach((module) => {
     base[module.id] = { enabled: true, options: {} }
@@ -850,15 +935,27 @@ const buildDefaultPermissions = (role) => {
   return base
 }
 
-const buildSearchIndex = (options) => {
-  let labels = []
-  options.forEach((option) => {
+const buildSearchIndex = (options: PermissionOption[]): string[] => {
+  let labels: string[] = []
+  options.forEach((option: PermissionOption) => {
     labels.push(option.label.toLowerCase())
     if (option.children) {
       labels = labels.concat(buildSearchIndex(option.children))
     }
   })
   return labels
+}
+
+type OptionNodeProps = {
+  moduleId: string
+  option: PermissionOption
+  level: number
+  moduleEnabled: boolean
+  permissions: PermissionsState
+  onToggleOption: (moduleId: string, optionId: string, enabled: boolean) => void
+  percentValues: PercentValuesState
+  onPercentChange: (id: string, value: string) => void
+  parentEnabled: boolean
 }
 
 const OptionNode = ({
@@ -871,7 +968,7 @@ const OptionNode = ({
   percentValues,
   onPercentChange,
   parentEnabled,
-}) => {
+}: OptionNodeProps) => {
   const isPercent = option.kind === 'percent'
   const optionEnabled = isPercent
     ? parentEnabled
@@ -902,7 +999,7 @@ const OptionNode = ({
               type="number"
               min="0"
               max="100"
-              value={percentValues[option.id] ?? option.defaultValue}
+              value={percentValues[option.id] ?? option.defaultValue ?? 0}
               disabled={disabled}
               onChange={(event) => onPercentChange(option.id, event.target.value)}
             />
@@ -912,7 +1009,7 @@ const OptionNode = ({
       </div>
       {option.children && (
         <div className="rac-children">
-          {option.children.map((child) => (
+          {option.children.map((child: PermissionOption) => (
             <OptionNode
               key={child.id}
               moduleId={moduleId}
@@ -933,15 +1030,15 @@ const OptionNode = ({
 }
 
 const RoleAccessControl = () => {
-  const [roleOptions, setRoleOptions] = useState(() => loadRoleOptions())
-  const [currentRole, setCurrentRole] = useState(() => roleOptions[0]?.value || 'admin')
-  const [permissions, setPermissions] = useState(() =>
+  const [roleOptions, setRoleOptions] = useState<RoleOption[]>(() => loadRoleOptions())
+  const [currentRole, setCurrentRole] = useState<string>(() => roleOptions[0]?.value || 'admin')
+  const [permissions, setPermissions] = useState<PermissionsState>(() =>
     buildDefaultPermissions(roleOptions[0]?.value || 'admin')
   )
-  const [expandedModules, setExpandedModules] = useState({ overview: true })
+  const [expandedModules, setExpandedModules] = useState<ExpandedModulesState>({ overview: true })
   const [activeCategory, setActiveCategory] = useState('all')
   const [searchTerm, setSearchTerm] = useState('')
-  const [percentValues, setPercentValues] = useState(() => buildPercentDefaults())
+  const [percentValues, setPercentValues] = useState<PercentValuesState>(() => buildPercentDefaults())
   const [showSuccessPopup, setShowSuccessPopup] = useState(false)
   const [successMessage, setSuccessMessage] = useState('')
 
@@ -952,12 +1049,17 @@ const RoleAccessControl = () => {
 
     const stored = localStorage.getItem(`permissions_${currentRole}`)
     if (stored) {
-      setPermissions(JSON.parse(stored))
+      try {
+        setPermissions(JSON.parse(stored) as PermissionsState)
+      } catch (error) {
+        console.warn('Failed to parse stored role permissions:', error)
+        setPermissions(buildDefaultPermissions(currentRole))
+      }
     } else {
       setPermissions(buildDefaultPermissions(currentRole))
     }
     setExpandedModules({})
-    setPercentValues(buildPercentDefaults())
+    setPercentValues(loadStoredPercentValues(currentRole))
   }, [currentRole])
 
   useEffect(() => {
@@ -995,22 +1097,25 @@ const RoleAccessControl = () => {
     })
   }, [activeCategory, searchTerm, modulesWithSearchIndex])
 
-  const handleToggleModule = (moduleId) => {
+  const handleToggleModule = (moduleId: string) => {
     setExpandedModules((prev) => ({
       ...prev,
       [moduleId]: !prev[moduleId],
     }))
   }
 
-  const handleToggleModuleEnabled = (moduleId, enabled) => {
+  const handleToggleModuleEnabled = (moduleId: string, enabled: boolean) => {
     setPermissions((prev) => {
+      const currentModule = prev[moduleId] || { enabled: false, options: {} }
+      const nextModule: PermissionModuleState = {
+        ...currentModule,
+        enabled,
+        options: { ...currentModule.options },
+      }
+
       const next = {
         ...prev,
-        [moduleId]: {
-          ...prev[moduleId],
-          enabled,
-          options: { ...prev[moduleId].options },
-        },
+        [moduleId]: nextModule,
       }
 
       if (!enabled) {
@@ -1023,27 +1128,27 @@ const RoleAccessControl = () => {
     })
   }
 
-  const handleToggleOption = (moduleId, optionId, enabled) => {
+  const handleToggleOption = (moduleId: string, optionId: string, enabled: boolean) => {
     setPermissions((prev) => ({
       ...prev,
       [moduleId]: {
-        ...prev[moduleId],
+        ...(prev[moduleId] || { enabled: false, options: {} }),
         options: {
-          ...prev[moduleId].options,
+          ...(prev[moduleId]?.options || {}),
           [optionId]: enabled,
         },
       },
     }))
   }
 
-  const handlePercentChange = (id, value) => {
+  const handlePercentChange = (id: string, value: string) => {
     setPercentValues((prev) => ({
       ...prev,
       [id]: value === '' ? '' : Number(value),
     }))
   }
 
-  const showSuccessMessage = (message) => {
+  const showSuccessMessage = (message: string) => {
     setSuccessMessage(message)
     setShowSuccessPopup(true)
   }
@@ -1053,6 +1158,7 @@ const RoleAccessControl = () => {
       return
     }
     localStorage.removeItem(`permissions_${currentRole}`)
+    localStorage.removeItem(`${PERCENT_STORAGE_PREFIX}${currentRole}`)
     setPermissions(buildDefaultPermissions(currentRole))
     setPercentValues(buildPercentDefaults())
     notifyPermissionsUpdated()
@@ -1060,7 +1166,10 @@ const RoleAccessControl = () => {
   }
 
   const handleSave = () => {
+    const normalizedPercents = normalizePercentValues(percentValues, buildPercentDefaults())
     localStorage.setItem(`permissions_${currentRole}`, JSON.stringify(permissions))
+    localStorage.setItem(`${PERCENT_STORAGE_PREFIX}${currentRole}`, JSON.stringify(normalizedPercents))
+    setPercentValues(normalizedPercents)
     const roleLabel = roleOptions.find((role) => role.value === currentRole)?.label || currentRole
     notifyPermissionsUpdated()
     showSuccessMessage(`Permissions for ${roleLabel} have been saved successfully!`)

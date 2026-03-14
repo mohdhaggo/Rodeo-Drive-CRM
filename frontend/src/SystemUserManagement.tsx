@@ -1,4 +1,5 @@
 import { useMemo, useState, useEffect, useRef } from 'react'
+import type { ChangeEvent, Dispatch, SetStateAction } from 'react'
 import { createPortal } from 'react-dom'
 import './SystemUserManagement.css'
 import PermissionGate from './PermissionGate'
@@ -11,25 +12,37 @@ import {
   generatePasswordResetToken
 } from './userService.ts'
 
-const initialUsers = [
-  {
-    id: '1',
-    employeeId: 'EP0001',
-    name: 'test number 99',
-    email: 'test99@redoedrive.com',
-    mobile: '12345699',
-    department: 'IT',
-    role: 'Administrator',
-    lineManager: 'test number 08',
-    status: 'active',
-    dashboardAccess: 'allowed',
-    createdDate: '2025-01-15',
-    tempPassword: null,
-    description:
-      'System Administrator responsible for overall system management and user administration.',
-  },
-  // ... rest of initial users array (keeping the same)
-]
+type UserStatus = 'active' | 'inactive'
+type DashboardAccess = 'allowed' | 'blocked'
+
+interface SystemUser {
+  id: string
+  employeeId: string
+  name: string
+  email: string
+  mobile: string
+  department: string
+  role: string
+  lineManager?: string
+  status: UserStatus
+  dashboardAccess: DashboardAccess
+  createdDate?: string
+  tempPassword?: string | null
+  mustChangePassword?: boolean
+  password?: string | null
+  description?: string
+  [key: string]: unknown
+}
+
+interface UserFormState {
+  employeeId: string
+  name: string
+  email: string
+  mobile: string
+  department: string
+  role: string
+  lineManager: string
+}
 
 const departmentData = [
   { id: 1, name: 'IT', roles: ['Administrator', 'IT helpdesk'] },
@@ -62,7 +75,7 @@ const departmentData = [
   },
 ]
 
-const emptyForm = {
+const emptyForm: UserFormState = {
   employeeId: '',
   name: '',
   email: '',
@@ -91,52 +104,49 @@ export default function SystemUserManagement() {
   }, [])
 
   const loadUsers = () => {
-    const usersFromService = getAllUsersIncludingInactive()
+    const usersFromService = getAllUsersIncludingInactive() as SystemUser[]
     setUsers(usersFromService)
   }
 
-  const [users, setUsers] = useState([])
+  const [users, setUsers] = useState<SystemUser[]>([])
   const [searchQuery, setSearchQuery] = useState('')
   const [currentPage, setCurrentPage] = useState(1)
   const [pageSize, setPageSize] = useState(10)
-  const [detailsUserId, setDetailsUserId] = useState(null)
+  const [detailsUserId, setDetailsUserId] = useState<string | null>(null)
   const [showAddUserModal, setShowAddUserModal] = useState(false)
   const [showEditUserModal, setShowEditUserModal] = useState(false)
   const [showAlert, setShowAlert] = useState(false)
-  const [userToDelete, setUserToDelete] = useState(null)
+  const [userToDelete, setUserToDelete] = useState<SystemUser | null>(null)
   const [alertOptions, setAlertOptions] = useState<AlertOptions>({
     title: '',
     message: '',
     type: 'info',
   })
-  const [formState, setFormState] = useState(emptyForm)
-  const [editFormState, setEditFormState] = useState(emptyForm)
-  const [activeDropdown, setActiveDropdown] = useState(null)
+  const [formState, setFormState] = useState<UserFormState>(emptyForm)
+  const [editFormState, setEditFormState] = useState<UserFormState>(emptyForm)
+  const [activeDropdown, setActiveDropdown] = useState<string | null>(null)
   const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0 })
 
   // Refs for focus management
   const employeeIdRef = useRef<HTMLInputElement>(null)
-  const nameRef = useRef<HTMLInputElement>(null)
-  const emailRef = useRef<HTMLInputElement>(null)
-  const mobileRef = useRef<HTMLInputElement>(null)
 
   const detailsUser = useMemo(
-    () => users.find((user) => user.id === detailsUserId) || null,
+    () => users.find((user: SystemUser) => user.id === detailsUserId) || null,
     [users, detailsUserId]
   )
 
   const departments = useMemo(() => {
-    const fromUsers = new Set(users.map((user) => user.department))
+    const fromUsers = new Set(users.map((user: SystemUser) => user.department))
     return Array.from(fromUsers).sort()
   }, [users])
 
   const roles = useMemo(() => {
-    const fromUsers = new Set(users.map((user) => user.role))
+    const fromUsers = new Set(users.map((user: SystemUser) => user.role))
     return Array.from(fromUsers).sort()
   }, [users])
 
   const lineManagers = useMemo(() => {
-    const names = users.map((user) => user.name).sort()
+    const names = users.map((user: SystemUser) => user.name).sort()
     return ['not available', ...new Set(names)]
   }, [users])
 
@@ -146,7 +156,7 @@ export default function SystemUserManagement() {
       .toLowerCase()
       .split(' ')
       .filter((term) => term.trim())
-    return users.filter((user) =>
+    return users.filter((user: SystemUser) =>
       terms.every((term) =>
         [
           user.employeeId,
@@ -176,8 +186,8 @@ export default function SystemUserManagement() {
 
   const getStats = () => {
     const totalUsers = users.length
-    const activeUsers = users.filter(u => u.status === 'active').length
-    const inactiveUsers = users.filter(u => u.status === 'inactive').length
+    const activeUsers = users.filter((u: SystemUser) => u.status === 'active').length
+    const inactiveUsers = users.filter((u: SystemUser) => u.status === 'inactive').length
     return { totalUsers, activeUsers, inactiveUsers }
   }
 
@@ -194,9 +204,14 @@ export default function SystemUserManagement() {
   }, [detailsUserId, detailsUser])
 
   useEffect(() => {
-    const handleClickOutside = (event) => {
-      const isDropdownButton = event.target.closest('.btn-action-dropdown')
-      const isDropdownMenu = event.target.closest('.action-dropdown-menu')
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as HTMLElement | null
+      if (!target) {
+        return
+      }
+
+      const isDropdownButton = target.closest('.btn-action-dropdown')
+      const isDropdownMenu = target.closest('.action-dropdown-menu')
 
       if (!isDropdownButton && !isDropdownMenu) {
         setActiveDropdown(null)
@@ -238,7 +253,7 @@ export default function SystemUserManagement() {
     document.body.style.overflow = 'auto'
   }
 
-  const openModal = (setter: React.Dispatch<React.SetStateAction<boolean>>) => {
+  const openModal = (setter: Dispatch<SetStateAction<boolean>>) => {
     setter(true)
     document.body.style.overflow = 'hidden'
   }
@@ -258,12 +273,12 @@ export default function SystemUserManagement() {
     }
   }
 
-  const handleSearch = (event) => {
+  const handleSearch = (event: ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(event.target.value)
     setCurrentPage(1)
   }
 
-  const handlePageSizeChange = (event) => {
+  const handlePageSizeChange = (event: ChangeEvent<HTMLSelectElement>) => {
     setPageSize(Number.parseInt(event.target.value, 10))
     setCurrentPage(1)
   }
@@ -273,8 +288,9 @@ export default function SystemUserManagement() {
     openModal(setShowAddUserModal)
   }
 
-  const openEditUserModal = (user) => {
+  const openEditUserModal = (user: SystemUser) => {
     setEditFormState({
+      employeeId: user.employeeId || '',
       name: user.name,
       email: user.email,
       mobile: user.mobile,
@@ -298,7 +314,7 @@ export default function SystemUserManagement() {
     }
 
     // Check if Employee ID already exists
-    const existingUser = users.find(u => u.employeeId === employeeId.trim())
+    const existingUser = users.find((u: SystemUser) => u.employeeId === employeeId.trim())
     if (existingUser) {
       showAlertMessage({
         title: 'Error',
@@ -322,7 +338,7 @@ export default function SystemUserManagement() {
       createdDate: new Date().toISOString().slice(0, 10),
       tempPassword: null,
       mustChangePassword: true,
-      password: null,
+      password: '',
       description: '',
     }
 
@@ -358,6 +374,15 @@ export default function SystemUserManagement() {
   }
 
   const saveEditUser = () => {
+    if (!detailsUserId) {
+      showAlertMessage({
+        title: 'Error',
+        message: 'No user selected for editing.',
+        type: 'error',
+      })
+      return
+    }
+
     const { name, email, mobile, department, role } = editFormState
     if (!name || !email || !mobile || !department || !role) {
       showAlertMessage({
@@ -419,7 +444,7 @@ export default function SystemUserManagement() {
     }
   }
 
-  const openDeleteModal = (user) => {
+  const openDeleteModal = (user: SystemUser) => {
     showAlertMessage({
       title: 'Confirm Delete',
       message: `Are you sure you want to delete "${user.name}"? This action cannot be undone.`,
@@ -440,7 +465,7 @@ export default function SystemUserManagement() {
     setUserToDelete(user)
   }
 
-  const openDetailsView = (userId) => {
+  const openDetailsView = (userId: string) => {
     setDetailsUserId(userId)
   }
 
@@ -448,8 +473,8 @@ export default function SystemUserManagement() {
     setDetailsUserId(null)
   }
 
-  const resetPassword = (userId) => {
-    const user = users.find(u => u.id === userId)
+  const resetPassword = (userId: string) => {
+    const user = users.find((u: SystemUser) => u.id === userId)
     if (!user) {
       showAlertMessage({
         title: 'Error',
@@ -476,8 +501,8 @@ export default function SystemUserManagement() {
     }
   }
 
-  const toggleUserStatus = (userId) => {
-    const user = users.find(u => u.id === userId)
+  const toggleUserStatus = (userId: string) => {
+    const user = users.find((u: SystemUser) => u.id === userId)
     if (!user) return
     
     const nextStatus = user.status === 'active' ? 'inactive' : 'active'
@@ -503,8 +528,8 @@ export default function SystemUserManagement() {
     }
   }
 
-  const toggleDashboardAccess = (userId) => {
-    const user = users.find(u => u.id === userId)
+  const toggleDashboardAccess = (userId: string) => {
+    const user = users.find((u: SystemUser) => u.id === userId)
     if (!user || user.status !== 'active') return
     
     const updates = {
@@ -629,7 +654,7 @@ export default function SystemUserManagement() {
               <tbody>
                 {paginatedUsers.length === 0 && (
                   <tr>
-                    <td colSpan="9" className="empty-table-cell">
+                    <td colSpan={9} className="empty-table-cell">
                       <div className="empty-state">
                         <i className="fas fa-user-slash"></i>
                         <h3>No Users Found</h3>
@@ -638,7 +663,7 @@ export default function SystemUserManagement() {
                     </td>
                   </tr>
                 )}
-                {paginatedUsers.map((user) => (
+                {paginatedUsers.map((user: SystemUser) => (
                   <tr key={user.id}>
                     <td>
                       <span className="employee-id-badge">{user.employeeId}</span>
@@ -735,7 +760,7 @@ export default function SystemUserManagement() {
                   <button
                     className="dropdown-item edit"
                     onClick={() => {
-                      const user = users.find((entry) => entry.id === activeDropdown)
+                      const user = users.find((entry: SystemUser) => entry.id === activeDropdown)
                       if (user) {
                         openEditUserModal(user)
                       }
@@ -748,7 +773,7 @@ export default function SystemUserManagement() {
                   <button
                     className="dropdown-item delete"
                     onClick={() => {
-                      const user = users.find((entry) => entry.id === activeDropdown)
+                      const user = users.find((entry: SystemUser) => entry.id === activeDropdown)
                       if (user) {
                         openDeleteModal(user)
                       }

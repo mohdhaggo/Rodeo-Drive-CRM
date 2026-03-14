@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { useApprovalRequests } from './ApprovalRequestsContext.tsx';
+import { useState } from 'react';
+import { useApprovalRequests } from './approvalRequestsStore.ts';
 import './SalesApprovals.css';
 import PermissionGate from './PermissionGate';
 
@@ -7,7 +7,7 @@ import PermissionGate from './PermissionGate';
 const SalesApprovals = () => {
   const { requests, updateRequestStatus } = useApprovalRequests();
   const [showDetails, setShowDetails] = useState(false);
-  const [selectedRequestId, setSelectedRequestId] = useState(null);
+  const [selectedRequestId, setSelectedRequestId] = useState<string | null>(null);
   const [decision, setDecision] = useState('');
   const [notes, setNotes] = useState('');
   const [search, setSearch] = useState('');
@@ -21,7 +21,7 @@ const SalesApprovals = () => {
     return matchesSearch && matchesPriority;
   });
 
-  const handleViewDetails = (id) => {
+  const handleViewDetails = (id: string) => {
     setSelectedRequestId(id);
     setShowDetails(true);
     setDecision('');
@@ -29,11 +29,17 @@ const SalesApprovals = () => {
   };
 
   const handleApprove = () => {
+    if (!selectedRequestId) {
+      return;
+    }
     updateRequestStatus(selectedRequestId, 'approved', notes);
     setShowDetails(false);
   };
 
   const handleDecline = () => {
+    if (!selectedRequestId) {
+      return;
+    }
     updateRequestStatus(selectedRequestId, 'declined', notes);
     setShowDetails(false);
   };

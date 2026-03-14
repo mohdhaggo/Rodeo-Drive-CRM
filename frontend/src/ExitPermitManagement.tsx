@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect, type ChangeEvent, type FormEvent } from 'react';
 import { createPortal } from 'react-dom';
 import './ExitPermitManagement.css';
 import { getStoredJobOrders, updateCompletedServiceCounts } from './demoData';
@@ -6,9 +6,162 @@ import SuccessPopup from './SuccessPopup';
 import ErrorPopup from './ErrorPopup';
 import PermissionGate from './PermissionGate';
 
+interface JobOrderSummary {
+  createDate?: string;
+  createdBy?: string;
+  expectedDelivery?: string;
+}
+
+interface RoadmapStep {
+  step: string;
+  stepStatus: string;
+  startTimestamp?: string | null;
+  endTimestamp?: string | null;
+  actionBy?: string | null;
+  status: string;
+}
+
+interface CustomerDetails {
+  customerId?: string;
+  email?: string;
+  address?: string;
+  registeredVehicles?: string;
+  registeredVehiclesCount?: number;
+  completedServicesCount?: number;
+  customerSince?: string;
+}
+
+interface VehicleDetails {
+  vehicleId?: string;
+  ownedBy?: string;
+  make?: string;
+  model?: string;
+  year?: string;
+  type?: string;
+  color?: string;
+  vin?: string;
+  registrationDate?: string;
+}
+
+interface ServiceItem {
+  name: string;
+  status?: string;
+  started?: string | null;
+  ended?: string | null;
+  duration?: string | null;
+  technician?: string;
+  notes?: string;
+  qualityCheckResult?: string;
+  qcResult?: string;
+  qcStatus?: string;
+  qualityStatus?: string;
+}
+
+type ServiceEntry = string | ServiceItem;
+
+interface AdditionalServiceRequest {
+  requestId: string;
+  requestDate: string;
+  requestedService: string;
+  status: string;
+  customerNotes?: string;
+  estimatedPrice?: string;
+}
+
+interface Invoice {
+  number: string;
+  amount: string;
+  discount: string;
+  status: string;
+  paymentMethod?: string | null;
+  services?: string[];
+}
+
+interface BillingInfo {
+  billId?: string;
+  totalAmount?: string;
+  discount?: string;
+  netAmount?: string;
+  amountPaid?: string;
+  balanceDue?: string;
+  paymentMethod?: string | null;
+  invoices?: Invoice[];
+}
+
+interface ExitPermitInfo {
+  permitId: string | null;
+  createDate: string | null;
+  nextServiceDate: string | null;
+  createdBy: string | null;
+  collectedBy: string | null;
+  collectedByMobile: string | null;
+}
+
+interface PaymentActivity {
+  serial: number;
+  amount: string;
+  discount: string;
+  paymentMethod?: string | null;
+  cashierName: string;
+  timestamp: string;
+}
+
+interface DocumentEntry {
+  name: string;
+  type: string;
+  category?: string;
+  paymentReference?: string;
+  uploadDate?: string;
+  uploadedBy?: string;
+  url?: string;
+  fileData?: string;
+}
+
+interface JobOrder {
+  id: string;
+  orderType: string;
+  customerName: string;
+  mobile: string;
+  vehiclePlate: string;
+  workStatus: string;
+  paymentStatus: string;
+  createDate: string;
+  exitPermitStatus?: string;
+  jobOrderSummary?: JobOrderSummary;
+  roadmap?: RoadmapStep[];
+  customerDetails?: CustomerDetails;
+  vehicleDetails?: VehicleDetails;
+  services?: ServiceItem[];
+  additionalServiceRequests?: AdditionalServiceRequest[];
+  billing?: BillingInfo;
+  exitPermit?: ExitPermitInfo;
+  paymentActivityLog?: PaymentActivity[];
+  documents?: DocumentEntry[];
+  customerNotes?: string;
+  serviceOrderReference?: {
+    services?: ServiceEntry[];
+  };
+}
+
+interface ExitPermitFormState {
+  collectedBy: string;
+  mobileNumber: string;
+  nextServiceDate: string;
+}
+
+interface ExitPermitManagementProps {
+  currentUser?: {
+    name?: string;
+  } | null;
+}
+
+interface OrderCardProps {
+  order: JobOrder;
+}
+
 // Demo Job Orders Data
-const createCompleteJobOrders = () => {
-  const baseOrders = [
+const createCompleteJobOrders = (): JobOrder[] => {
+  const baseOrders: JobOrder[] = [
     {
       id: 'JO-2023-001245',
       orderType: 'New Job Order',
@@ -563,7 +716,7 @@ const createCompleteJobOrders = () => {
     const template = baseOrders[templateIndex];
     const orderTypeIndex = i % orderTypes.length;
     
-    const newOrder = JSON.parse(JSON.stringify(template));
+    const newOrder = JSON.parse(JSON.stringify(template)) as JobOrder;
     newOrder.id = `JO-2023-00${239 - i}`;
     newOrder.orderType = orderTypes[orderTypeIndex];
     newOrder.customerName = `Customer ${239 - i}`;
@@ -638,7 +791,7 @@ const createCompleteJobOrders = () => {
     newOrder.createDate = `${randomDay} Oct 2023`;
     
     if (newOrder.services) {
-      newOrder.services.forEach(service => {
+      newOrder.services.forEach((service: ServiceItem) => {
         service.status = (newOrder.workStatus === 'Ready' || newOrder.workStatus === 'Completed') ? 'Completed' : 'Cancelled';
         if (service.status === 'Completed') {
           service.started = `${randomDay} Oct 2023, 09:00 AM`;
@@ -654,19 +807,21 @@ const createCompleteJobOrders = () => {
     
     if (newOrder.paymentStatus === 'Fully Paid' || newOrder.paymentStatus === 'Partially Paid') {
       const methodIndex = Math.floor(Math.random() * paymentMethods.length);
-      if (newOrder.billing) {
-        newOrder.billing.paymentMethod = paymentMethods[methodIndex];
+      const billing = newOrder.billing;
+      if (billing) {
+        billing.paymentMethod = paymentMethods[methodIndex];
         if (newOrder.paymentStatus === 'Fully Paid') {
-          newOrder.billing.amountPaid = newOrder.billing.netAmount;
-          newOrder.billing.balanceDue = 'QAR 0.00';
+          billing.amountPaid = billing.netAmount ?? 'QAR 0.00';
+          billing.balanceDue = 'QAR 0.00';
         } else {
-          const netAmount = parseFloat(newOrder.billing.netAmount.replace('QAR ', '').replace(',', ''));
+          const netAmountValue = billing.netAmount ?? 'QAR 0.00';
+          const netAmount = parseFloat(netAmountValue.replace('QAR ', '').replace(',', ''));
           const paidAmount = netAmount * 0.5;
-          newOrder.billing.amountPaid = `QAR ${paidAmount.toFixed(2)}`;
-          newOrder.billing.balanceDue = `QAR ${(netAmount - paidAmount).toFixed(2)}`;
+          billing.amountPaid = `QAR ${paidAmount.toFixed(2)}`;
+          billing.balanceDue = `QAR ${(netAmount - paidAmount).toFixed(2)}`;
         }
-        if (newOrder.billing.invoices) {
-          newOrder.billing.invoices.forEach(invoice => {
+        if (billing.invoices) {
+          billing.invoices.forEach((invoice: Invoice) => {
             invoice.status = newOrder.paymentStatus === 'Fully Paid' ? 'Paid' : 'Partially Paid';
             invoice.paymentMethod = paymentMethods[methodIndex];
           });
@@ -681,7 +836,7 @@ const createCompleteJobOrders = () => {
 };
 
 // Helper Functions
-const getWorkStatusClass = (status) => {
+const getWorkStatusClass = (status: string): string => {
   switch(status) {
     case 'Ready': return 'epm-status-completed';
     case 'Cancelled': return 'epm-status-cancelled';
@@ -689,7 +844,7 @@ const getWorkStatusClass = (status) => {
   }
 };
 
-const getServiceStatusClass = (status) => {
+const getServiceStatusClass = (status: string): string => {
   switch(status) {
     case 'Completed': return 'epm-status-completed';
     case 'Cancelled': return 'epm-status-cancelled';
@@ -697,7 +852,7 @@ const getServiceStatusClass = (status) => {
   }
 };
 
-const getAdditionalServiceStatusClass = (status) => {
+const getAdditionalServiceStatusClass = (status: string): string => {
   switch(status) {
     case 'Pending Approval': return 'epm-pending';
     case 'Approved': return 'epm-approved';
@@ -706,7 +861,7 @@ const getAdditionalServiceStatusClass = (status) => {
   }
 };
 
-const getPaymentMethodClass = (method) => {
+const getPaymentMethodClass = (method?: string | null): string => {
   switch(method) {
     case 'Cash': return 'epm-payment-method-cash';
     case 'Card': return 'epm-payment-method-card';
@@ -716,55 +871,22 @@ const getPaymentMethodClass = (method) => {
   }
 };
 
-const getStepStatusClass = (stepStatus) => {
-  switch(stepStatus.toLowerCase()) {
-    case 'completed': return 'epm-step-completed';
-    case 'active': return 'epm-step-active';
-    case 'inprogress': return 'epm-step-inprogress';
-    case 'pending': return 'epm-step-pending';
-    case 'cancelled': return 'epm-step-cancelled';
-    case 'upcoming': return 'epm-step-upcoming';
-    default: return 'epm-step-upcoming';
-  }
-};
-
-const getStepIcon = (stepStatus) => {
-  switch(stepStatus.toLowerCase()) {
-    case 'completed': return 'fas fa-check-circle';
-    case 'active': return 'fas fa-play-circle';
-    case 'inprogress': return 'fas fa-play-circle';
-    case 'pending': return 'fas fa-clock';
-    case 'cancelled': return 'fas fa-times-circle';
-    case 'upcoming': return 'fas fa-circle';
-    default: return 'fas fa-circle';
-  }
-};
-
-const getStatusBadgeClass = (status) => {
-  switch(status) {
-    case 'New': return 'epm-status-new';
-    case 'InProgress': return 'epm-status-inprogress';
-    case 'Completed': return 'epm-status-completed';
-    case 'Pending': return 'epm-status-pending';
-    case 'Cancelled': return 'epm-status-cancelled';
-    default: return 'epm-status-pending';
-  }
-};
-
-const parseDateString = (dateStr) => {
+const parseDateString = (dateStr: string): number => {
   const parts = dateStr.split(' ');
   if (parts.length === 3) {
-    const day = parseInt(parts[0]);
+    const day = Number.parseInt(parts[0], 10);
     const monthStr = parts[1];
-    const year = parseInt(parts[2]);
+    const year = Number.parseInt(parts[2], 10);
     const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
     const month = months.indexOf(monthStr);
-    return new Date(year, month, day);
+    if (!Number.isNaN(day) && !Number.isNaN(year) && month >= 0) {
+      return new Date(year, month, day).getTime();
+    }
   }
-  return new Date();
+  return Date.now();
 };
 
-const formatDateForDisplay = (dateString) => {
+const formatDateForDisplay = (dateString: string): string => {
   const date = new Date(dateString);
   const day = date.getDate();
   const month = date.toLocaleString('en-US', { month: 'short' });
@@ -773,7 +895,10 @@ const formatDateForDisplay = (dateString) => {
 };
 
 // Generate Exit Permit PDF (HTML-based like other modules)
-const generateExitPermitPDF = (order, exitPermit) => {
+const generateExitPermitPDF = (
+  order: JobOrder,
+  exitPermit: ExitPermitInfo
+): Promise<string> => {
   // Create HTML document matching the system's design pattern
   const exitPermitHTML = `
     <!DOCTYPE html>
@@ -1093,9 +1218,14 @@ const generateExitPermitPDF = (order, exitPermit) => {
   const blob = new Blob([exitPermitHTML], { type: 'text/html' });
   const reader = new FileReader();
   
-  return new Promise((resolve) => {
+  return new Promise<string>((resolve) => {
     reader.onloadend = () => {
       const dataUrl = reader.result;
+
+      if (typeof dataUrl !== 'string') {
+        resolve('');
+        return;
+      }
       
       // Download the HTML file
       const link = document.createElement('a');
@@ -1120,27 +1250,26 @@ const generateExitPermitPDF = (order, exitPermit) => {
 };
 
 // Exit Permit Management Component
-const ExitPermitManagement = ({ currentUser }) => {
-  const [allOrders, setAllOrders] = useState([]);
+const ExitPermitManagement = ({ currentUser }: ExitPermitManagementProps) => {
+  const [allOrders, setAllOrders] = useState<JobOrder[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
-  const [searchResults, setSearchResults] = useState([]);
+  const [searchResults, setSearchResults] = useState<JobOrder[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(20);
   const [showDetailsScreen, setShowDetailsScreen] = useState(false);
-  const [selectedOrder, setSelectedOrder] = useState(null);
+  const [selectedOrder, setSelectedOrder] = useState<JobOrder | null>(null);
   const [showExitPermitModal, setShowExitPermitModal] = useState(false);
-  const [currentOrderForPermit, setCurrentOrderForPermit] = useState(null);
-  const [exitPermitForm, setExitPermitForm] = useState({
+  const [currentOrderForPermit, setCurrentOrderForPermit] = useState<JobOrder | null>(null);
+  const [exitPermitForm, setExitPermitForm] = useState<ExitPermitFormState>({
     collectedBy: '',
     mobileNumber: '',
     nextServiceDate: ''
   });
-  const [activeDropdown, setActiveDropdown] = useState(null);
-  const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0 });
-  const [cancelOrderId, setCancelOrderId] = useState(null);
+  const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
+  const [dropdownPosition, setDropdownPosition] = useState<{ top: number; left: number }>({ top: 0, left: 0 });
+  const [cancelOrderId, setCancelOrderId] = useState<string | null>(null);
   const [showCancelConfirmation, setShowCancelConfirmation] = useState(false);
   const [showSuccessPopup, setShowSuccessPopup] = useState(false);
-  const [lastAction, setLastAction] = useState('cancel');
   const [showErrorPopup, setShowErrorPopup] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [showExitPermitSuccessPopup, setShowExitPermitSuccessPopup] = useState(false);
@@ -1148,15 +1277,19 @@ const ExitPermitManagement = ({ currentUser }) => {
   const [successOrderId, setSuccessOrderId] = useState('');
 
   useEffect(() => {
-    const orders = getStoredJobOrders();
+    const storedOrders = getStoredJobOrders() as JobOrder[];
+    const orders = Array.isArray(storedOrders) && storedOrders.length > 0
+      ? storedOrders
+      : createCompleteJobOrders();
     setAllOrders(orders);
   }, []);
 
   // Click outside handler for dropdown
   useEffect(() => {
-    const handleClickOutside = (event) => {
-      const isDropdownButton = event.target.closest('.btn-action-dropdown');
-      const isDropdownMenu = event.target.closest('.action-dropdown-menu');
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as HTMLElement | null;
+      const isDropdownButton = target?.closest('.btn-action-dropdown');
+      const isDropdownMenu = target?.closest('.action-dropdown-menu');
       
       if (!isDropdownButton && !isDropdownMenu) {
         setActiveDropdown(null);
@@ -1170,8 +1303,8 @@ const ExitPermitManagement = ({ currentUser }) => {
   }, [activeDropdown]);
 
   // Filter orders for exit permit management
-  const filterJobOrdersForExitPermit = () => {
-    return allOrders.filter(order => {
+  const filterJobOrdersForExitPermit = (): JobOrder[] => {
+    return allOrders.filter((order) => {
       const workStatus = order.workStatus;
       const paymentStatus = order.paymentStatus;
       const exitPermitStatus = order.exitPermitStatus || 'Not Created';
@@ -1203,15 +1336,15 @@ const ExitPermitManagement = ({ currentUser }) => {
   }, [allOrders]);
 
   // Handle search
-  const performSmartSearch = (query) => {
+  const performSmartSearch = (query: string): JobOrder[] => {
     if (!query.trim()) {
       return filterJobOrdersForExitPermit();
     }
     
-    const terms = query.toLowerCase().split(' ').filter(term => term.trim());
+    const terms = query.toLowerCase().split(' ').filter((term) => term.trim());
     let results = filterJobOrdersForExitPermit();
     
-    terms.forEach(term => {
+    terms.forEach((term) => {
       if (term.startsWith('!')) {
         const excludeTerm = term.substring(1);
         if (excludeTerm) {
@@ -1225,7 +1358,7 @@ const ExitPermitManagement = ({ currentUser }) => {
     return results;
   };
 
-  const matchesTerm = (order, term) => {
+  const matchesTerm = (order: JobOrder, term: string): boolean => {
     return (
       order.id.toLowerCase().includes(term) ||
       order.orderType.toLowerCase().includes(term) ||
@@ -1238,7 +1371,7 @@ const ExitPermitManagement = ({ currentUser }) => {
     );
   };
 
-  const handleSearchInput = (e) => {
+  const handleSearchInput = (e: ChangeEvent<HTMLInputElement>) => {
     const query = e.target.value;
     setSearchQuery(query);
     const results = performSmartSearch(query);
@@ -1251,13 +1384,13 @@ const ExitPermitManagement = ({ currentUser }) => {
     setCurrentPage(1);
   };
 
-  const handlePageSizeChange = (e) => {
-    setPageSize(parseInt(e.target.value));
+  const handlePageSizeChange = (e: ChangeEvent<HTMLSelectElement>) => {
+    setPageSize(Number.parseInt(e.target.value, 10));
     setCurrentPage(1);
   };
 
-  const openDetailsView = (orderId) => {
-    const order = allOrders.find(o => o.id === orderId);
+  const openDetailsView = (orderId: string) => {
+    const order = allOrders.find((o) => o.id === orderId);
     if (order) {
       setSelectedOrder(order);
       setShowDetailsScreen(true);
@@ -1269,8 +1402,8 @@ const ExitPermitManagement = ({ currentUser }) => {
     setSelectedOrder(null);
   };
 
-  const openExitPermitModal = (orderId) => {
-    const order = allOrders.find(o => o.id === orderId);
+  const openExitPermitModal = (orderId: string) => {
+    const order = allOrders.find((o) => o.id === orderId);
     
     if (!order) {
       setErrorMessage('Order not found');
@@ -1343,7 +1476,7 @@ const ExitPermitManagement = ({ currentUser }) => {
     };
 
     // Update the order status in jobOrders storage
-    const updatedOrders = allOrders.map(order => 
+    const updatedOrders = allOrders.map((order) => 
       order.id === cancelOrderId ? cancelledOrder : order
     );
     
@@ -1351,12 +1484,11 @@ const ExitPermitManagement = ({ currentUser }) => {
     localStorage.setItem('jobOrders', JSON.stringify(updatedOrders));
     updateCompletedServiceCounts();
     
-    setLastAction('cancel');
     setShowSuccessPopup(true);
     setShowCancelConfirmation(false);
   };
 
-  const handleCreateExitPermit = async (e) => {
+  const handleCreateExitPermit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     
     if (!currentOrderForPermit) {
@@ -1404,10 +1536,10 @@ const ExitPermitManagement = ({ currentUser }) => {
     // Generate PDF and get the data URL (await since it returns a Promise)
     const pdfDataUrl = await generateExitPermitPDF(currentOrderForPermit, exitPermitData);
     
-    const updatedOrders = allOrders.map(order => {
+    const updatedOrders = allOrders.map((order) => {
       if (order.id === currentOrderForPermit.id) {
         // Update the roadmap to mark "Ready for Delivery" step as completed
-        const updatedRoadmap = order.roadmap ? order.roadmap.map(step => {
+        const updatedRoadmap = order.roadmap ? order.roadmap.map((step) => {
           if (step.step === 'Ready for Delivery' && step.stepStatus !== 'completed') {
             return {
               ...step,
@@ -1438,7 +1570,7 @@ const ExitPermitManagement = ({ currentUser }) => {
         
         // Add exit permit HTML document to documents array
         const existingDocuments = Array.isArray(order.documents) ? order.documents : [];
-        const exitPermitDocument = {
+        const exitPermitDocument: DocumentEntry = {
           name: `Exit_Permit_${permitId}_${order.id}.html`,
           type: 'HTML',
           category: 'Exit Permit',
@@ -1942,7 +2074,7 @@ const ExitPermitManagement = ({ currentUser }) => {
 };
 
 // Card Components
-const JobOrderSummaryCard = ({ order }) => {
+const JobOrderSummaryCard = ({ order }: OrderCardProps) => {
   const orderTypeClass = order.orderType === 'New Job Order' ? 'epm-order-type-new-job' : 'epm-order-type-service';
   
   return (
@@ -1986,10 +2118,10 @@ const JobOrderSummaryCard = ({ order }) => {
   );
 };
 
-const RoadmapCard = ({ order }) => {
+const RoadmapCard = ({ order }: OrderCardProps) => {
   if (!order.roadmap || order.roadmap.length === 0) return null;
 
-  const formatStepStatus = (status) => {
+  const formatStepStatus = (status: string): string => {
     switch (status) {
       case 'New': return 'epm-status-new';
       case 'Completed': return 'epm-status-completed';
@@ -2000,7 +2132,7 @@ const RoadmapCard = ({ order }) => {
     }
   };
 
-  const getStepStatusClass = (stepStatus) => {
+  const getStepStatusClass = (stepStatus: string): string => {
     switch (stepStatus) {
       case 'completed': return 'epm-step-completed';
       case 'Completed': return 'epm-step-completed';
@@ -2018,7 +2150,7 @@ const RoadmapCard = ({ order }) => {
     }
   };
 
-  const getStepIcon = (stepStatus) => {
+  const getStepIcon = (stepStatus: string): string => {
     switch (stepStatus) {
       case 'Completed':
       case 'completed': 
@@ -2047,7 +2179,7 @@ const RoadmapCard = ({ order }) => {
       <h3><i className="fas fa-map-signs"></i> Job Order Roadmap</h3>
       <div className="epm-roadmap-container">
         <div className="epm-roadmap-steps">
-          {order.roadmap.map((step, idx) => (
+          {order.roadmap.map((step: RoadmapStep, idx: number) => (
             <div key={idx} className={`epm-roadmap-step ${getStepStatusClass(step.stepStatus)}`}>
               <div className="epm-step-icon">
                 <i className={getStepIcon(step.stepStatus)}></i>
@@ -2080,7 +2212,7 @@ const RoadmapCard = ({ order }) => {
   );
 };
 
-const CustomerDetailsCard = ({ order }) => {
+const CustomerDetailsCard = ({ order }: OrderCardProps) => {
   return (
     <div className="epm-detail-card">
       <h3><i className="fas fa-user"></i> Customer Information</h3>
@@ -2126,7 +2258,7 @@ const CustomerDetailsCard = ({ order }) => {
   );
 };
 
-const VehicleDetailsCard = ({ order }) => {
+const VehicleDetailsCard = ({ order }: OrderCardProps) => {
   return (
     <div className="epm-detail-card">
       <h3><i className="fas fa-car"></i> Vehicle Details</h3>
@@ -2176,7 +2308,7 @@ const VehicleDetailsCard = ({ order }) => {
   );
 };
 
-const DocumentsCard = ({ order }) => {
+const DocumentsCard = ({ order }: OrderCardProps) => {
   const documents = Array.isArray(order.documents) ? order.documents : []
 
   if (documents.length === 0) return null;
@@ -2185,7 +2317,7 @@ const DocumentsCard = ({ order }) => {
     <div className="epm-detail-card">
       <h3><i className="fas fa-folder-open"></i> Documents</h3>
       <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-        {documents.map((doc, idx) => (
+        {documents.map((doc: DocumentEntry, idx: number) => (
           <div key={idx} style={{
             padding: '15px',
             border: '1px solid #e5e7eb',
@@ -2226,12 +2358,13 @@ const DocumentsCard = ({ order }) => {
             <PermissionGate moduleId="exitpermit" optionId="exitpermit_download">
               <button
                 onClick={() => {
-                  if (doc.url || doc.fileData) {
-                    const link = document.createElement('a');
-                    link.href = doc.fileData || doc.url;
-                    link.download = doc.name || 'document';
-                    link.click();
-                  }
+                  const downloadUrl: string = doc.fileData ?? doc.url ?? '';
+                  if (!downloadUrl) return;
+
+                  const link = document.createElement('a');
+                  link.href = downloadUrl;
+                  link.download = doc.name || 'document';
+                  link.click();
                 }}
                 style={{
                   padding: '8px 16px',
@@ -2258,8 +2391,8 @@ const DocumentsCard = ({ order }) => {
   );
 };
 
-const ServicesCard = ({ order }) => {
-  const combinedServices = order.orderType === 'Service Order'
+const ServicesCard = ({ order }: OrderCardProps) => {
+  const combinedServices: ServiceEntry[] = order.orderType === 'Service Order'
     ? [...(order.serviceOrderReference?.services || []), ...(order.services || [])]
     : (order.services || []);
 
@@ -2268,11 +2401,11 @@ const ServicesCard = ({ order }) => {
       <h3><i className="fas fa-tasks"></i> Services Summary</h3>
       <div className="epm-services-list">
         {combinedServices.length > 0 ? (
-          combinedServices.map((service, idx) => (
+          combinedServices.map((service: ServiceEntry, idx: number) => (
             <div key={idx} className="epm-service-item">
               <div className="epm-service-header">
                 <span className="epm-service-name">{typeof service === 'string' ? service : service.name}</span>
-                <span className={`epm-status-badge ${getServiceStatusClass(typeof service === 'string' ? 'New' : service.status)}`}>{typeof service === 'string' ? 'New' : service.status}</span>
+                <span className={`epm-status-badge ${getServiceStatusClass(typeof service === 'string' ? 'New' : service.status || 'New')}`}>{typeof service === 'string' ? 'New' : service.status || 'New'}</span>
               </div>
               <div className="epm-service-timeline">
                 <div className="epm-timeline-item">
@@ -2293,7 +2426,7 @@ const ServicesCard = ({ order }) => {
                 <div className="epm-timeline-item">
                   <i className="fas fa-user-cog"></i>
                   <span className="epm-timeline-label">Technician:</span>
-                  <span className="epm-timeline-value">{typeof service === 'string' ? 'Not assigned' : service.technician}</span>
+                  <span className="epm-timeline-value">{typeof service === 'string' ? 'Not assigned' : service.technician || 'Not assigned'}</span>
                 </div>
               </div>
               {typeof service !== 'string' && service.notes && (
@@ -2312,7 +2445,12 @@ const ServicesCard = ({ order }) => {
   );
 };
 
-const AdditionalServicesRequestCard = ({ request, index }) => {
+interface AdditionalServicesRequestCardProps {
+  request: AdditionalServiceRequest;
+  index: number;
+}
+
+const AdditionalServicesRequestCard = ({ request, index }: AdditionalServicesRequestCardProps) => {
   const statusClass = getAdditionalServiceStatusClass(request.status);
   
   return (
@@ -2352,7 +2490,7 @@ const AdditionalServicesRequestCard = ({ request, index }) => {
   );
 };
 
-const CustomerNotesCard = ({ order }) => {
+const CustomerNotesCard = ({ order }: OrderCardProps) => {
   return (
     <div className="epm-detail-card">
       <h3><i className="fas fa-sticky-note"></i> Customer Notes / Comments</h3>
@@ -2377,7 +2515,7 @@ const CustomerNotesCard = ({ order }) => {
   );
 };
 
-const BillingCard = ({ order }) => {
+const BillingCard = ({ order }: OrderCardProps) => {
   return (
     <div className="epm-detail-card">
       <h3><i className="fas fa-receipt"></i> Billing & Invoices</h3>
@@ -2451,7 +2589,7 @@ const BillingCard = ({ order }) => {
             <i className="fas fa-file-invoice" style={{ color: '#3b82f6' }}></i>
             Invoice Details ({order.billing.invoices.length})
           </div>
-          {order.billing.invoices.map((invoice, idx) => (
+          {order.billing.invoices.map((invoice: Invoice, idx: number) => (
             <div key={idx} className="epm-invoice-item" style={{ 
               background: 'linear-gradient(to right, #ffffff, #fafbfc)',
               border: '1px solid #e2e8f0',
@@ -2510,7 +2648,7 @@ const BillingCard = ({ order }) => {
                 }}>
                   <i className="fas fa-list-ul"></i> Services Included:
                 </div>
-                {invoice.services?.map((service, sidx) => (
+                {invoice.services?.map((service: string, sidx: number) => (
                   <div key={sidx} className="epm-service-in-invoice" style={{ 
                     padding: '8px 0 8px 15px',
                     fontSize: '14px',
@@ -2532,7 +2670,7 @@ const BillingCard = ({ order }) => {
   );
 };
 
-const PaymentActivityLogCard = ({ order }) => {
+const PaymentActivityLogCard = ({ order }: OrderCardProps) => {
   if (!order.paymentActivityLog || order.paymentActivityLog.length === 0) return null;
 
   return (
@@ -2551,7 +2689,7 @@ const PaymentActivityLogCard = ({ order }) => {
             </tr>
           </thead>
           <tbody>
-            {[...order.paymentActivityLog].reverse().map((payment, idx) => (
+            {[...order.paymentActivityLog].reverse().map((payment: PaymentActivity, idx: number) => (
               <tr key={idx}>
                 <td className="epm-serial-column">{payment.serial}</td>
                 <td className="epm-amount-column">{payment.amount}</td>
@@ -2572,7 +2710,7 @@ const PaymentActivityLogCard = ({ order }) => {
   );
 };
 
-const ExitPermitCard = ({ order }) => {
+const ExitPermitCard = ({ order }: OrderCardProps) => {
   const permitId = order.exitPermit?.permitId || 'N/A';
   const createDate = order.exitPermit?.createDate || 'N/A';
   const nextServiceDate = order.exitPermit?.nextServiceDate || 'N/A';
@@ -2617,12 +2755,12 @@ const ExitPermitCard = ({ order }) => {
   );
 };
 
-const QualityCheckListCard = ({ order }) => {
-  const services = order.orderType === 'Service Order'
+const QualityCheckListCard = ({ order }: OrderCardProps) => {
+  const services: ServiceEntry[] = order.orderType === 'Service Order'
     ? [...(order.serviceOrderReference?.services || []), ...(order.services || [])]
     : (order.services || []);
 
-  const getQualityCheckResult = (service, index) => {
+  const getQualityCheckResult = (service: ServiceEntry): string | null => {
     if (service && typeof service === 'object') {
       return service.qualityCheckResult || service.qcResult || service.qcStatus || service.qualityStatus || null;
     }
@@ -2634,9 +2772,9 @@ const QualityCheckListCard = ({ order }) => {
       <h3><i className="fas fa-clipboard-check"></i> Quality Check List</h3>
       <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
         {services.length > 0 ? (
-          services.map((service, idx) => {
+          services.map((service: ServiceEntry, idx: number) => {
             const serviceName = typeof service === 'string' ? service : service.name;
-            const result = getQualityCheckResult(service, idx) || 'Not Evaluated';
+            const result = getQualityCheckResult(service) || 'Not Evaluated';
             const isPass = result === 'Pass';
             const isFailed = result === 'Failed';
             const isAcceptable = result === 'Acceptable';

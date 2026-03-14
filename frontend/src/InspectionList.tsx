@@ -1,24 +1,42 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState, type FormEvent } from 'react'
 import './InspectionList.css'
 import inspectionListConfig from './inspectionConfig'
 
-const buildId = (label) =>
+interface InspectionItem {
+  id: string
+  name: string
+  required: boolean
+}
+
+interface InspectionSection {
+  name: string
+  items: InspectionItem[]
+}
+
+interface InspectionCategory {
+  category: string
+  sections: InspectionSection[]
+}
+
+const isNonNull = <T,>(value: T | null): value is T => value !== null
+
+const buildId = (label: string): string =>
   label
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/(^-|-$)/g, '')
 
 function InspectionList() {
-  const [inspectionConfig, setInspectionConfig] = useState(() => {
+  const [inspectionConfig, setInspectionConfig] = useState<InspectionCategory[]>(() => {
     const stored = localStorage.getItem('inspection_list_config')
     if (stored) {
       try {
-        return JSON.parse(stored)
+        return JSON.parse(stored) as InspectionCategory[]
       } catch {
-        return inspectionListConfig
+        return inspectionListConfig as InspectionCategory[]
       }
     }
-    return inspectionListConfig
+    return inspectionListConfig as InspectionCategory[]
   })
   const [selectedCategory, setSelectedCategory] = useState(
     inspectionListConfig[0]?.category || ''
@@ -35,13 +53,17 @@ function InspectionList() {
   }, [inspectionConfig])
 
   const categoryOptions = useMemo(
-    () => inspectionConfig.map((item) => item.category),
+    () => inspectionConfig.map((item: InspectionCategory) => item.category),
     [inspectionConfig]
   )
 
   const sectionOptions = useMemo(() => {
-    const category = inspectionConfig.find((item) => item.category === selectedCategory)
-    return category ? category.sections.map((section) => section.name) : []
+    const category = inspectionConfig.find(
+      (item: InspectionCategory) => item.category === selectedCategory
+    )
+    return category
+      ? category.sections.map((section: InspectionSection) => section.name)
+      : []
   }, [inspectionConfig, selectedCategory])
 
   const normalizedSearch = searchTerm.trim().toLowerCase()
@@ -52,10 +74,10 @@ function InspectionList() {
     }
 
     return inspectionConfig
-      .map((category) => {
+      .map((category: InspectionCategory) => {
         const filteredSections = category.sections
-          .map((section) => {
-            const items = section.items.filter((item) =>
+          .map((section: InspectionSection) => {
+            const items = section.items.filter((item: InspectionItem) =>
               item.name.toLowerCase().includes(normalizedSearch)
             )
             if (!items.length) {
@@ -63,7 +85,7 @@ function InspectionList() {
             }
             return { ...section, items }
           })
-          .filter(Boolean)
+          .filter(isNonNull)
 
         if (!filteredSections.length) {
           return null
@@ -71,14 +93,18 @@ function InspectionList() {
 
         return { ...category, sections: filteredSections }
       })
-      .filter(Boolean)
+      .filter(isNonNull)
   }, [inspectionConfig, normalizedSearch])
 
   const totalItems = useMemo(
     () =>
       inspectionConfig.reduce(
-        (total, category) =>
-          total + category.sections.reduce((sum, section) => sum + section.items.length, 0),
+        (total: number, category: InspectionCategory) =>
+          total +
+          category.sections.reduce(
+            (sum: number, section: InspectionSection) => sum + section.items.length,
+            0
+          ),
         0
       ),
     [inspectionConfig]
@@ -87,10 +113,11 @@ function InspectionList() {
   const requiredCount = useMemo(
     () =>
       inspectionConfig.reduce(
-        (total, category) =>
+        (total: number, category: InspectionCategory) =>
           total +
           category.sections.reduce(
-            (sum, section) => sum + section.items.filter((item) => item.required).length,
+            (sum: number, section: InspectionSection) =>
+              sum + section.items.filter((item: InspectionItem) => item.required).length,
             0
           ),
         0
@@ -98,7 +125,7 @@ function InspectionList() {
     [inspectionConfig]
   )
 
-  const handleAddItem = (event) => {
+  const handleAddItem = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
 
     const trimmedItem = itemName.trim()
@@ -114,10 +141,10 @@ function InspectionList() {
     }
 
     setInspectionConfig((prev) =>
-      prev.map((category) => {
+      prev.map((category: InspectionCategory) => {
         if (category.category !== selectedCategory) return category
 
-        const updatedSections = category.sections.map((section) => {
+        const updatedSections = category.sections.map((section: InspectionSection) => {
           if (section.name !== targetSectionName) return section
 
           return {
@@ -133,7 +160,11 @@ function InspectionList() {
           }
         })
 
-        if (!updatedSections.some((section) => section.name === targetSectionName)) {
+        if (
+          !updatedSections.some(
+            (section: InspectionSection) => section.name === targetSectionName
+          )
+        ) {
           updatedSections.push({
             name: targetSectionName,
             items: [
@@ -156,19 +187,24 @@ function InspectionList() {
     setNewSection('')
   }
 
-  const updateRequirement = (categoryName, sectionName, itemId, required) => {
+  const updateRequirement = (
+    categoryName: string,
+    sectionName: string,
+    itemId: string,
+    required: boolean
+  ) => {
     setInspectionConfig((prev) =>
-      prev.map((category) => {
+      prev.map((category: InspectionCategory) => {
         if (category.category !== categoryName) return category
 
         return {
           ...category,
-          sections: category.sections.map((section) => {
+          sections: category.sections.map((section: InspectionSection) => {
             if (section.name !== sectionName) return section
 
             return {
               ...section,
-              items: section.items.map((item) =>
+              items: section.items.map((item: InspectionItem) =>
                 item.id === itemId ? { ...item, required } : item
               )
             }
@@ -178,22 +214,22 @@ function InspectionList() {
     )
   }
 
-  const removeItem = (categoryName, sectionName, itemId) => {
+  const removeItem = (categoryName: string, sectionName: string, itemId: string) => {
     setInspectionConfig((prev) =>
-      prev.map((category) => {
+      prev.map((category: InspectionCategory) => {
         if (category.category !== categoryName) return category
 
         return {
           ...category,
           sections: category.sections
-            .map((section) => {
+            .map((section: InspectionSection) => {
               if (section.name !== sectionName) return section
               return {
                 ...section,
-                items: section.items.filter((item) => item.id !== itemId)
+                items: section.items.filter((item: InspectionItem) => item.id !== itemId)
               }
             })
-            .filter((section) => section.items.length > 0)
+            .filter((section: InspectionSection) => section.items.length > 0)
         }
       })
     )
@@ -244,7 +280,7 @@ function InspectionList() {
                 value={selectedCategory}
                 onChange={(event) => setSelectedCategory(event.target.value)}
               >
-                {categoryOptions.map((category) => (
+                {categoryOptions.map((category: string) => (
                   <option key={category} value={category}>
                     {category}
                   </option>
@@ -259,7 +295,7 @@ function InspectionList() {
                 onChange={(event) => setSelectedSection(event.target.value)}
               >
                 <option value="">Select section</option>
-                {sectionOptions.map((section) => (
+                {sectionOptions.map((section: string) => (
                   <option key={section} value={section}>
                     {section}
                   </option>
@@ -318,7 +354,7 @@ function InspectionList() {
           </div>
         )}
 
-        {filteredConfig.map((category) => (
+        {filteredConfig.map((category: InspectionCategory) => (
           <div key={category.category} className="category-card">
             <div className="category-header">
               <div>
@@ -326,12 +362,16 @@ function InspectionList() {
                 <p>{category.sections.length} sections</p>
               </div>
               <span className="pill">
-                {category.sections.reduce((sum, section) => sum + section.items.length, 0)} items
+                {category.sections.reduce(
+                  (sum: number, section: InspectionSection) => sum + section.items.length,
+                  0
+                )}{' '}
+                items
               </span>
             </div>
 
             <div className="section-list">
-              {category.sections.map((section) => (
+              {category.sections.map((section: InspectionSection) => (
                 <details key={section.name} className="section-item" open>
                   <summary>
                     <span>{section.name}</span>
@@ -340,7 +380,7 @@ function InspectionList() {
                     </span>
                   </summary>
                   <div className="items-grid">
-                    {section.items.map((item) => (
+                    {section.items.map((item: InspectionItem) => (
                       <div key={item.id} className="item-row">
                         <div>
                           <p className="item-name">{item.name}</p>

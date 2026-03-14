@@ -1,107 +1,173 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, type ChangeEvent, type ReactNode } from 'react'
 import { createPortal } from 'react-dom'
 import './VehicleManagement.css'
 import { getVehicles, getStoredJobOrders } from './demoData'
 import { vehicleService } from './amplifyService'
 import PermissionGate from './PermissionGate'
 
-// Demo data generator functions (kept for backward compatibility but not used)
-const generateVIN = () => {
-    const chars = '0123456789ABCDEFGHJKLMNPRSTUVWXYZ'
-    let vin = ''
-    for (let i = 0; i < 17; i++) {
-        vin += chars.charAt(Math.floor(Math.random() * chars.length))
-    }
-    return vin
+interface ServiceItem {
+    createDate: string
+    jobCardId: string
+    orderType: string
+    workStatus: string
+    paymentStatus: string
+    totalCost: string
 }
 
-const generateDemoVehicles = () => {
-    const makes = ['Toyota', 'BMW', 'Mercedes', 'Honda', 'Ford', 'Hyundai', 'Kia', 'Nissan', 'Chevrolet', 'Volkswagen']
-    const models = ['Camry', 'X5', 'C300', 'Civic', 'Explorer', 'Sonata', 'Sorento', 'Altima', 'Malibu', 'Passat']
-    const colors = ['Silver Metallic', 'Black Sapphire', 'White', 'Blue', 'Red', 'Gray', 'Green', 'Brown', 'Black', 'White Pearl']
-    const firstNames = ['John', 'Emma', 'Michael', 'Sarah', 'David', 'Lisa', 'Robert', 'Maria', 'James', 'Patricia', 'Ahmed', 'Fatima', 'Mohammed', 'Aisha']
-    const lastNames = ['Smith', 'Johnson', 'Williams', 'Brown', 'Jones', 'Garcia', 'Miller', 'Davis', 'Hassan', 'Rahman', 'Ali', 'Khan']
-    
-    const vehicles = []
-    
-    for (let i = 0; i < 20; i++) {
-        const makeIndex = i % makes.length
-        const modelIndex = i % models.length
-        const colorIndex = i % colors.length
-        const firstNameIndex = i % firstNames.length
-        const lastNameIndex = i % lastNames.length
-        const ownerName = `${firstNames[firstNameIndex]} ${lastNames[lastNameIndex]}`
-        
-        const vehicle = {
-            vehicleId: `VEH-00${1260 - i}`,
-            ownedBy: ownerName,
-            customerId: `CUST-2023-00${1260 - i}`,
-            make: makes[makeIndex],
-            model: models[modelIndex],
-            year: (2020 + Math.floor(Math.random() * 4)).toString(),
-            color: colors[colorIndex],
-            plateNumber: `${['DXB', 'SHJ', 'AUH', 'RAK', 'FJH', 'AJM'][Math.floor(Math.random() * 6)]}-${Math.floor(1000 + Math.random() * 9000)}${String.fromCharCode(65 + Math.floor(Math.random() * 26))}`,
-            completedServices: Math.floor(Math.random() * 10) + 1,
-            
-            customerDetails: {
-                customerId: `CUST-2023-00${1260 - i}`,
-                name: ownerName,
-                email: `${firstNames[firstNameIndex].toLowerCase()}.${lastNames[lastNameIndex].toLowerCase()}@example.com`,
-                mobile: `+971 5${Math.floor(Math.random() * 9)} ${Math.floor(100 + Math.random() * 900)} ${Math.floor(1000 + Math.random() * 9000)}`,
-                address: Math.random() > 0.5 ? `Building ${Math.floor(Math.random() * 100) + 1}, Street ${Math.floor(Math.random() * 50) + 1}, ${['Dubai', 'Sharjah', 'Abu Dhabi', 'Ajman'][Math.floor(Math.random() * 4)]}` : null,
-                registeredVehiclesCount: Math.floor(Math.random() * 3) + 1,
-                registeredVehicles: `${Math.floor(Math.random() * 3) + 1} vehicles`,
-                completedServicesCount: Math.floor(Math.random() * 10) + 1,
-                customerSince: `${Math.floor(Math.random() * 28) + 1} ${['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][Math.floor(Math.random() * 12)]} ${2022 + Math.floor(Math.random() * 2)}`
-            },
-            
-            vehicleDetails: {
-                vehicleId: `VEH-00${1260 - i}`,
-                ownedBy: ownerName,
-                make: makes[makeIndex],
-                model: models[modelIndex],
-                year: (2020 + Math.floor(Math.random() * 4)).toString(),
-                color: colors[colorIndex],
-                plateNumber: `${['DXB', 'SHJ', 'AUH', 'RAK', 'FJH', 'AJM'][Math.floor(Math.random() * 6)]}-${Math.floor(1000 + Math.random() * 9000)}${String.fromCharCode(65 + Math.floor(Math.random() * 26))}`,
-                vin: generateVIN(),
-                registrationDate: `${Math.floor(Math.random() * 28) + 1} ${['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'][Math.floor(Math.random() * 6)]} ${2020 + Math.floor(Math.random() * 4)}`,
-                type: ['Sedan', 'SUV', 'Truck', 'Hatchback', 'Coupe'][Math.floor(Math.random() * 5)],
-                lastServiceDate: `${Math.floor(Math.random() * 28) + 1} ${['Sep', 'Oct', 'Nov', 'Dec', 'Jan'][Math.floor(Math.random() * 5)]} ${2023 + Math.floor(Math.random() * 2)}`
-            },
-            
-            services: []
-        }
-        
-        // Add random services
-        const serviceCount = Math.floor(Math.random() * 5) + 1
-        for (let j = 0; j < serviceCount; j++) {
-            const orderTypes = ['New Job Order', 'Service Order']
-            const workStatuses = ['Completed', 'Inprogress', 'Quality Check', 'Ready', 'Inspection', 'New Request']
-            const paymentStatuses = ['Fully Paid', 'Partially Paid', 'Unpaid']
-            
-            vehicle.services.push({
-                createDate: `${Math.floor(Math.random() * 28) + 1} ${['Sep', 'Oct', 'Nov', 'Dec', 'Jan'][Math.floor(Math.random() * 5)]} 2023, ${Math.floor(Math.random() * 12) + 8}:${String(Math.floor(Math.random() * 60)).padStart(2, '0')} ${Math.random() > 0.5 ? 'AM' : 'PM'}`,
-                jobCardId: `JO-2023-00${Math.floor(Math.random() * 1000) + 1100}`,
-                orderType: orderTypes[Math.floor(Math.random() * orderTypes.length)],
-                workStatus: workStatuses[Math.floor(Math.random() * workStatuses.length)],
-                paymentStatus: paymentStatuses[Math.floor(Math.random() * paymentStatuses.length)],
-                totalCost: `QAR ${(Math.floor(Math.random() * 3000) + 300).toFixed(2)}`
-            })
-        }
-        
-        vehicles.push(vehicle)
-    }
-    
-    return vehicles
+interface CustomerDetails {
+    customerId: string
+    name: string
+    email: string
+    mobile: string
+    address: string | null
+    registeredVehiclesCount?: number
+    registeredVehicles?: string
+    completedServicesCount?: number
+    customerSince?: string | null
 }
 
-const VehicleManagement = ({ navigationData, onClearNavigation, onNavigateBack, onNavigate }) => {
-    const buildVehicleRecord = (customer, vehicle) => {
+interface VehicleDetails {
+    vehicleId: string
+    ownedBy: string
+    make: string
+    model: string
+    year: string
+    color: string
+    plateNumber: string
+    vin: string
+    registrationDate?: string | null
+    type: string
+    lastServiceDate?: string | null
+}
+
+interface VehicleRecord {
+    vehicleId: string
+    ownedBy: string
+    customerId: string
+    make: string
+    model: string
+    year: string
+    color: string
+    plateNumber: string
+    completedServices: number
+    customerDetails: CustomerDetails
+    vehicleDetails: VehicleDetails
+    services: ServiceItem[]
+    vin?: string
+    vehicleType?: string
+    [key: string]: unknown
+}
+
+interface SourceVehicle {
+    vehicleId?: string
+    ownedBy?: string
+    make?: string
+    factory?: string
+    model?: string
+    year?: string
+    color?: string
+    plateNumber?: string
+    plate?: string
+    completedServices?: number
+    vin?: string
+    registrationDate?: string | null
+    vehicleType?: string
+    type?: string
+}
+
+interface SourceCustomer {
+    id?: string
+    name?: string
+    email?: string
+    mobile?: string
+    address?: string | null
+    registeredVehiclesCount?: number
+    vehicles?: SourceVehicle[]
+    completedServicesCount?: number
+    customerSince?: string | null
+}
+
+interface JobOrder {
+    id: string
+    createDate: string
+    orderType: string
+    workStatus: string
+    paymentStatus: string
+    customerId?: string
+    customerName?: string
+    mobile?: string
+    customer?: {
+        id?: string
+        customerId?: string
+        name?: string
+    }
+    customerDetails?: {
+        customerId?: string
+        id?: string
+        name?: string
+        mobile?: string
+    }
+    vehicleDetails?: {
+        vehicleId?: string
+    }
+    billing?: {
+        netAmount?: string
+    }
+}
+
+interface CompletedServiceRecord {
+    createDate: string
+    jobCardId: string
+    orderType: string
+    workStatus: string
+    paymentStatus: string
+    totalCost: string
+    jobOrderData: JobOrder
+}
+
+interface VerifiedCustomer {
+    id: string
+    name: string
+}
+
+interface EditVehicleState extends VehicleRecord {
+    newOwnerId: string
+}
+
+interface AddVehicleState {
+    customerId: string
+    make: string
+    model: string
+    year: string
+    type: string
+    color: string
+    plateNumber: string
+    vin: string
+}
+
+interface NavigationData {
+    openDetails?: boolean
+    vehicle?: VehicleRecord
+    vehicleId?: string
+    source?: string
+    returnToCustomer?: string
+}
+
+interface VehicleManagementProps {
+    navigationData?: NavigationData | null
+    onClearNavigation?: () => void
+    onNavigateBack?: (source: string, returnToCustomerId?: string | null) => void
+    onNavigate?: (target: string, payload?: Record<string, unknown>) => void
+}
+
+const VehicleManagement = ({ navigationData, onClearNavigation, onNavigateBack, onNavigate }: VehicleManagementProps) => {
+    const buildVehicleRecord = (customer: SourceCustomer, vehicle: SourceVehicle): VehicleRecord => {
         const registeredVehiclesCount = customer.registeredVehiclesCount ?? customer.vehicles?.length ?? 1;
+        const vehicleId = vehicle.vehicleId || `VEH-${Date.now()}`;
         return {
-            vehicleId: vehicle.vehicleId,
+            vehicleId,
             ownedBy: customer.name || vehicle.ownedBy || 'Unknown',
-            customerId: customer.id,
+            customerId: customer.id || 'Unknown',
             make: vehicle.make || vehicle.factory || 'N/A',
             model: vehicle.model || 'N/A',
             year: vehicle.year || 'N/A',
@@ -109,7 +175,7 @@ const VehicleManagement = ({ navigationData, onClearNavigation, onNavigateBack, 
             plateNumber: vehicle.plateNumber || vehicle.plate || 'N/A',
             completedServices: vehicle.completedServices || 0,
             customerDetails: {
-                customerId: customer.id,
+                customerId: customer.id || 'Unknown',
                 name: customer.name || 'Unknown',
                 email: customer.email || '',
                 mobile: customer.mobile || '',
@@ -120,7 +186,7 @@ const VehicleManagement = ({ navigationData, onClearNavigation, onNavigateBack, 
                 customerSince: customer.customerSince || null
             },
             vehicleDetails: {
-                vehicleId: vehicle.vehicleId,
+                vehicleId,
                 ownedBy: customer.name || vehicle.ownedBy || 'Unknown',
                 make: vehicle.make || vehicle.factory || 'N/A',
                 model: vehicle.model || 'N/A',
@@ -137,13 +203,13 @@ const VehicleManagement = ({ navigationData, onClearNavigation, onNavigateBack, 
     };
 
     const syncVehiclesFromCustomers = useCallback(() => {
-        const savedVehicles = JSON.parse(localStorage.getItem('vehicleManagementVehicles') || '[]');
-        const savedIds = new Set(savedVehicles.map(v => v.vehicleId));
-        const savedCustomers = JSON.parse(localStorage.getItem('jobOrderCustomers') || '[]');
+        const savedVehicles = JSON.parse(localStorage.getItem('vehicleManagementVehicles') || '[]') as VehicleRecord[];
+        const savedIds = new Set(savedVehicles.map((v: VehicleRecord) => v.vehicleId));
+        const savedCustomers = JSON.parse(localStorage.getItem('jobOrderCustomers') || '[]') as SourceCustomer[];
 
-        const derivedVehicles = [];
-        savedCustomers.forEach((customer) => {
-            (customer.vehicles || []).forEach((vehicle) => {
+        const derivedVehicles: VehicleRecord[] = [];
+        savedCustomers.forEach((customer: SourceCustomer) => {
+            (customer.vehicles || []).forEach((vehicle: SourceVehicle) => {
                 if (!vehicle.vehicleId || savedIds.has(vehicle.vehicleId)) return;
                 derivedVehicles.push(buildVehicleRecord(customer, vehicle));
                 savedIds.add(vehicle.vehicleId);
@@ -158,9 +224,9 @@ const VehicleManagement = ({ navigationData, onClearNavigation, onNavigateBack, 
             localStorage.setItem('vehicleManagementVehicles', JSON.stringify(mergedSaved));
         }
 
-        const demoVehicles = getVehicles();
-        const allVehicles = [...demoVehicles];
-        mergedSaved.forEach(saved => {
+        const demoVehicles = getVehicles() as VehicleRecord[];
+        const allVehicles: VehicleRecord[] = [...demoVehicles];
+        mergedSaved.forEach((saved: VehicleRecord) => {
             if (!allVehicles.some(v => v.vehicleId === saved.vehicleId)) {
                 allVehicles.push(saved);
             }
@@ -168,23 +234,23 @@ const VehicleManagement = ({ navigationData, onClearNavigation, onNavigateBack, 
         setVehicles(allVehicles);
     }, []);
     // Load vehicles from demo data and localStorage
-    const [vehicles, setVehicles] = useState([]);
-    const [isLoadingVehicles, setIsLoadingVehicles] = useState(true);
-    const [jobOrders, setJobOrders] = useState(() => getStoredJobOrders())
+    const [vehicles, setVehicles] = useState<VehicleRecord[]>([]);
+    const [, setIsLoadingVehicles] = useState(true);
+    const [jobOrders, setJobOrders] = useState<JobOrder[]>(() => getStoredJobOrders() as JobOrder[])
     const [searchQuery, setSearchQuery] = useState('')
-    const [searchResults, setSearchResults] = useState([])
+    const [searchResults, setSearchResults] = useState<VehicleRecord[]>([])
     const [currentPage, setCurrentPage] = useState(1)
     const [pageSize, setPageSize] = useState(20)
-    const [activeDropdown, setActiveDropdown] = useState(null)
+    const [activeDropdown, setActiveDropdown] = useState<string | null>(null)
     const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0 })
-    const [detailsVehicle, setDetailsVehicle] = useState(null)
-    const [editVehicle, setEditVehicle] = useState(null)
-    const [deleteVehicle, setDeleteVehicle] = useState(null)
-    const [addVehicle, setAddVehicle] = useState(null)
-    const [verifiedCustomer, setVerifiedCustomer] = useState(null)
-    const [addVerifiedCustomer, setAddVerifiedCustomer] = useState(null)
-    const [navigationSource, setNavigationSource] = useState(null)
-    const [returnToCustomerId, setReturnToCustomerId] = useState(null)
+    const [detailsVehicle, setDetailsVehicle] = useState<VehicleRecord | null>(null)
+    const [editVehicle, setEditVehicle] = useState<EditVehicleState | null>(null)
+    const [deleteVehicle, setDeleteVehicle] = useState<VehicleRecord | null>(null)
+    const [addVehicle, setAddVehicle] = useState<AddVehicleState | null>(null)
+    const [verifiedCustomer, setVerifiedCustomer] = useState<VerifiedCustomer | null>(null)
+    const [addVerifiedCustomer, setAddVerifiedCustomer] = useState<VerifiedCustomer | null>(null)
+    const [navigationSource, setNavigationSource] = useState<string | null>(null)
+    const [returnToCustomerId, setReturnToCustomerId] = useState<string | null>(null)
 
     // Load vehicles from Amplify on component mount
     useEffect(() => {
@@ -195,7 +261,7 @@ const VehicleManagement = ({ navigationData, onClearNavigation, onNavigateBack, 
                 console.log('✅ Loaded vehicles from Amplify:', amplifyVehicles);
                 
                 // Map Amplify data to vehicle interface
-                const mappedVehicles = (amplifyVehicles || []).map((v: any) => ({
+                const mappedVehicles = (amplifyVehicles || []).map((v: any): VehicleRecord => ({
                     vehicleId: v.id,
                     ownedBy: v.customer?.name || 'Unknown',
                     customerId: v.customerId,
@@ -222,13 +288,14 @@ const VehicleManagement = ({ navigationData, onClearNavigation, onNavigateBack, 
                         plateNumber: v.plateNumber || '',
                         vin: v.vin || '',
                         type: v.vehicleType || '',
-                    }
+                    },
+                    services: []
                 }));
                 
                 // Merge with locally saved vehicles
-                const savedVehicles = JSON.parse(localStorage.getItem('vehicleManagementVehicles') || '[]');
-                const allVehicles = [...mappedVehicles];
-                savedVehicles.forEach((saved: any) => {
+                const savedVehicles = JSON.parse(localStorage.getItem('vehicleManagementVehicles') || '[]') as VehicleRecord[];
+                const allVehicles: VehicleRecord[] = [...mappedVehicles];
+                savedVehicles.forEach((saved: VehicleRecord) => {
                     if (!allVehicles.some(v => v.vehicleId === saved.vehicleId)) {
                         allVehicles.push(saved);
                     }
@@ -238,10 +305,10 @@ const VehicleManagement = ({ navigationData, onClearNavigation, onNavigateBack, 
             } catch (error) {
                 console.error('❌ Error loading vehicles from Amplify:', error);
                 // Fall back to demo data
-                const demoVehicles = getVehicles();
-                const savedVehicles = JSON.parse(localStorage.getItem('vehicleManagementVehicles') || '[]');
-                const allVehicles = [...demoVehicles];
-                savedVehicles.forEach(saved => {
+                const demoVehicles = getVehicles() as VehicleRecord[];
+                const savedVehicles = JSON.parse(localStorage.getItem('vehicleManagementVehicles') || '[]') as VehicleRecord[];
+                const allVehicles: VehicleRecord[] = [...demoVehicles];
+                savedVehicles.forEach((saved: VehicleRecord) => {
                     if (!allVehicles.some(v => v.vehicleId === saved.vehicleId)) {
                         allVehicles.push(saved);
                     }
@@ -257,10 +324,15 @@ const VehicleManagement = ({ navigationData, onClearNavigation, onNavigateBack, 
 
     // Close dropdown when clicking outside
     useEffect(() => {
-        const handleClickOutside = (event) => {
+        const handleClickOutside = (event: MouseEvent) => {
+            const target = event.target as HTMLElement | null
+            if (!target) {
+                return
+            }
+
             // Check if click is outside dropdown button and menu
-            const isDropdownButton = event.target.closest('.btn-action-dropdown')
-            const isDropdownMenu = event.target.closest('.action-dropdown-menu')
+            const isDropdownButton = target.closest('.btn-action-dropdown')
+            const isDropdownMenu = target.closest('.action-dropdown-menu')
             
             if (!isDropdownButton && !isDropdownMenu) {
                 setActiveDropdown(null)
@@ -297,10 +369,10 @@ const VehicleManagement = ({ navigationData, onClearNavigation, onNavigateBack, 
             else if (navigationData?.vehicleId) {
                 console.log('Setting details vehicle by ID:', navigationData.vehicleId);
                 // Find the vehicle by ID - get fresh data directly
-                const demoVehicles = getVehicles();
-                const savedVehicles = JSON.parse(localStorage.getItem('vehicleManagementVehicles') || '[]');
-                const allVehicles = [...demoVehicles, ...savedVehicles];
-                const vehicle = allVehicles.find(v => v.vehicleId === navigationData.vehicleId);
+                const demoVehicles = getVehicles() as VehicleRecord[];
+                const savedVehicles = JSON.parse(localStorage.getItem('vehicleManagementVehicles') || '[]') as VehicleRecord[];
+                const allVehicles: VehicleRecord[] = [...demoVehicles, ...savedVehicles];
+                const vehicle = allVehicles.find((v: VehicleRecord) => v.vehicleId === navigationData.vehicleId);
                 if (vehicle) {
                     setDetailsVehicle(vehicle);
                 }
@@ -334,7 +406,7 @@ const VehicleManagement = ({ navigationData, onClearNavigation, onNavigateBack, 
     useEffect(() => {
         const handleCompletedServicesUpdate = () => {
             syncVehiclesFromCustomers();
-            setJobOrders(getStoredJobOrders());
+            setJobOrders(getStoredJobOrders() as JobOrder[]);
         };
 
         window.addEventListener('completed-services-updated', handleCompletedServicesUpdate);
@@ -351,43 +423,44 @@ const VehicleManagement = ({ navigationData, onClearNavigation, onNavigateBack, 
         setCurrentPage(1)
     }, [searchQuery, vehicles])
 
-    const performSmartSearch = (query) => {
-        const terms = query.toLowerCase().split(' ').filter(term => term.trim())
-        let results = [...vehicles]
+    const performSmartSearch = (query: string): VehicleRecord[] => {
+        const terms = query.toLowerCase().split(' ').filter((term: string) => term.trim())
+        let results: VehicleRecord[] = [...vehicles]
         
-        terms.forEach(term => {
+        terms.forEach((term: string) => {
             if (term.startsWith('!')) {
                 const excludeTerm = term.substring(1)
                 if (excludeTerm) {
-                    results = results.filter(vehicle => !matchesTerm(vehicle, excludeTerm))
+                    results = results.filter((vehicle: VehicleRecord) => !matchesTerm(vehicle, excludeTerm))
                 }
             } else if (term.includes(':')) {
                 const [field, value] = term.split(':')
                 if (field && value) {
-                    results = results.filter(vehicle => matchesField(vehicle, field.trim(), value.trim()))
+                    results = results.filter((vehicle: VehicleRecord) => matchesField(vehicle, field.trim(), value.trim()))
                 }
             } else {
-                results = results.filter(vehicle => matchesTerm(vehicle, term))
+                results = results.filter((vehicle: VehicleRecord) => matchesTerm(vehicle, term))
             }
         })
         
         return results
     }
 
-    const matchesTerm = (vehicle, term) => {
+    const matchesTerm = (vehicle: VehicleRecord, term: string): boolean => {
+        const normalizedTerm = term.toLowerCase()
         return (
-            vehicle.vehicleId.toLowerCase().includes(term) ||
-            vehicle.ownedBy.toLowerCase().includes(term) ||
-            vehicle.make.toLowerCase().includes(term) ||
-            vehicle.model.toLowerCase().includes(term) ||
-            vehicle.year.toLowerCase().includes(term) ||
-            vehicle.color.toLowerCase().includes(term) ||
-            vehicle.plateNumber.toLowerCase().includes(term)
+            vehicle.vehicleId.toLowerCase().includes(normalizedTerm) ||
+            vehicle.ownedBy.toLowerCase().includes(normalizedTerm) ||
+            vehicle.make.toLowerCase().includes(normalizedTerm) ||
+            vehicle.model.toLowerCase().includes(normalizedTerm) ||
+            vehicle.year.toLowerCase().includes(normalizedTerm) ||
+            vehicle.color.toLowerCase().includes(normalizedTerm) ||
+            vehicle.plateNumber.toLowerCase().includes(normalizedTerm)
         )
     }
 
-    const matchesField = (vehicle, field, value) => {
-        const fieldMap = {
+    const matchesField = (vehicle: VehicleRecord, field: string, value: string): boolean => {
+        const fieldMap: Record<string, keyof VehicleRecord> = {
             'make': 'make',
             'brand': 'make',
             'model': 'model',
@@ -398,10 +471,11 @@ const VehicleManagement = ({ navigationData, onClearNavigation, onNavigateBack, 
             'id': 'vehicleId'
         }
         
-        const actualField = fieldMap[field.toLowerCase()] || field
+        const actualField = fieldMap[field.toLowerCase()] || (field as keyof VehicleRecord)
+        const rawValue = vehicle[actualField]
         
-        if (vehicle[actualField]) {
-            const fieldValue = vehicle[actualField].toString().toLowerCase()
+        if (rawValue !== undefined && rawValue !== null) {
+            const fieldValue = String(rawValue).toLowerCase()
             const searchValue = value.toLowerCase()
             return fieldValue.includes(searchValue)
         }
@@ -409,22 +483,22 @@ const VehicleManagement = ({ navigationData, onClearNavigation, onNavigateBack, 
         return false
     }
 
-    const highlightSearchMatches = (text, query) => {
+    const highlightSearchMatches = (text: string | number, query: string): ReactNode => {
         if (!query || query.startsWith('!') || query.includes(':')) {
             return text
         }
         
         const terms = query.toLowerCase().split(' ')
-            .filter(term => !term.startsWith('!') && !term.includes(':'))
+            .filter((term: string) => !term.startsWith('!') && !term.includes(':'))
         
         if (terms.length === 0) {
             return text
         }
         
-        let result = text.toString()
+        let result = String(text)
         const textLower = result.toLowerCase()
         
-        terms.forEach(term => {
+        terms.forEach((term: string) => {
             if (term && textLower.includes(term)) {
                 const regex = new RegExp(`(${term})`, 'gi')
                 result = result.replace(regex, '<span class="search-highlight">$1</span>')
@@ -437,7 +511,7 @@ const VehicleManagement = ({ navigationData, onClearNavigation, onNavigateBack, 
     const totalPages = Math.ceil(searchResults.length / pageSize)
     const paginatedData = searchResults.slice((currentPage - 1) * pageSize, currentPage * pageSize)
 
-    const getWorkStatusClass = (status) => {
+    const getWorkStatusClass = (status: string): string => {
         switch(status) {
             case 'Completed': return 'status-completed'
             case 'Inprogress': return 'status-inprogress'
@@ -450,16 +524,16 @@ const VehicleManagement = ({ navigationData, onClearNavigation, onNavigateBack, 
     }
 
     // Get completed services for a vehicle from job orders
-    const getVehicleCompletedServices = (vehicleId) => {
+    const getVehicleCompletedServices = (vehicleId: string): CompletedServiceRecord[] => {
         if (!jobOrders || !vehicleId) return []
         
         // Filter job orders for this vehicle and only completed ones
         return jobOrders
-            .filter(order => 
+            .filter((order: JobOrder) => 
                 order.vehicleDetails?.vehicleId === vehicleId && 
                 order.workStatus === 'Completed'
             )
-            .map(order => ({
+            .map((order: JobOrder): CompletedServiceRecord => ({
                 createDate: order.createDate,
                 jobCardId: order.id,
                 orderType: order.orderType,
@@ -472,17 +546,17 @@ const VehicleManagement = ({ navigationData, onClearNavigation, onNavigateBack, 
                 // Sort by date, newest first
                 const dateA = new Date(a.createDate)
                 const dateB = new Date(b.createDate)
-                return dateB - dateA
+                return dateB.getTime() - dateA.getTime()
             })
     }
 
-    const getCustomerCompletedCount = (customerId, customerName, customerMobile) => {
+    const getCustomerCompletedCount = (customerId: string, customerName: string, customerMobile: string): number => {
         if (!jobOrders) return 0
 
         const nameKey = (customerName || '').trim().toLowerCase()
         const mobileKey = (customerMobile || '').trim().toLowerCase()
 
-        return jobOrders.filter(order => {
+        return jobOrders.filter((order: JobOrder) => {
             if (order.workStatus !== 'Completed') return false
 
             const orderCustomerId = order.customerDetails?.customerId
@@ -505,7 +579,7 @@ const VehicleManagement = ({ navigationData, onClearNavigation, onNavigateBack, 
     }
 
     // Navigate to Job Order History with details view
-    const handleViewJobOrderDetails = (jobOrderData, vehicleId) => {
+    const handleViewJobOrderDetails = (jobOrderData: JobOrder, vehicleId: string) => {
         if (onNavigate) {
             onNavigate('Job Order History', {
                 openDetails: true,
@@ -516,8 +590,8 @@ const VehicleManagement = ({ navigationData, onClearNavigation, onNavigateBack, 
         }
     }
 
-    const handlePageSizeChange = (e) => {
-        setPageSize(parseInt(e.target.value))
+    const handlePageSizeChange = (e: ChangeEvent<HTMLSelectElement>) => {
+        setPageSize(parseInt(e.target.value, 10))
         setCurrentPage(1)
     }
 
@@ -527,7 +601,7 @@ const VehicleManagement = ({ navigationData, onClearNavigation, onNavigateBack, 
             return
         }
         
-        const customer = vehicles.find(v => v.customerId === editVehicle.newOwnerId)
+        const customer = vehicles.find((v: VehicleRecord) => v.customerId === editVehicle.newOwnerId)
         if (customer) {
             setVerifiedCustomer({ id: customer.customerId, name: customer.ownedBy })
             alert(`Customer verified: ${customer.ownedBy}`)
@@ -543,7 +617,7 @@ const VehicleManagement = ({ navigationData, onClearNavigation, onNavigateBack, 
             return
         }
         
-        const customer = vehicles.find(v => v.customerId === addVehicle.customerId)
+        const customer = vehicles.find((v: VehicleRecord) => v.customerId === addVehicle.customerId)
         if (customer) {
             setAddVerifiedCustomer({ id: customer.customerId, name: customer.ownedBy })
             alert(`Customer verified: ${customer.ownedBy}`)
@@ -554,6 +628,10 @@ const VehicleManagement = ({ navigationData, onClearNavigation, onNavigateBack, 
     }
 
     const handleSaveEdit = () => {
+        if (!editVehicle) {
+            return
+        }
+
         if (!editVehicle.newOwnerId || !editVehicle.color || !editVehicle.plateNumber || !editVehicle.vin) {
             alert('Please fill in all fields')
             return
@@ -565,7 +643,7 @@ const VehicleManagement = ({ navigationData, onClearNavigation, onNavigateBack, 
         }
         
         // Update vehicle in state
-        const updatedVehicles = vehicles.map(v => {
+        const updatedVehicles = vehicles.map((v: VehicleRecord): VehicleRecord => {
             if (v.vehicleId === editVehicle.vehicleId) {
                 return {
                     ...v,
@@ -578,7 +656,7 @@ const VehicleManagement = ({ navigationData, onClearNavigation, onNavigateBack, 
                         ownedBy: verifiedCustomer.name,
                         color: editVehicle.color,
                         plateNumber: editVehicle.plateNumber,
-                        vin: editVehicle.vin
+                        vin: editVehicle.vin || ''
                     },
                     customerDetails: {
                         ...v.customerDetails,
@@ -592,16 +670,20 @@ const VehicleManagement = ({ navigationData, onClearNavigation, onNavigateBack, 
         setVehicles(updatedVehicles);
         
         // Update in localStorage if it's a saved vehicle
-        const savedVehicles = JSON.parse(localStorage.getItem('vehicleManagementVehicles') || '[]');
-        const vehicleIndex = savedVehicles.findIndex(v => v.vehicleId === editVehicle.vehicleId);
+        const savedVehicles = JSON.parse(localStorage.getItem('vehicleManagementVehicles') || '[]') as VehicleRecord[];
+        const vehicleIndex = savedVehicles.findIndex((v: VehicleRecord) => v.vehicleId === editVehicle.vehicleId);
         if (vehicleIndex !== -1) {
-            savedVehicles[vehicleIndex] = updatedVehicles.find(v => v.vehicleId === editVehicle.vehicleId);
+            const updatedVehicle = updatedVehicles.find((v: VehicleRecord) => v.vehicleId === editVehicle.vehicleId)
+            if (updatedVehicle) {
+                savedVehicles[vehicleIndex] = updatedVehicle;
+            }
             localStorage.setItem('vehicleManagementVehicles', JSON.stringify(savedVehicles));
         }
         
         // Update detailsVehicle if it's the one being edited
         if (detailsVehicle?.vehicleId === editVehicle.vehicleId) {
-            setDetailsVehicle(updatedVehicles.find(v => v.vehicleId === editVehicle.vehicleId));
+            const updatedDetail = updatedVehicles.find((v: VehicleRecord) => v.vehicleId === editVehicle.vehicleId) || null
+            setDetailsVehicle(updatedDetail);
         }
         
         alert(`Vehicle ${editVehicle.vehicleId} details updated successfully!`)
@@ -610,6 +692,10 @@ const VehicleManagement = ({ navigationData, onClearNavigation, onNavigateBack, 
     }
 
     const handleSaveNewVehicle = () => {
+        if (!addVehicle) {
+            return
+        }
+
         if (!addVehicle.customerId || !addVehicle.make || !addVehicle.model || !addVehicle.year || !addVehicle.type || !addVehicle.color || !addVehicle.plateNumber) {
             alert('Please fill in all required fields')
             return
@@ -624,7 +710,7 @@ const VehicleManagement = ({ navigationData, onClearNavigation, onNavigateBack, 
         const newVehicleId = `VEH-${String(Date.now()).slice(-6)}`;
         
         // Create new vehicle object
-        const newVehicle = {
+        const newVehicle: VehicleRecord = {
             vehicleId: newVehicleId,
             ownedBy: addVerifiedCustomer.name,
             customerId: addVehicle.customerId,
@@ -662,11 +748,11 @@ const VehicleManagement = ({ navigationData, onClearNavigation, onNavigateBack, 
         };
         
         // Add to state
-        const updatedVehicles = [newVehicle, ...vehicles];
+        const updatedVehicles: VehicleRecord[] = [newVehicle, ...vehicles];
         setVehicles(updatedVehicles);
         
         // Save to localStorage
-        const savedVehicles = JSON.parse(localStorage.getItem('vehicleManagementVehicles') || '[]');
+        const savedVehicles = JSON.parse(localStorage.getItem('vehicleManagementVehicles') || '[]') as VehicleRecord[];
         savedVehicles.push(newVehicle);
         localStorage.setItem('vehicleManagementVehicles', JSON.stringify(savedVehicles));
         
@@ -683,12 +769,12 @@ const VehicleManagement = ({ navigationData, onClearNavigation, onNavigateBack, 
             const vehicleToDelete = deleteVehicle;
             
             // Remove from state
-            const updatedVehicles = vehicles.filter(v => v.vehicleId !== vehicleToDelete.vehicleId);
+            const updatedVehicles = vehicles.filter((v: VehicleRecord) => v.vehicleId !== vehicleToDelete.vehicleId);
             setVehicles(updatedVehicles);
             
             // Remove from localStorage if it was a saved vehicle
-            const savedVehicles = JSON.parse(localStorage.getItem('vehicleManagementVehicles') || '[]');
-            const filteredSaved = savedVehicles.filter(v => v.vehicleId !== vehicleToDelete.vehicleId);
+            const savedVehicles = JSON.parse(localStorage.getItem('vehicleManagementVehicles') || '[]') as VehicleRecord[];
+            const filteredSaved = savedVehicles.filter((v: VehicleRecord) => v.vehicleId !== vehicleToDelete.vehicleId);
             if (savedVehicles.length !== filteredSaved.length) {
                 localStorage.setItem('vehicleManagementVehicles', JSON.stringify(filteredSaved));
             }
@@ -1148,7 +1234,7 @@ const VehicleManagement = ({ navigationData, onClearNavigation, onNavigateBack, 
                                                                     ))
                                                                 ) : (
                                                                     <tr>
-                                                                        <td colSpan="7" style={{textAlign: 'center', padding: '40px'}}>
+                                                                        <td colSpan={7} style={{textAlign: 'center', padding: '40px'}}>
                                                                             <i className="fas fa-clipboard-list" style={{fontSize: '48px', color: '#ddd', marginBottom: '15px', display: 'block'}}></i>
                                                                             <div style={{color: '#7f8c8d', fontSize: '16px'}}>No completed services found for this vehicle</div>
                                                                         </td>
@@ -1374,7 +1460,7 @@ const VehicleManagement = ({ navigationData, onClearNavigation, onNavigateBack, 
                                             type="text" 
                                             className="form-input"
                                             placeholder="17-character VIN"
-                                            maxLength="17"
+                                            maxLength={17}
                                             value={addVehicle.vin}
                                             onChange={(e) => setAddVehicle({...addVehicle, vin: e.target.value})}
                                             disabled={!addVerifiedCustomer}

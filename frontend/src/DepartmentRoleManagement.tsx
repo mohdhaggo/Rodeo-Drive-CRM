@@ -4,7 +4,37 @@ import PermissionGate from './PermissionGate'
 
 const ROLE_STORAGE_KEY = 'department_roles'
 
-const initialDepartments = [
+interface Role {
+  id: number
+  name: string
+  description: string
+}
+
+interface Department {
+  id: number
+  name: string
+  description: string
+  roles: Role[]
+}
+
+type ModalType = 'addDept' | 'editDept' | 'addRole' | 'editRole'
+type AlertType = 'info' | 'success' | 'error' | 'warning'
+
+interface AlertButton {
+  text: string
+  className: string
+  action: () => void
+}
+
+interface AlertState {
+  open: boolean
+  title: string
+  message: string
+  type: AlertType
+  buttons: AlertButton[] | null
+}
+
+const initialDepartments: Department[] = [
   {
     id: 1,
     name: 'IT',
@@ -514,15 +544,15 @@ const usersData = [
   },
 ]
 
-const loadDepartments = () => {
+const loadDepartments = (): Department[] => {
   const stored = localStorage.getItem(ROLE_STORAGE_KEY)
   if (!stored) {
     return initialDepartments
   }
 
   try {
-    const parsed = JSON.parse(stored)
-    return Array.isArray(parsed) ? parsed : initialDepartments
+    const parsed: unknown = JSON.parse(stored)
+    return Array.isArray(parsed) ? (parsed as Department[]) : initialDepartments
   } catch (error) {
     console.warn('Failed to parse stored departments:', error)
     return initialDepartments
@@ -530,7 +560,7 @@ const loadDepartments = () => {
 }
 
 function DepartmentRoleManagement() {
-  const [departments, setDepartments] = useState(loadDepartments)
+  const [departments, setDepartments] = useState<Department[]>(loadDepartments)
   const [showAddDept, setShowAddDept] = useState(false)
   const [showEditDept, setShowEditDept] = useState(false)
   const [showAddRole, setShowAddRole] = useState(false)
@@ -538,19 +568,19 @@ function DepartmentRoleManagement() {
 
   const [deptName, setDeptName] = useState('')
   const [deptDescription, setDeptDescription] = useState('')
-  const [editDeptId, setEditDeptId] = useState(null)
+  const [editDeptId, setEditDeptId] = useState<number | null>(null)
   const [editDeptName, setEditDeptName] = useState('')
   const [editDeptDescription, setEditDeptDescription] = useState('')
 
-  const [roleDeptId, setRoleDeptId] = useState(null)
+  const [roleDeptId, setRoleDeptId] = useState<number | null>(null)
   const [roleName, setRoleName] = useState('')
   const [roleDescription, setRoleDescription] = useState('')
-  const [editRoleId, setEditRoleId] = useState(null)
-  const [editRoleDeptId, setEditRoleDeptId] = useState(null)
+  const [editRoleId, setEditRoleId] = useState<number | null>(null)
+  const [editRoleDeptId, setEditRoleDeptId] = useState<number | null>(null)
   const [editRoleName, setEditRoleName] = useState('')
   const [editRoleDescription, setEditRoleDescription] = useState('')
 
-  const [alertState, setAlertState] = useState({
+  const [alertState, setAlertState] = useState<AlertState>({
     open: false,
     title: '',
     message: '',
@@ -591,21 +621,21 @@ function DepartmentRoleManagement() {
     setShowAddDept(true)
   }
 
-  const openEditDepartmentModal = (dept) => {
+  const openEditDepartmentModal = (dept: Department) => {
     setEditDeptId(dept.id)
     setEditDeptName(dept.name)
     setEditDeptDescription(dept.description || '')
     setShowEditDept(true)
   }
 
-  const openAddRoleModal = (dept) => {
+  const openAddRoleModal = (dept: Department) => {
     setRoleDeptId(dept.id)
     setRoleName('')
     setRoleDescription('')
     setShowAddRole(true)
   }
 
-  const openEditRoleModal = (deptId, role) => {
+  const openEditRoleModal = (deptId: number, role: Role) => {
     setEditRoleId(role.id)
     setEditRoleDeptId(deptId)
     setEditRoleName(role.name)
@@ -613,14 +643,19 @@ function DepartmentRoleManagement() {
     setShowEditRole(true)
   }
 
-  const closeModal = (modalType) => {
+  const closeModal = (modalType: ModalType) => {
     if (modalType === 'addDept') setShowAddDept(false)
     if (modalType === 'editDept') setShowEditDept(false)
     if (modalType === 'addRole') setShowAddRole(false)
     if (modalType === 'editRole') setShowEditRole(false)
   }
 
-  const showAlert = (title, message, type, buttons = null) => {
+  const showAlert = (
+    title: string,
+    message: string,
+    type: AlertType,
+    buttons: AlertButton[] | null = null
+  ) => {
     setAlertState({ open: true, title, message, type, buttons })
   }
 
@@ -677,7 +712,7 @@ function DepartmentRoleManagement() {
     showAlert('Success', 'Department updated successfully!', 'success')
   }
 
-  const deleteDepartment = (dept) => {
+  const deleteDepartment = (dept: Department) => {
     const usersInDept = usersData.filter((user) => user.department === dept.name)
 
     if (usersInDept.length > 0) {
@@ -771,7 +806,7 @@ function DepartmentRoleManagement() {
     showAlert('Success', 'Role updated successfully!', 'success')
   }
 
-  const deleteRole = (deptId, role) => {
+  const deleteRole = (deptId: number, role: Role) => {
     const usersWithRole = usersData.filter((user) => user.role === role.name)
 
     if (usersWithRole.length > 0) {
@@ -989,7 +1024,7 @@ function DepartmentRoleManagement() {
                 <label htmlFor="deptDescription">Description</label>
                 <textarea
                   id="deptDescription"
-                  rows="4"
+                  rows={4}
                   placeholder="Enter department description"
                   value={deptDescription}
                   onChange={(event) => setDeptDescription(event.target.value)}
@@ -1047,7 +1082,7 @@ function DepartmentRoleManagement() {
                 <label htmlFor="roleDescription">Role Description</label>
                 <textarea
                   id="roleDescription"
-                  rows="4"
+                  rows={4}
                   placeholder="Enter role description"
                   value={roleDescription}
                   onChange={(event) => setRoleDescription(event.target.value)}
@@ -1104,7 +1139,7 @@ function DepartmentRoleManagement() {
                 <label htmlFor="editDeptDescription">Description</label>
                 <textarea
                   id="editDeptDescription"
-                  rows="4"
+                  rows={4}
                   value={editDeptDescription}
                   onChange={(event) =>
                     setEditDeptDescription(event.target.value)
@@ -1162,7 +1197,7 @@ function DepartmentRoleManagement() {
                 <label htmlFor="editRoleDescription">Role Description</label>
                 <textarea
                   id="editRoleDescription"
-                  rows="4"
+                  rows={4}
                   value={editRoleDescription}
                   onChange={(event) =>
                     setEditRoleDescription(event.target.value)

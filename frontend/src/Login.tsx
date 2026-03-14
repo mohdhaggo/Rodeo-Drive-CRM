@@ -1,14 +1,53 @@
-import React, { useState } from 'react';
+import { useEffect, useState, type FormEvent } from 'react';
 import {
   validateCredentials,
   setCurrentUser,
   initializeUsers,
   updateUserPassword,
-  markNotificationsRead
+  markNotificationsRead,
+  type User
 } from './userService.ts';
 import './Login.css';
+interface NotificationItem {
+  id: string | number;
+  message: string;
+}
 
-export default function Login({ onLoginSuccess }) {
+interface LoginProps {
+  onLoginSuccess?: (user: User) => void;
+}
+
+interface ValidationSuccess {
+  success: true;
+  user: User;
+  requiresPasswordChange?: boolean;
+  notifications?: NotificationItem[];
+}
+
+interface ValidationFailure {
+  success: false;
+  error?: string;
+}
+
+type ValidationResult = ValidationSuccess | ValidationFailure;
+
+interface PasswordUpdateSuccess {
+  success: true;
+  user: User;
+}
+
+interface PasswordUpdateFailure {
+  success: false;
+  error?: string;
+}
+
+type PasswordUpdateResult = PasswordUpdateSuccess | PasswordUpdateFailure;
+
+const hasErrorMessage = (value: unknown): value is { message: string } => {
+  return typeof value === 'object' && value !== null && 'message' in value;
+};
+
+export default function Login({ onLoginSuccess }: LoginProps) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -18,21 +57,21 @@ export default function Login({ onLoginSuccess }) {
   const [pendingEmail, setPendingEmail] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [pendingNotifications, setPendingNotifications] = useState([]);
+  const [pendingNotifications, setPendingNotifications] = useState<NotificationItem[]>([]);
 
   // Initialize users on component mount
-  React.useEffect(() => {
+  useEffect(() => {
     initializeUsers();
   }, []);
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError('');
     setLoading(true);
 
     try {
       // Validate credentials against system user management
-      const result = validateCredentials(email, password);
+      const result = validateCredentials(email, password) as ValidationResult;
       
       if (result.success) {
         setPendingNotifications(result.notifications || []);
@@ -55,13 +94,13 @@ export default function Login({ onLoginSuccess }) {
         setError(result.error || 'Authentication failed');
       }
     } catch (err) {
-      setError(err.message || 'Authentication failed');
+      setError(hasErrorMessage(err) ? err.message : 'Authentication failed');
     } finally {
       setLoading(false);
     }
   };
 
-  const handlePasswordUpdate = (e) => {
+  const handlePasswordUpdate = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError('');
     setLoading(true);
@@ -78,7 +117,7 @@ export default function Login({ onLoginSuccess }) {
       return;
     }
 
-    const updateResult = updateUserPassword(pendingEmail, newPassword);
+    const updateResult = updateUserPassword(pendingEmail, newPassword) as PasswordUpdateResult;
     if (updateResult.success) {
       markNotificationsRead(pendingEmail);
       setCurrentUser(updateResult.user);

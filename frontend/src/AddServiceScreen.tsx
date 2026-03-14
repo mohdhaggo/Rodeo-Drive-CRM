@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import PermissionGate from './PermissionGate';
+import { clampDiscountPercent, getDiscountAllowance, parseCurrencyValue } from './discountLimits';
 
 interface Service {
   name: string;
@@ -19,12 +20,32 @@ interface AddServiceScreenProps {
   products?: Product[];
   moduleId?: string;
   permissionId?: string;
+  servicePriceOptionId?: string;
+  serviceDiscountOptionId?: string;
+  discountOptionId?: string;
+  existingTotalAmount?: number | string;
+  existingDiscountAmount?: number | string;
 }
 
-function AddServiceScreen({ order, onClose, onSubmit, products = [], moduleId = 'joborder', permissionId = 'joborder_pricesummary' }: AddServiceScreenProps) {
+function AddServiceScreen({
+  order,
+  onClose,
+  onSubmit,
+  products = [],
+  moduleId = 'joborder',
+  permissionId = 'joborder_pricesummary',
+  servicePriceOptionId,
+  serviceDiscountOptionId,
+  discountOptionId,
+  existingTotalAmount,
+  existingDiscountAmount,
+}: AddServiceScreenProps) {
   const [selectedServices, setSelectedServices] = useState<Service[]>([]);
   const [discountPercent, setDiscountPercent] = useState<number>(0);
   const vehicleType = order?.vehicleDetails?.type || 'SUV';
+  const resolvedServicePriceOptionId = servicePriceOptionId || `${moduleId}_serviceprice`;
+  const resolvedServiceDiscountOptionId = serviceDiscountOptionId || `${moduleId}_servicediscount`;
+  const resolvedDiscountOptionId = discountOptionId || `${moduleId}_servicediscount_percent`;
 
   const handleToggleService = (product: Product) => {
     const price = vehicleType === 'SUV' ? product.suvPrice : product.sedanPrice;
@@ -37,6 +58,30 @@ function AddServiceScreen({ order, onClose, onSubmit, products = [], moduleId = 
 
   const formatPrice = (price: number) => `QAR ${price.toLocaleString()}`;
   const subtotal = selectedServices.reduce((sum, s) => sum + s.price, 0);
+  const priorOrderTotal = parseCurrencyValue(existingTotalAmount ?? order?.billing?.totalAmount);
+  const priorOrderDiscount = parseCurrencyValue(existingDiscountAmount ?? order?.billing?.discount);
+  const discountAllowance = useMemo(
+    () =>
+      getDiscountAllowance({
+        optionId: resolvedDiscountOptionId,
+        totalAmount: priorOrderTotal + subtotal,
+        existingDiscountAmount: priorOrderDiscount,
+        currentDiscountBaseAmount: subtotal,
+        fallbackPercent: 100,
+      }),
+    [resolvedDiscountOptionId, priorOrderTotal, priorOrderDiscount, subtotal]
+  );
+
+  useEffect(() => {
+    setDiscountPercent((prev) => clampDiscountPercent(prev, discountAllowance.maxAdditionalPercent));
+  }, [discountAllowance.maxAdditionalPercent]);
+
+  const handleDiscountChange = (rawValue: string) => {
+    const requestedPercent = parseFloat(rawValue);
+    const safeRequestedPercent = Number.isFinite(requestedPercent) ? requestedPercent : 0;
+    setDiscountPercent(clampDiscountPercent(safeRequestedPercent, discountAllowance.maxAdditionalPercent));
+  };
+
   const discount = (subtotal * discountPercent) / 100;
   const total = subtotal - discount;
 
@@ -70,7 +115,7 @@ function AddServiceScreen({ order, onClose, onSubmit, products = [], moduleId = 
                   <div className="service-info">
                     <div className="service-name">{product.name}</div>
                   </div>
-                  <PermissionGate moduleId={moduleId} optionId={`${moduleId}_serviceprice`}>
+                  <PermissionGate moduleId={moduleId} optionId={resolvedServicePriceOptionId}>
                     <div className="service-price">
                       {formatPrice(vehicleType === 'SUV' ? product.suvPrice : product.sedanPrice)}
                     </div>
@@ -86,20 +131,23 @@ function AddServiceScreen({ order, onClose, onSubmit, products = [], moduleId = 
                   <span>Services:</span>
                   <span>{formatPrice(subtotal)}</span>
                 </div>
-                <PermissionGate moduleId={moduleId} optionId={`${moduleId}_servicediscount`}>
+                <PermissionGate moduleId={moduleId} optionId={resolvedServiceDiscountOptionId}>
                   <div className="price-row">
                     <span>Apply Discount:</span>
                     <div>
-                      <PermissionGate moduleId={moduleId} optionId={`${moduleId}_servicediscount_percent`}>
+                      <PermissionGate moduleId={moduleId} optionId={resolvedDiscountOptionId}>
                         <input
                           type="number"
                           min="0"
-                          max="100"
+                          max={discountAllowance.maxAdditionalPercent}
                           value={discountPercent}
-                          onChange={(e) => setDiscountPercent(parseFloat(e.target.value) || 0)}
+                          onChange={(e) => handleDiscountChange(e.target.value)}
                           style={{ width: '80px' }}
                         />
                         <span> %</span>
+                        <div style={{ fontSize: '12px', color: '#64748b', marginTop: '4px' }}>
+                          Max now: {discountAllowance.maxAdditionalPercent.toFixed(2)}% (Remaining {formatPrice(discountAllowance.remainingAmount)})
+                        </div>
                       </PermissionGate>
                     </div>
                   </div>

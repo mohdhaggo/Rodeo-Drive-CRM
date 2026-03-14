@@ -5,15 +5,35 @@ const RANGE_OPTIONS = [
   { value: '7d', label: 'Last 7 days' },
   { value: '30d', label: 'Last 30 days' },
   { value: '90d', label: 'Last 90 days' },
-]
+] as const
 
-const TREND_DATA = {
+type RangeKey = (typeof RANGE_OPTIONS)[number]['value']
+
+interface RevenueRow {
+  label: string
+  value: number
+}
+
+interface MixSegment {
+  label: string
+  value: number
+  color: string
+}
+
+interface OverviewProps {
+  onNavigate?: (target: string) => void
+  currentUser?: {
+    name?: string
+  } | null
+}
+
+const TREND_DATA: Record<RangeKey, number[]> = {
   '7d': [28, 36, 30, 44, 40, 52, 48],
   '30d': [26, 30, 28, 34, 38, 36, 40, 44, 42, 48],
   '90d': [22, 26, 24, 28, 32, 30, 36, 40, 38, 44, 46, 50],
 }
 
-const REVENUE_DATA = {
+const REVENUE_DATA: Record<RangeKey, RevenueRow[]> = {
   '7d': [
     { label: 'Labor', value: 420 },
     { label: 'Parts', value: 310 },
@@ -37,7 +57,7 @@ const REVENUE_DATA = {
   ],
 }
 
-const MIX_DATA = {
+const MIX_DATA: Record<RangeKey, MixSegment[]> = {
   '7d': [
     { label: 'Inspection', value: 28, color: '#ff8a65' },
     { label: 'Service', value: 34, color: '#f6c453' },
@@ -81,12 +101,12 @@ const ACTIVITY_LIST = [
   { title: 'Invoice #7721 paid', time: '2 hrs ago', owner: 'Finance' },
 ]
 
-const formatCurrency = (value) => `$${value.toLocaleString('en-US')}`
+const formatCurrency = (value: number): string => `$${value.toLocaleString('en-US')}`
 
-const buildConicGradient = (segments) => {
-  const total = segments.reduce((sum, item) => sum + item.value, 0)
+const buildConicGradient = (segments: MixSegment[]): string => {
+  const total = segments.reduce((sum: number, item: MixSegment) => sum + item.value, 0)
   let start = 0
-  const parts = segments.map((item) => {
+  const parts = segments.map((item: MixSegment) => {
     const span = (item.value / total) * 360
     const segment = `${item.color} ${start}deg ${start + span}deg`
     start += span
@@ -95,12 +115,12 @@ const buildConicGradient = (segments) => {
   return `conic-gradient(${parts.join(', ')})`
 }
 
-const buildSparklinePoints = (values, width, height) => {
+const buildSparklinePoints = (values: number[], width: number, height: number): string => {
   const maxValue = Math.max(...values)
   const minValue = Math.min(...values)
   const range = maxValue - minValue || 1
   return values
-    .map((value, index) => {
+    .map((value: number, index: number) => {
       const x = (index / (values.length - 1)) * width
       const y = height - ((value - minValue) / range) * height
       return `${x.toFixed(1)},${y.toFixed(1)}`
@@ -108,10 +128,10 @@ const buildSparklinePoints = (values, width, height) => {
     .join(' ')
 }
 
-function Overview({ onNavigate, currentUser }) {
-  const [trendRange, setTrendRange] = useState('30d')
-  const [revenueRange, setRevenueRange] = useState('30d')
-  const [mixRange, setMixRange] = useState('30d')
+function Overview({ onNavigate, currentUser }: OverviewProps) {
+  const [trendRange, setTrendRange] = useState<RangeKey>('30d')
+  const [revenueRange, setRevenueRange] = useState<RangeKey>('30d')
+  const [mixRange, setMixRange] = useState<RangeKey>('30d')
 
   const trendPoints = useMemo(() => buildSparklinePoints(TREND_DATA[trendRange], 280, 80), [trendRange])
   const revenueRows = REVENUE_DATA[revenueRange]
@@ -151,7 +171,7 @@ function Overview({ onNavigate, currentUser }) {
               <h3>Job Order Momentum</h3>
               <p>Daily intake trend with completion velocity.</p>
             </div>
-            <select value={trendRange} onChange={(event) => setTrendRange(event.target.value)}>
+            <select value={trendRange} onChange={(event) => setTrendRange(event.target.value as RangeKey)}>
               {RANGE_OPTIONS.map((option) => (
                 <option key={option.value} value={option.value}>{option.label}</option>
               ))}
@@ -180,7 +200,7 @@ function Overview({ onNavigate, currentUser }) {
               <h3>Revenue Mix</h3>
               <p>Share of revenue by workflow stage.</p>
             </div>
-            <select value={mixRange} onChange={(event) => setMixRange(event.target.value)}>
+            <select value={mixRange} onChange={(event) => setMixRange(event.target.value as RangeKey)}>
               {RANGE_OPTIONS.map((option) => (
                 <option key={option.value} value={option.value}>{option.label}</option>
               ))}
@@ -208,7 +228,7 @@ function Overview({ onNavigate, currentUser }) {
               <h3>Revenue by Department</h3>
               <p>Top earning areas this period.</p>
             </div>
-            <select value={revenueRange} onChange={(event) => setRevenueRange(event.target.value)}>
+            <select value={revenueRange} onChange={(event) => setRevenueRange(event.target.value as RangeKey)}>
               {RANGE_OPTIONS.map((option) => (
                 <option key={option.value} value={option.value}>{option.label}</option>
               ))}

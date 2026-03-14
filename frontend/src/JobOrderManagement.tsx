@@ -1,28 +1,67 @@
 import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import './JobOrderManagement.css';
-import { getCustomers, getStoredJobOrders } from './demoData';
+import { getCustomers } from './demoData';
 import { jobOrderService } from './amplifyService';
 import SuccessPopup from './SuccessPopup';
 import PermissionGate from './PermissionGate';
 import AddServiceScreen from './AddServiceScreen';
 import { PRODUCT_CATALOG } from './productCatalog';
+import { clampDiscountPercent, getDiscountAllowance, parseCurrencyValue } from './discountLimits';
 
 // ============================================
 // DEMO DATA
 // ============================================
 // Get customers from shared demo data and merge with saved customers
+interface CustomerRecord {
+  id?: string | number;
+  [key: string]: any;
+}
+
 const getDemoAndSavedCustomers = () => {
-  const demoCustomers = getCustomers();
-  const savedCustomers = JSON.parse(localStorage.getItem('jobOrderCustomers') || '[]');
+  const demoCustomersRaw = getCustomers() as unknown;
+  const demoCustomers: CustomerRecord[] = Array.isArray(demoCustomersRaw)
+    ? (demoCustomersRaw as CustomerRecord[])
+    : [];
+
+  const savedCustomersRaw: unknown = JSON.parse(localStorage.getItem('jobOrderCustomers') || '[]');
+  const savedCustomers: CustomerRecord[] = Array.isArray(savedCustomersRaw)
+    ? (savedCustomersRaw as CustomerRecord[])
+    : [];
+
   // Merge saved customers with demo customers (avoiding duplicates)
-  const allCustomers = [...demoCustomers];
-  savedCustomers.forEach((saved: any) => {
-    if (!allCustomers.some(customer => customer.id === saved.id)) {
+  const allCustomers: CustomerRecord[] = [...demoCustomers];
+  savedCustomers.forEach((saved: CustomerRecord) => {
+    if (!allCustomers.some((customer: CustomerRecord) => customer.id === saved.id)) {
       allCustomers.push(saved);
     }
   });
   return allCustomers;
+};
+
+const getLocalJobOrders = (): any[] => {
+  try {
+    const raw = JSON.parse(localStorage.getItem('jobOrders') || '[]');
+    return Array.isArray(raw) ? raw : [];
+  } catch {
+    return [];
+  }
+};
+
+const mergeJobOrders = (localOrders: any[], amplifyOrders: any[]): any[] => {
+  const orderMap = new Map<string, any>();
+
+  [...localOrders, ...amplifyOrders].forEach((order: any) => {
+    if (!order?.id) {
+      return;
+    }
+
+    if (!orderMap.has(order.id)) {
+      orderMap.set(order.id, order);
+    }
+  });
+
+  return Array.from(orderMap.values());
 };
 
 // ============================================
@@ -59,15 +98,16 @@ function JobOrderManagement({ currentUser, navigationData, onClearNavigation, on
   // Initialize demo data on mount
   useEffect(() => {
     const loadJobOrders = async () => {
+      const localOrders = getLocalJobOrders();
+
       try {
         const amplifyJobOrders = await jobOrderService.getAll();
+        const mergedOrders = mergeJobOrders(localOrders, amplifyJobOrders || []);
         console.log('✅ Loaded job orders from Amplify:', amplifyJobOrders);
-        setDemoOrders(amplifyJobOrders || []);
+        setDemoOrders(mergedOrders);
       } catch (error) {
         console.error('❌ Error loading job orders from Amplify:', error);
-        // Fall back to localStorage
-        const demoJobOrders = getStoredJobOrders();
-        setDemoOrders(demoJobOrders);
+        setDemoOrders(localOrders);
       }
     };
     
@@ -78,14 +118,16 @@ function JobOrderManagement({ currentUser, navigationData, onClearNavigation, on
   useEffect(() => {
     if (screenState === 'main') {
       const loadJobOrders = async () => {
+        const localOrders = getLocalJobOrders();
+
         try {
           const amplifyJobOrders = await jobOrderService.getAll();
+          const mergedOrders = mergeJobOrders(localOrders, amplifyJobOrders || []);
           console.log('✅ Reloaded job orders from Amplify');
-          setDemoOrders(amplifyJobOrders || []);
+          setDemoOrders(mergedOrders);
         } catch (error) {
           console.error('Error reloading job orders:', error);
-          const refreshedOrders = getStoredJobOrders();
-          setDemoOrders(refreshedOrders);
+          setDemoOrders(localOrders);
         }
       };
       
@@ -152,12 +194,20 @@ function JobOrderManagement({ currentUser, navigationData, onClearNavigation, on
     const invoiceNumber = `INV-${year}-${String(Math.floor(Math.random() * 1000000)).padStart(6, '0')}`;
     const billId = currentAddServiceOrder.billing?.billId || `BILL-${year}-${String(Math.floor(Math.random() * 1000000)).padStart(6, '0')}`;
 
-    const subtotal = selectedServices.reduce((sum: number, s: any) => sum + (s.price || 0), 0);
-    const discount = (subtotal * (discountPercent || 0)) / 100;
-    const netAmount = subtotal - discount;
-
     const existingTotal = parseAmount(currentAddServiceOrder.billing?.totalAmount);
     const existingDiscount = parseAmount(currentAddServiceOrder.billing?.discount);
+    const subtotal = selectedServices.reduce((sum: number, s: any) => sum + (s.price || 0), 0);
+    const addServiceDiscountAllowance = getDiscountAllowance({
+      optionId: 'joborder_servicediscount_percent',
+      totalAmount: existingTotal + subtotal,
+      existingDiscountAmount: existingDiscount,
+      currentDiscountBaseAmount: subtotal,
+      fallbackPercent: 100,
+    });
+    const safeDiscountPercent = clampDiscountPercent(discountPercent || 0, addServiceDiscountAllowance.maxAdditionalPercent);
+    const discount = (subtotal * safeDiscountPercent) / 100;
+    const netAmount = subtotal - discount;
+
     const existingNet = parseAmount(currentAddServiceOrder.billing?.netAmount);
     const existingPaid = parseAmount(currentAddServiceOrder.billing?.amountPaid);
 
@@ -290,7 +340,7 @@ function JobOrderManagement({ currentUser, navigationData, onClearNavigation, on
           onSearchChange={setSearchQuery}
           onViewDetails={(order: any) => {
             // Reload from localStorage to get the latest data
-            const freshOrders = getStoredJobOrders();
+            const freshOrders = mergeJobOrders(getLocalJobOrders(), demoOrders);
             const freshOrder = freshOrders.find((o: any) => o.id === order.id) || order;
             setCurrentDetailsOrder(freshOrder);
             setScreenState('details');
@@ -332,10 +382,10 @@ function JobOrderManagement({ currentUser, navigationData, onClearNavigation, on
           }}
           prefill={newJobPrefill}
           onSubmit={(newOrder: any) => {
-            const savedOrders = JSON.parse(localStorage.getItem('jobOrders') || '[]');
-            const updatedOrders = [newOrder, ...savedOrders];
+            const savedOrders = getLocalJobOrders();
+            const updatedOrders = mergeJobOrders([newOrder], savedOrders);
             localStorage.setItem('jobOrders', JSON.stringify(updatedOrders));
-            setDemoOrders([newOrder, ...demoOrders]);
+            setDemoOrders((prevOrders: any[]) => mergeJobOrders([newOrder], prevOrders));
             
             // Set popup data first
             setSubmittedOrderId(newOrder.id);
@@ -359,6 +409,9 @@ function JobOrderManagement({ currentUser, navigationData, onClearNavigation, on
           products={PRODUCT_CATALOG}
           moduleId="joborder"
           permissionId="joborder_pricesummary"
+          discountOptionId="joborder_servicediscount_percent"
+          existingTotalAmount={parseCurrencyValue(currentAddServiceOrder?.billing?.totalAmount)}
+          existingDiscountAmount={parseCurrencyValue(currentAddServiceOrder?.billing?.discount)}
         />
       )}
       {inspectionModalOpen && currentInspectionItem && (
@@ -810,6 +863,30 @@ function NewJobScreen({ currentUser, onClose, onSubmit, prefill }: NewJobScreenP
   const [expectedDeliveryTime, setExpectedDeliveryTime] = useState<string>('');
   const [vehicleCompletedServices, setVehicleCompletedServices] = useState<any[]>([]);
 
+  const activeServiceOrder = selectedCompletedServices.length > 0 ? selectedCompletedServices[0] : null;
+  const servicesToBillForCurrentStep = orderType === 'service' ? additionalServices : selectedServices;
+  const currentStepSubtotal = servicesToBillForCurrentStep.reduce((sum: number, service: any) => sum + (service.price || 0), 0);
+  const priorOrderTotal = orderType === 'service' ? parseCurrencyValue(activeServiceOrder?.billing?.totalAmount) : 0;
+  const priorOrderDiscount = orderType === 'service' ? parseCurrencyValue(activeServiceOrder?.billing?.discount) : 0;
+  const discountOptionId = orderType === 'service' ? 'joborder_servicediscount_percent' : 'joborder_discount_percent';
+  const discountAllowance = getDiscountAllowance({
+    optionId: discountOptionId,
+    totalAmount: priorOrderTotal + currentStepSubtotal,
+    existingDiscountAmount: priorOrderDiscount,
+    currentDiscountBaseAmount: currentStepSubtotal,
+    fallbackPercent: 100,
+    user: currentUser,
+  });
+  const maxDiscountPercent = discountAllowance.maxAdditionalPercent;
+
+  const handleDiscountPercentChange = (value: number) => {
+    setDiscountPercent(clampDiscountPercent(value, maxDiscountPercent));
+  };
+
+  useEffect(() => {
+    setDiscountPercent((prev) => clampDiscountPercent(prev, maxDiscountPercent));
+  }, [maxDiscountPercent]);
+
   const formatAmount = (value: any): string => `QAR ${Number(value || 0).toLocaleString()}`;
 
   const handleVehicleSelected = (vehicleInfo: any) => {
@@ -866,9 +943,19 @@ function NewJobScreen({ currentUser, onClose, onSubmit, prefill }: NewJobScreenP
     ));
     
     // Calculate billing amounts
-    const servicesToBill = orderType === 'service' ? additionalServices : selectedServices;
+    const isServiceOrder = orderType === 'service';
+    const servicesToBill = isServiceOrder ? additionalServices : selectedServices;
     const subtotal = servicesToBill.reduce((sum: number, s: any) => sum + (s.price || 0), 0);
-    const discount = (subtotal * (discountPercent || 0)) / 100;
+    const submitDiscountAllowance = getDiscountAllowance({
+      optionId: isServiceOrder ? 'joborder_servicediscount_percent' : 'joborder_discount_percent',
+      totalAmount: (isServiceOrder ? parseCurrencyValue(selectedOrder?.billing?.totalAmount) : 0) + subtotal,
+      existingDiscountAmount: isServiceOrder ? parseCurrencyValue(selectedOrder?.billing?.discount) : 0,
+      currentDiscountBaseAmount: subtotal,
+      fallbackPercent: 100,
+      user: currentUser,
+    });
+    const safeDiscountPercent = clampDiscountPercent(discountPercent || 0, submitDiscountAllowance.maxAdditionalPercent);
+    const discount = (subtotal * safeDiscountPercent) / 100;
     const netAmount = subtotal - discount;
     
     // Generate master billing ID and first invoice
@@ -1091,7 +1178,8 @@ function NewJobScreen({ currentUser, onClose, onSubmit, prefill }: NewJobScreenP
             setSelectedServices={setSelectedServices}
             vehicleType={vehicleData?.carType || vehicleData?.vehicleType || 'SUV'}
             discountPercent={discountPercent}
-            setDiscountPercent={setDiscountPercent}
+            setDiscountPercent={handleDiscountPercentChange}
+            maxDiscountPercent={maxDiscountPercent}
             orderNotes={orderNotes}
             setOrderNotes={setOrderNotes}
             expectedDeliveryDate={expectedDeliveryDate}
@@ -1115,7 +1203,8 @@ function NewJobScreen({ currentUser, onClose, onSubmit, prefill }: NewJobScreenP
             additionalServices={additionalServices}
             setAdditionalServices={setAdditionalServices}
             discountPercent={discountPercent}
-            setDiscountPercent={setDiscountPercent}
+            setDiscountPercent={handleDiscountPercentChange}
+            maxDiscountPercent={maxDiscountPercent}
             orderNotes={orderNotes}
             setOrderNotes={setOrderNotes}
             expectedDeliveryDate={expectedDeliveryDate}
@@ -1406,6 +1495,7 @@ interface StepThreeCompletedServicesProps {
   setAdditionalServices: (services: any[]) => void;
   discountPercent: number;
   setDiscountPercent: (percent: number) => void;
+  maxDiscountPercent: number;
   orderNotes: string;
   setOrderNotes: (notes: string) => void;
   expectedDeliveryDate: string;
@@ -1424,6 +1514,7 @@ function StepThreeCompletedServices({
   setAdditionalServices,
   discountPercent,
   setDiscountPercent,
+  maxDiscountPercent,
   orderNotes,
   setOrderNotes,
   expectedDeliveryDate,
@@ -1749,12 +1840,15 @@ function StepThreeCompletedServices({
                       <input
                         type="number"
                         min="0"
-                        max="100"
+                        max={maxDiscountPercent}
                         value={discountPercent}
-                        onChange={(e) => setDiscountPercent(parseFloat(e.target.value))}
+                        onChange={(e) => setDiscountPercent(parseFloat(e.target.value) || 0)}
                         style={{ width: '80px' }}
                       />
                       <span> %</span>
+                      <div style={{ fontSize: '12px', color: '#7f8c8d', marginTop: '4px' }}>
+                        Max allowed now: {maxDiscountPercent.toFixed(2)}%
+                      </div>
                     </PermissionGate>
                   </div>
                 </div>
@@ -2715,6 +2809,7 @@ interface StepThreeServicesProps {
   vehicleType: any;
   discountPercent: number;
   setDiscountPercent: (percent: number) => void;
+  maxDiscountPercent: number;
   orderNotes: string;
   setOrderNotes: (notes: string) => void;
   expectedDeliveryDate: string;
@@ -2731,6 +2826,7 @@ function StepThreeServices({
   vehicleType,
   discountPercent,
   setDiscountPercent,
+  maxDiscountPercent,
   orderNotes,
   setOrderNotes,
   expectedDeliveryDate,
@@ -2864,12 +2960,15 @@ function StepThreeServices({
               <input
                 type="number"
                 min="0"
-                max="100"
+                max={maxDiscountPercent}
                 value={discountPercent}
-                onChange={(e) => setDiscountPercent(parseFloat(e.target.value))}
+                onChange={(e) => setDiscountPercent(parseFloat(e.target.value) || 0)}
                 style={{ width: '80px', color: '#333', backgroundColor: '#fff' }}
               />
               <span> %</span>
+              <div style={{ fontSize: '12px', color: '#7f8c8d', marginTop: '4px' }}>
+                Max allowed now: {maxDiscountPercent.toFixed(2)}%
+              </div>
             </div>
           </div>
           <div className="price-row discount-amount">

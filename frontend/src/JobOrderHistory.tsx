@@ -1,11 +1,183 @@
-﻿import React, { useState, useEffect, useCallback } from 'react';
+﻿import { useState, useEffect } from 'react';
 import './JobOrderHistory.css';
 import { getStoredJobOrders } from './demoData';
 import PermissionGate from './PermissionGate';
 
+interface JobOrderSummary {
+  createDate?: string;
+  createdBy?: string;
+  expectedDelivery?: string;
+}
+
+interface RoadmapStep {
+  step: string;
+  stepStatus: string;
+  startTimestamp?: string | null;
+  endTimestamp?: string | null;
+  actionBy?: string | null;
+  status: string;
+}
+
+interface CustomerDetails {
+  customerId?: string;
+  name?: string;
+  mobile?: string;
+  email?: string;
+  address?: string;
+  registeredVehiclesCount?: number;
+  registeredVehicles?: string;
+  completedServicesCount?: number;
+  customerSince?: string;
+}
+
+interface VehicleDetails {
+  vehicleId: string;
+  ownedBy?: string;
+  make?: string;
+  model?: string;
+  year?: string;
+  type?: string;
+  color?: string;
+  plateNumber?: string;
+  vin?: string;
+  completedServices?: number;
+  registrationDate?: string;
+}
+
+interface ServiceItem {
+  name: string;
+  status?: string;
+  started?: string | null;
+  ended?: string | null;
+  duration?: string | null;
+  technician?: string;
+  notes?: string;
+  qualityCheckResult?: string;
+  qcResult?: string;
+  qcStatus?: string;
+  qualityStatus?: string;
+}
+
+type ServiceEntry = string | ServiceItem;
+
+interface AdditionalServiceRequest {
+  requestId: string;
+  requestDate: string;
+  requestedService: string;
+  status: string;
+  customerNotes?: string;
+  estimatedPrice?: string;
+}
+
+interface InvoiceInfo {
+  number: string;
+  amount: string;
+  discount: string;
+  status: string;
+  paymentMethod?: string | null;
+  services?: string[];
+}
+
+interface BillingInfo {
+  billId?: string;
+  totalAmount?: string;
+  discount?: string;
+  netAmount?: string;
+  amountPaid?: string;
+  balanceDue?: string;
+  paymentMethod?: string | null;
+  invoices?: InvoiceInfo[];
+}
+
+interface ExitPermitInfo {
+  permitId?: string;
+  createDate?: string;
+  nextServiceDate?: string;
+  createdBy?: string;
+  collectedBy?: string;
+  collectedByMobile?: string;
+}
+
+interface PaymentActivity {
+  serial: number;
+  amount: string;
+  discount: string;
+  paymentMethod?: string | null;
+  cashierName: string;
+  timestamp: string;
+}
+
+interface DocumentInfo {
+  name: string;
+  type: string;
+  category?: string;
+  paymentReference?: string;
+  uploadDate?: string;
+  uploadedBy?: string;
+  url?: string;
+  fileData?: string;
+}
+
+interface ServiceOrderReference {
+  services?: ServiceEntry[];
+}
+
+interface JobOrder {
+  id: string;
+  orderType: string;
+  customerName: string;
+  mobile: string;
+  vehiclePlate: string;
+  workStatus: string;
+  paymentStatus: string;
+  createDate: string;
+  jobOrderSummary?: JobOrderSummary;
+  roadmap?: RoadmapStep[];
+  customerDetails?: CustomerDetails;
+  vehicleDetails: VehicleDetails;
+  services?: ServiceEntry[];
+  additionalServiceRequests?: AdditionalServiceRequest[];
+  billing: BillingInfo;
+  exitPermit?: ExitPermitInfo;
+  paymentActivityLog?: PaymentActivity[];
+  serviceOrderReference?: ServiceOrderReference | null;
+  qualityCheckResults?: string[] | Record<string, string>;
+  customerNotes?: string | null;
+  documents?: DocumentInfo[];
+}
+
+interface JobOrderHistoryProps {
+  navigationData?: {
+    openDetails?: boolean;
+    jobOrder?: JobOrder;
+    source?: string;
+    returnToVehicle?: string;
+  };
+  onClearNavigation?: () => void;
+  onNavigateBack?: (source?: string, vehicleId?: string) => void;
+}
+
+interface ExportDates {
+  startDate: string;
+  endDate: string;
+}
+
+interface JobOrderDetailsViewProps {
+  order: JobOrder;
+  onClose: () => void;
+}
+
+interface OrderCardProps {
+  order: JobOrder;
+}
+
+interface PaymentActivityLogCardProps {
+  payments: PaymentActivity[];
+}
+
 // Demo data generator - exported for use in other modules
-export const generateDemoJobOrders = () => {
-  const demoJobOrders = [
+export const generateDemoJobOrders = (): JobOrder[] => {
+  const demoJobOrders: JobOrder[] = [
     {
       id: 'JO-2023-001245',
       orderType: 'New Job Order',
@@ -374,7 +546,7 @@ export const generateDemoJobOrders = () => {
     const orderTypeIndex = i % orderTypes.length;
     const vehicleId = vehicleIds[i % vehicleIds.length];
     
-    const newOrder = JSON.parse(JSON.stringify(template));
+    const newOrder: JobOrder = JSON.parse(JSON.stringify(template));
     newOrder.id = `JO-2023-00${1242 - i}`;
     newOrder.orderType = orderTypes[orderTypeIndex];
     newOrder.customerName = `Customer ${1242 - i}`;
@@ -390,7 +562,7 @@ export const generateDemoJobOrders = () => {
     const template = demoJobOrders[i % 3];
     const vehicleId = vehicleIds[i % 10]; // Focus on first 10 vehicles
     
-    const newOrder = JSON.parse(JSON.stringify(template));
+    const newOrder: JobOrder = JSON.parse(JSON.stringify(template));
     newOrder.id = `JO-2024-00${100 + i}`;
     newOrder.orderType = orderTypes[i % 2];
     newOrder.workStatus = 'Completed'; // Always completed
@@ -402,32 +574,32 @@ export const generateDemoJobOrders = () => {
     demoJobOrders.push(newOrder);
   }
 
-  return demoJobOrders.filter(order => 
+  return demoJobOrders.filter((order: JobOrder) =>
     ['Completed', 'Cancelled'].includes(order.workStatus)
   );
 };
 
-const JobOrderHistory = ({ currentUser, navigationData, onClearNavigation, onNavigateBack }) => {
+const JobOrderHistory = ({ navigationData, onClearNavigation, onNavigateBack }: JobOrderHistoryProps) => {
   const [searchQuery, setSearchQuery] = useState('');
-  const [jobOrders, setJobOrders] = useState([]);
-  const [filteredOrders, setFilteredOrders] = useState([]);
-  const [selectedOrder, setSelectedOrder] = useState(null);
+  const [jobOrders, setJobOrders] = useState<JobOrder[]>([]);
+  const [filteredOrders, setFilteredOrders] = useState<JobOrder[]>([]);
+  const [selectedOrder, setSelectedOrder] = useState<JobOrder | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(20);
   const [showExportModal, setShowExportModal] = useState(false);
-  const [exportDates, setExportDates] = useState({
+  const [exportDates, setExportDates] = useState<ExportDates>({
     startDate: '2023-10-01',
     endDate: '2023-10-31'
   });
-  const [navigationSource, setNavigationSource] = useState(null);
-  const [returnToVehicleId, setReturnToVehicleId] = useState(null);
+  const [navigationSource, setNavigationSource] = useState<string | null>(null);
+  const [returnToVehicleId, setReturnToVehicleId] = useState<string | null>(null);
 
   // Initialize demo data
   useEffect(() => {
-    const orders = getStoredJobOrders().filter(order =>
+    const orders = (getStoredJobOrders() as JobOrder[]).filter((order: JobOrder) =>
       ['Completed', 'Cancelled'].includes(order.workStatus)
     );
-    orders.sort((a, b) => {
+    orders.sort((a: JobOrder, b: JobOrder) => {
       const dateA = parseDateString(a.createDate);
       const dateB = parseDateString(b.createDate);
       return dateB - dateA;
@@ -468,7 +640,7 @@ const JobOrderHistory = ({ currentUser, navigationData, onClearNavigation, onNav
     if (!searchQuery.trim()) {
       setFilteredOrders(jobOrders);
     } else {
-      const results = jobOrders.filter(order => {
+      const results = jobOrders.filter((order: JobOrder) => {
         const query = searchQuery.toLowerCase();
         return (
           order.id.toLowerCase().includes(query) ||
@@ -484,18 +656,18 @@ const JobOrderHistory = ({ currentUser, navigationData, onClearNavigation, onNav
     setCurrentPage(1);
   }, [searchQuery, jobOrders]);
 
-  const parseDateString = (dateStr) => {
+  const parseDateString = (dateStr: string): number => {
     const parts = dateStr.split(' ');
     if (parts.length === 3) {
-      const day = parseInt(parts[0]);
+      const day = Number.parseInt(parts[0], 10);
       const month = getMonthNumber(parts[1]);
-      const year = parseInt(parts[2]);
-      return new Date(year, month, day);
+      const year = Number.parseInt(parts[2], 10);
+      return new Date(year, month, day).getTime();
     }
-    return new Date();
+    return Date.now();
   };
 
-  const getMonthNumber = (monthStr) => {
+  const getMonthNumber = (monthStr: string): number => {
     const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
     return months.indexOf(monthStr);
   };
@@ -504,7 +676,7 @@ const JobOrderHistory = ({ currentUser, navigationData, onClearNavigation, onNav
   const startIndex = (currentPage - 1) * pageSize;
   const paginatedOrders = filteredOrders.slice(startIndex, startIndex + pageSize);
 
-  const getStatusClass = (status) => {
+  const getStatusClass = (status: string): string => {
     switch(status) {
       case 'Completed': return 'status-completed';
       case 'Cancelled': return 'status-cancelled';
@@ -512,27 +684,28 @@ const JobOrderHistory = ({ currentUser, navigationData, onClearNavigation, onNav
     }
   };
 
-  const getPaymentStatusClass = (status) => {
+  const getPaymentStatusClass = (status: string): string => {
     if (status === 'Fully Paid') return 'payment-full';
     if (status === 'Partially Paid') return 'payment-partial';
     return 'payment-unpaid';
   };
 
-  const getOrderTypeClass = (type) => {
+  const getOrderTypeClass = (type: string): string => {
     return type === 'New Job Order' ? 'order-type-new-job' : 'order-type-service';
   };
 
   const handleExport = () => {
-    const filtered = jobOrders.filter(order => {
+    const filtered = jobOrders.filter((order: JobOrder) => {
       const orderDate = parseDateString(order.createDate);
-      const start = new Date(exportDates.startDate);
-      const end = new Date(exportDates.endDate);
-      end.setHours(23, 59, 59, 999);
+      const start = new Date(exportDates.startDate).getTime();
+      const endDate = new Date(exportDates.endDate);
+      endDate.setHours(23, 59, 59, 999);
+      const end = endDate.getTime();
       return orderDate >= start && orderDate <= end;
     });
 
     let csvContent = "Job Order ID,Order Type,Customer Name,Mobile,Vehicle Plate,Work Status,Payment Status,Create Date\n";
-    filtered.forEach(order => {
+    filtered.forEach((order: JobOrder) => {
       csvContent += `"${order.id}","${order.orderType}","${order.customerName}","${order.mobile}","${order.vehiclePlate}","${order.workStatus}","${order.paymentStatus}","${order.createDate}"\n`;
     });
 
@@ -556,10 +729,10 @@ const JobOrderHistory = ({ currentUser, navigationData, onClearNavigation, onNav
         onClose={() => {
           setSelectedOrder(null);
           // Reload data from localStorage to get latest updates
-          const refreshedOrders = getStoredJobOrders().filter(order =>
+          const refreshedOrders = (getStoredJobOrders() as JobOrder[]).filter((order: JobOrder) =>
             ['Completed', 'Cancelled'].includes(order.workStatus)
           );
-          refreshedOrders.sort((a, b) => {
+          refreshedOrders.sort((a: JobOrder, b: JobOrder) => {
             const dateA = parseDateString(a.createDate);
             const dateB = parseDateString(b.createDate);
             return dateB - dateA;
@@ -571,7 +744,7 @@ const JobOrderHistory = ({ currentUser, navigationData, onClearNavigation, onNav
             const vehicleId = returnToVehicleId;
             setNavigationSource(null);
             setReturnToVehicleId(null);
-            onNavigateBack(navigationSource, vehicleId);
+            onNavigateBack(navigationSource || undefined, vehicleId || undefined);
           }
         }}
       />
@@ -668,7 +841,7 @@ const JobOrderHistory = ({ currentUser, navigationData, onClearNavigation, onNav
                     </tr>
                   </thead>
                   <tbody>
-                    {paginatedOrders.map(order => (
+                    {paginatedOrders.map((order: JobOrder) => (
                       <tr key={order.id}>
                         <td className="date-column">{order.createDate}</td>
                         <td>{order.id}</td>
@@ -684,8 +857,8 @@ const JobOrderHistory = ({ currentUser, navigationData, onClearNavigation, onNav
                               className="btn-view"
                               onClick={() => {
                                 // Reload from localStorage to get the latest data
-                                const freshOrders = getStoredJobOrders();
-                                const freshOrder = freshOrders.find(o => o.id === order.id) || order;
+                                const freshOrders = getStoredJobOrders() as JobOrder[];
+                                const freshOrder = freshOrders.find((o: JobOrder) => o.id === order.id) || order;
                                 setSelectedOrder(freshOrder);
                               }}
                             >
@@ -782,8 +955,8 @@ const JobOrderHistory = ({ currentUser, navigationData, onClearNavigation, onNav
 };
 
 // Details View Component
-const JobOrderDetailsView = ({ order, onClose }) => {
-  const combinedServices = order.orderType === 'Service Order'
+const JobOrderDetailsView = ({ order, onClose }: JobOrderDetailsViewProps) => {
+  const combinedServices: ServiceEntry[] = order.orderType === 'Service Order'
     ? [...(order.serviceOrderReference?.services || []), ...(order.services || [])]
     : (order.services || []);
 
@@ -906,7 +1079,7 @@ const JobOrderDetailsView = ({ order, onClose }) => {
             <div className="pim-detail-card">
               <h3><i className="fas fa-tasks"></i> Services Summary</h3>
               <div className="services-list">
-                {combinedServices.map((service, idx) => (
+                {combinedServices.map((service: ServiceEntry, idx: number) => (
                   <div key={idx} className="service-item">
                     <div className="service-header">
                       <span className="service-name">{typeof service === 'string' ? service : service.name}</span>
@@ -1036,10 +1209,10 @@ const JobOrderDetailsView = ({ order, onClose }) => {
 };
 
 // Roadmap Component - Exact copy from Job Order Management
-const RoadmapCard = ({ order }) => {
+const RoadmapCard = ({ order }: OrderCardProps) => {
   if (!order || !order.roadmap || order.roadmap.length === 0) return null;
 
-  const formatStepStatus = (status) => {
+  const formatStepStatus = (status: string): string => {
     switch (status) {
       case 'New': return 'pim-status-new';
       case 'Completed': return 'pim-status-completed';
@@ -1050,7 +1223,7 @@ const RoadmapCard = ({ order }) => {
     }
   };
 
-  const getStepStatusClass = (stepStatus) => {
+  const getStepStatusClass = (stepStatus: string): string => {
     switch (stepStatus) {
       case 'Completed': return 'pim-step-completed';
       case 'Active': return 'pim-step-active';
@@ -1062,7 +1235,7 @@ const RoadmapCard = ({ order }) => {
     }
   };
 
-  const getStepIcon = (stepStatus) => {
+  const getStepIcon = (stepStatus: string): string => {
     switch (stepStatus) {
       case 'Completed': return 'fas fa-check-circle';
       case 'Active': return 'fas fa-play-circle';
@@ -1079,7 +1252,7 @@ const RoadmapCard = ({ order }) => {
       <h3><i className="fas fa-map-signs"></i> Job Order Roadmap</h3>
       <div className="pim-roadmap-container">
         <div className="pim-roadmap-steps">
-          {order.roadmap.map((step, idx) => (
+          {order.roadmap.map((step: RoadmapStep, idx: number) => (
             <div key={idx} className={`pim-roadmap-step ${getStepStatusClass(step.stepStatus)}`}>
               <div className="pim-step-icon">
                 <i className={getStepIcon(step.stepStatus)}></i>
@@ -1113,7 +1286,7 @@ const RoadmapCard = ({ order }) => {
 };
 
 // Vehicle Details Component - Exact copy from Job Order Management
-const VehicleDetailsCard = ({ order }) => {
+const VehicleDetailsCard = ({ order }: OrderCardProps) => {
   return (
     <div className="pim-detail-card">
       <h3><i className="fas fa-car"></i> Vehicle Information</h3>
@@ -1164,12 +1337,12 @@ const VehicleDetailsCard = ({ order }) => {
 };
 
 // Quality Check List Component - Exact copy from Job Order Management
-const QualityCheckListCard = ({ order }) => {
-  const services = order.orderType === 'Service Order'
+const QualityCheckListCard = ({ order }: OrderCardProps) => {
+  const services: ServiceEntry[] = order.orderType === 'Service Order'
     ? [...(order.serviceOrderReference?.services || []), ...(Array.isArray(order.services) ? order.services : [])]
     : (Array.isArray(order.services) ? order.services : []);
 
-  const getStoredResult = (serviceName, index) => {
+  const getStoredResult = (serviceName: string, index: number): string | null => {
     const storedResults = order.qualityCheckResults;
     if (!storedResults) return null;
     if (Array.isArray(storedResults)) {
@@ -1181,7 +1354,7 @@ const QualityCheckListCard = ({ order }) => {
     return null;
   };
 
-  const getQualityCheckResult = (service, index) => {
+  const getQualityCheckResult = (service: ServiceEntry, index: number): string | null => {
     if (service && typeof service === 'object') {
       return service.qualityCheckResult || service.qcResult || service.qcStatus || service.qualityStatus || null;
     }
@@ -1194,7 +1367,7 @@ const QualityCheckListCard = ({ order }) => {
       <h3><i className="fas fa-clipboard-check"></i> Quality Check List</h3>
       <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
         {services.length > 0 ? (
-          services.map((service, idx) => {
+          services.map((service: ServiceEntry, idx: number) => {
             const serviceName = typeof service === 'string' ? service : service.name;
             const result = getQualityCheckResult(service, idx) || 'Not Evaluated';
             const isPass = result === 'Pass';
@@ -1247,8 +1420,8 @@ const QualityCheckListCard = ({ order }) => {
 };
 
 // Billing Card Component - Exact copy from Job Order Management
-const BillingCard = ({ order }) => {
-  const getPaymentMethodClass = (method) => {
+const BillingCard = ({ order }: OrderCardProps) => {
+  const getPaymentMethodClass = (method?: string | null): string => {
     if (!method) return '';
     const normalized = method.toLowerCase();
     if (normalized.includes('cash')) return 'epm-payment-method-cash';
@@ -1330,7 +1503,7 @@ const BillingCard = ({ order }) => {
             <i className="fas fa-file-invoice" style={{ color: '#3b82f6' }}></i>
             Invoice Details ({order.billing.invoices.length})
           </div>
-          {order.billing.invoices.map((invoice, idx) => (
+          {order.billing.invoices.map((invoice: InvoiceInfo, idx: number) => (
             <div key={idx} className="epm-invoice-item" style={{ 
               background: 'linear-gradient(to right, #ffffff, #fafbfc)',
               border: '1px solid #e2e8f0',
@@ -1389,7 +1562,7 @@ const BillingCard = ({ order }) => {
                 }}>
                   <i className="fas fa-list-ul"></i> Services Included:
                 </div>
-                {invoice.services?.map((service, sidx) => (
+                {invoice.services?.map((service: string, sidx: number) => (
                   <div key={sidx} className="epm-service-in-invoice" style={{ 
                     padding: '8px 0 8px 15px',
                     fontSize: '14px',
@@ -1412,8 +1585,8 @@ const BillingCard = ({ order }) => {
 };
 
 // Documents Card Component - Exact copy from Job Order Management
-const DocumentsCard = ({ order }) => {
-  const documents = Array.isArray(order.documents) ? order.documents : []
+const DocumentsCard = ({ order }: OrderCardProps) => {
+  const documents: DocumentInfo[] = Array.isArray(order.documents) ? order.documents : [];
 
   if (documents.length === 0) return null;
 
@@ -1421,7 +1594,7 @@ const DocumentsCard = ({ order }) => {
     <div className="pim-detail-card">
       <h3><i className="fas fa-folder-open"></i> Documents</h3>
       <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-        {documents.map((doc, idx) => (
+        {documents.map((doc: DocumentInfo, idx: number) => (
           <div key={idx} style={{
             padding: '15px',
             border: '1px solid #e5e7eb',
@@ -1461,12 +1634,13 @@ const DocumentsCard = ({ order }) => {
             </div>
             <button
               onClick={() => {
-                if (doc.url || doc.fileData) {
-                  const link = document.createElement('a');
-                  link.href = doc.fileData || doc.url;
-                  link.download = doc.name || 'document';
-                  link.click();
-                }
+                const downloadUrl = doc.fileData ?? doc.url;
+                if (!downloadUrl) return;
+
+                const link = document.createElement('a');
+                link.href = downloadUrl;
+                link.download = doc.name || 'document';
+                link.click();
               }}
               style={{
                 padding: '8px 16px',
@@ -1493,8 +1667,8 @@ const DocumentsCard = ({ order }) => {
 };
 
 // Payment Activity Log Component
-const PaymentActivityLogCard = ({ payments }) => {
-  const getPaymentMethodClass = (method) => {
+const PaymentActivityLogCard = ({ payments }: PaymentActivityLogCardProps) => {
+  const getPaymentMethodClass = (method?: string | null): string => {
     switch(method) {
       case 'Cash': return 'payment-method-cash';
       case 'Card': return 'payment-method-card';
@@ -1504,7 +1678,7 @@ const PaymentActivityLogCard = ({ payments }) => {
     }
   };
 
-  const sortedPayments = [...(payments || [])].sort((a, b) => b.serial - a.serial);
+  const sortedPayments = [...(payments || [])].sort((a: PaymentActivity, b: PaymentActivity) => b.serial - a.serial);
 
   return (
     <div className="payment-log-card">
@@ -1528,7 +1702,7 @@ const PaymentActivityLogCard = ({ payments }) => {
               </tr>
             </thead>
             <tbody>
-              {sortedPayments.map((payment) => (
+              {sortedPayments.map((payment: PaymentActivity) => (
                 <tr key={payment.serial}>
                   <td className="serial-column">{payment.serial}</td>
                   <td className="amount-column">{payment.amount}</td>

@@ -1,10 +1,51 @@
 import { useState, useEffect, useRef } from 'react';
-import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
+import type { ChangeEvent } from 'react';
+import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, type DragEndEvent } from '@dnd-kit/core';
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy, useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { FaGripVertical, FaUserTie, FaUsers, FaEdit, FaSave, FaCheckDouble, FaPlusCircle, FaWrench } from 'react-icons/fa';
-import { useApprovalRequests } from './ApprovalRequestsContext.tsx';
 import PermissionGate from './PermissionGate';
+
+type ServiceItem = {
+  id: string;
+  name: string;
+  order: number;
+  status: string;
+  assignedTo?: string | null;
+  technicians?: string[];
+  startTime?: string | null;
+  endTime?: string | null;
+  notes?: string;
+  customer?: string;
+  vehicle?: string;
+  priority?: string;
+  [key: string]: unknown;
+};
+
+type SortableServiceItemProps = {
+  service: ServiceItem;
+  editMode: boolean;
+  onUpdate: (serviceId: string, updates: Partial<ServiceItem>) => void;
+  availableTechs: string[];
+  availableAssignees: string[];
+  tabPrefix?: string;
+};
+
+type ServiceSummaryCardProps = {
+  jobId?: string;
+  services?: Array<ServiceItem | string>;
+  referenceServices?: Array<ServiceItem | string>;
+  onServicesReorder?: (services: ServiceItem[]) => void;
+  onServiceUpdate?: (serviceId: string, updates: Partial<ServiceItem>) => void;
+  onAddService?: () => void;
+  onFinishWork?: () => void;
+  allServicesCompleted?: boolean;
+  editMode: boolean;
+  setEditMode: (value: boolean) => void;
+  availableTechs?: string[];
+  availableAssignees?: string[];
+  tabPrefix?: string;
+};
 
 // =====================================================================
 // Sortable Service Item Component
@@ -16,8 +57,7 @@ const SortableServiceItem = ({
   availableTechs,
   availableAssignees,
   tabPrefix = 'serviceexec_assigned',
-}: any) => {
-  const { addRequest } = useApprovalRequests() as any;
+}: SortableServiceItemProps) => {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: service.id });
   
   const style = {
@@ -37,42 +77,30 @@ const SortableServiceItem = ({
         updatedTechs.push(techName);
       }
     } else {
-      updatedTechs = updatedTechs.filter(t => t !== techName);
+      updatedTechs = updatedTechs.filter((t: string) => t !== techName);
     }
     onUpdate(service.id, { technicians: updatedTechs });
   };
 
   // Handle assigned to change
-  const handleAssignedToChange = (e: any) => {
+  const handleAssignedToChange = (e: ChangeEvent<HTMLSelectElement>) => {
     onUpdate(service.id, { assignedTo: e.target.value || null });
   };
 
   // Handle status change
-  const handleStatusChange = (e: any) => {
+  const handleStatusChange = (e: ChangeEvent<HTMLSelectElement>) => {
     const newStatus = e.target.value;
-    if ((newStatus === 'Postponed' || newStatus === 'Cancelled') && service.status !== 'Pending Approval' && service.status !== newStatus) {
-      // Add approval request to context
-      addRequest({
-        id: service.id,
-        customer: service.customer,
-        vehicle: service.vehicle,
-        priority: service.priority || 'normal',
-        requestedBy: service.assignedTo || 'Unknown',
-        requestDate: new Date().toLocaleString(),
-        status: 'pending',
-        ...service
-      });
-      onUpdate(service.id, { status: 'Pending Approval', requestedAction: newStatus, approvalModule: true });
-    } else {
-      const updates: Record<string, any> = { status: newStatus };
-      if (newStatus === 'Inprogress' && service.status !== 'Inprogress' && !service.startTime) {
-        updates.startTime = new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
-      }
-      if (newStatus === 'Completed' && service.status !== 'Completed' && !service.endTime) {
-        updates.endTime = new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
-      }
-      onUpdate(service.id, updates);
+    const updates: Partial<ServiceItem> = { status: newStatus };
+
+    if (newStatus === 'Inprogress' && service.status !== 'Inprogress' && !service.startTime) {
+      updates.startTime = new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
     }
+
+    if (newStatus === 'Completed' && service.status !== 'Completed' && !service.endTime) {
+      updates.endTime = new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+    }
+
+    onUpdate(service.id, updates);
   };
 
   // Close dropdown when clicking outside
@@ -112,7 +140,7 @@ const SortableServiceItem = ({
           {service.name}
         </div>
         <span className={`status-badge ${getStatusClass(service.status)} service-status-badge`}>
-          {service.status === 'Pending Approval' ? (service.requestedAction || 'Pending') : service.status}
+          {service.status}
         </span>
       </div>
 
@@ -128,7 +156,7 @@ const SortableServiceItem = ({
         </div>
         <div className="meta-item">
           <span className="meta-label">Service work status</span>
-          <span className="meta-value status-display">{service.status === 'Pending Approval' ? (service.requestedAction || 'Pending') : service.status}</span>
+          <span className="meta-value status-display">{service.status}</span>
         </div>
         <div className="meta-item">
           <span className="meta-label">Assigned to</span>
@@ -148,7 +176,7 @@ const SortableServiceItem = ({
                 onChange={handleAssignedToChange}
               >
                 <option value="">— assign —</option>
-                {availableAssignees.map((assignee: any, idx: number) => (
+                {availableAssignees.map((assignee: string, idx: number) => (
                   <option key={idx} value={assignee}>{assignee}</option>
                 ))}
               </select>
@@ -171,7 +199,7 @@ const SortableServiceItem = ({
                 </button>
                 {techDropdownOpen && (
                   <div className="tech-dropdown-content show">
-                    {availableTechs.map((tech: any, idx: number) => (
+                    {availableTechs.map((tech: string, idx: number) => (
                       <div key={idx} className="tech-option">
                         <input
                           type="checkbox"
@@ -222,7 +250,7 @@ const SortableServiceItem = ({
         </div>
         <div className="tech-badge-list">
           {service.technicians?.length ? (
-            service.technicians.map((tech: any) => (
+            service.technicians.map((tech: string) => (
               <span key={tech} className="tech-badge">{tech}</span>
             ))
           ) : (
@@ -246,26 +274,26 @@ export const ServiceSummaryCard = ({
   onServiceUpdate,
   onAddService,
   onFinishWork,
-  allServicesCompleted,
+  allServicesCompleted = false,
   editMode,
   setEditMode,
   availableTechs = [],
   availableAssignees = [],
   tabPrefix = 'serviceexec_assigned',
-}: any) => {
-  const [localServices, setLocalServices] = useState<any[]>([]);
+}: ServiceSummaryCardProps) => {
+  const [localServices, setLocalServices] = useState<ServiceItem[]>([]);
   const [hasChanges, setHasChanges] = useState<boolean>(false);
 
   // Normalize and sync services when props change
   useEffect(() => {
-    const mergedServices = referenceServices.length > 0
+    const mergedServices: Array<ServiceItem | string> = referenceServices.length > 0
       ? [...referenceServices, ...(services || [])]
       : (services || []);
-    const normalizedServices = mergedServices.map((s: any, idx: number) => {
-      const baseService = typeof s === 'string' ? { name: s } : (s || {});
+    const normalizedServices: ServiceItem[] = mergedServices.map((s: ServiceItem | string, idx: number) => {
+      const baseService: Partial<ServiceItem> = typeof s === 'string' ? { name: s } : (s || {});
       return {
         ...baseService,
-        id: baseService.id || `service-${idx}-${Date.now()}`,
+        id: baseService.id || `service-${idx}-${String(baseService.name || 'item').trim().toLowerCase().replace(/\s+/g, '-')}`,
         name: baseService.name || `Service ${idx + 1}`,
         order: baseService.order || (idx + 1),
         status: baseService.status || 'Pending',
@@ -283,63 +311,53 @@ export const ServiceSummaryCard = ({
   // DnD sensors
   const sensors = useSensors(
     useSensor(PointerSensor, {
-      distance: 8,
-    } as any),
+      activationConstraint: { distance: 8 },
+    }),
     useSensor(KeyboardSensor, {
       coordinateGetter: sortableKeyboardCoordinates,
     })
   );
 
   // Handle drag end
-  const handleDragEnd = (event: any) => {
+  const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
     
     if (!over || active.id === over.id) {
       return;
     }
 
-    const oldIndex = localServices.findIndex((s: any) => s.id === (active as any).id);
-    const newIndex = localServices.findIndex((s: any) => s.id === (over as any).id);
+    const activeId = String(active.id);
+    const overId = String(over.id);
+    const oldIndex = localServices.findIndex((s: ServiceItem) => s.id === activeId);
+    const newIndex = localServices.findIndex((s: ServiceItem) => s.id === overId);
     
     if (oldIndex === -1 || newIndex === -1) {
       return;
     }
 
-    const reordered = arrayMove(localServices, oldIndex, newIndex).map((s: any, idx: number) => ({
+    const reordered = arrayMove(localServices, oldIndex, newIndex).map((s: ServiceItem, idx: number) => ({
       ...s,
       order: idx + 1,
     }));
     
     setLocalServices(reordered);
-    onServicesReorder(reordered);
+    onServicesReorder?.(reordered);
     setHasChanges(true);
   };
 
-  // Handle approval request for postponed/cancelled
-  const handleApprovalRequest = (serviceId: string, requestedAction: string) => {
-    // Set status to Pending Approval and wait for approval module (no alert/confirm)
-    handleServiceUpdate(serviceId, {
-      status: 'Pending Approval',
-      requestedAction,
-      approvalStatus: 'pending',
-    });
-  };
-
   // Handle service update with local state management
-  const handleServiceUpdate = (serviceId: string, updates: any) => {
-    const updatedServices = localServices.map((s: any) =>
+  const handleServiceUpdate = (serviceId: string, updates: Partial<ServiceItem>) => {
+    const updatedServices = localServices.map((s: ServiceItem) =>
       s.id === serviceId ? { ...s, ...updates } : s
     );
     setLocalServices(updatedServices);
-    onServiceUpdate(serviceId, updates);
+    onServiceUpdate?.(serviceId, updates);
     setHasChanges(true);
   };
 
   // Handle add service button
   const handleAddService = () => {
-    if (onAddService) {
-      onAddService();
-    }
+    onAddService?.();
   };
 
   // Toggle edit mode
@@ -353,7 +371,7 @@ export const ServiceSummaryCard = ({
   };
 
   // Sort services by order
-  const sortedServices = [...localServices].sort((a, b) => (a.order || 0) - (b.order || 0));
+  const sortedServices = [...localServices].sort((a: ServiceItem, b: ServiceItem) => (a.order || 0) - (b.order || 0));
 
   return (
     <div className="epm-detail-card">
@@ -408,7 +426,6 @@ export const ServiceSummaryCard = ({
                   service={service}
                   editMode={editMode}
                   onUpdate={handleServiceUpdate}
-                  onApprovalRequest={handleApprovalRequest}
                   availableTechs={availableTechs}
                   availableAssignees={availableAssignees}
                   tabPrefix={tabPrefix}
@@ -426,7 +443,6 @@ export const ServiceSummaryCard = ({
                 service={service}
                 editMode={editMode}
                 onUpdate={handleServiceUpdate}
-                onApprovalRequest={handleApprovalRequest}
                 availableTechs={availableTechs}
                 availableAssignees={availableAssignees}
                 tabPrefix={tabPrefix}

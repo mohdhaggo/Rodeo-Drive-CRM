@@ -1,12 +1,284 @@
-import { useEffect, useMemo, useState, useRef } from 'react'
+import {
+  useEffect,
+  useMemo,
+  useState,
+  type ChangeEvent,
+  type MouseEvent as ReactMouseEvent
+} from 'react'
 import { createPortal } from 'react-dom'
 import inspectionListConfig from './inspectionConfig'
 import { getStoredJobOrders } from './demoData'
 import SuccessPopup from './SuccessPopup'
 import PermissionGate from './PermissionGate'
+import { clampDiscountPercent, getDiscountAllowance, parseCurrencyValue } from './discountLimits'
 import './InspectionModule.css'
 
-const YOUR_PRODUCTS = [
+type SectionKey = 'exterior' | 'interior'
+type ItemStatus = 'pass' | 'attention' | 'failed' | null
+
+interface InspectionItemConfig {
+  id: string
+  name: string
+  required: boolean
+}
+
+interface InspectionCategorySection {
+  name: string
+  items: InspectionItemConfig[]
+}
+
+interface InspectionCategoryData {
+  category: string
+  sections: InspectionCategorySection[]
+}
+
+interface InspectionGroupConfig {
+  title: string
+  items: InspectionItemConfig[]
+}
+
+interface InspectionSectionConfig {
+  title: string
+  groups: InspectionGroupConfig[]
+}
+
+interface InspectionConfigMap {
+  exterior: InspectionSectionConfig
+  interior: InspectionSectionConfig
+}
+
+interface InspectionItemState {
+  status: ItemStatus
+  comment: string
+  photos: string[]
+}
+
+interface InspectionSectionState {
+  started: boolean
+  completed: boolean
+  paused: boolean
+  notRequired: boolean
+  items: Record<string, InspectionItemState>
+}
+
+interface InspectionState {
+  exterior: InspectionSectionState
+  interior: InspectionSectionState
+}
+
+interface RoadmapStep {
+  step: string
+  stepStatus: string
+  status: string
+  startTimestamp?: string
+  endTimestamp?: string
+  actionBy?: string
+}
+
+interface ServiceObject {
+  name: string
+  status?: string
+  started?: string
+  ended?: string
+  duration?: string
+  technician?: string
+  notes?: string
+  qualityCheckResult?: string
+  qcResult?: string
+  qcStatus?: string
+}
+
+type ServiceEntry = string | ServiceObject
+
+interface InvoiceInfo {
+  number: string
+  amount: string
+  discount: string
+  status: string
+  paymentMethod?: string | null
+  services?: string[]
+}
+
+interface BillingInfo {
+  billId?: string
+  totalAmount?: string
+  discount?: string
+  netAmount?: string
+  amountPaid?: string
+  balanceDue?: string
+  paymentMethod?: string | null
+  invoices?: InvoiceInfo[]
+}
+
+interface PaymentActivity {
+  serial: number
+  amount: string
+  discount: string
+  paymentMethod?: string | null
+  cashierName: string
+  timestamp: string
+}
+
+interface ExitPermitInfo {
+  permitId?: string
+  createDate?: string
+  nextServiceDate?: string
+  createdBy?: string
+  collectedBy?: string
+  collectedByMobile?: string
+}
+
+interface DocumentInfo {
+  id?: string
+  name: string
+  type: string
+  createdAt?: string
+  uploadDate?: string
+  uploadedBy?: string
+  category?: string
+  paymentReference?: string
+  url?: string
+  fileData?: string
+}
+
+interface JobOrder {
+  id: string
+  createDate?: string
+  orderType?: string
+  customerName?: string
+  mobile?: string | number
+  vehiclePlate?: string
+  workStatus?: string
+  paymentStatus?: string
+  exitPermitStatus?: string
+  jobOrderSummary?: {
+    createDate?: string
+    createdBy?: string
+    expectedDelivery?: string
+  }
+  customerDetails?: {
+    customerId?: string
+    email?: string
+    address?: string
+    registeredVehiclesCount?: number
+    completedServicesCount?: number
+    customerSince?: string
+    [key: string]: unknown
+  }
+  vehicleDetails?: {
+    plateNumber?: string
+    type?: string
+    make?: string
+    model?: string
+    year?: string
+    mileage?: string
+    vehicleId?: string
+    ownedBy?: string
+    color?: string
+    vin?: string
+    registrationDate?: string
+    [key: string]: unknown
+  }
+  serviceOrderReference?: {
+    services?: ServiceEntry[]
+  } | null
+  services?: ServiceEntry[]
+  roadmap?: RoadmapStep[]
+  billing?: BillingInfo
+  paymentActivityLog?: PaymentActivity[]
+  exitPermit?: ExitPermitInfo
+  documents?: DocumentInfo[]
+  customerNotes?: string | null
+  [key: string]: unknown
+}
+
+interface InspectionJob {
+  id: string
+  createDate: string
+  orderType: string
+  customerName: string
+  mobile: string
+  vehiclePlate: string
+  workStatus: string
+  status: string
+}
+
+interface DetailData {
+  jobOrderId: string
+  orderType: string
+  createDate: string
+  createdBy: string
+  expectedDelivery: string
+  workStatus: string
+  paymentStatus: string
+  exitPermitStatus: string
+  customerId: string
+  email: string
+  address: string
+  registeredVehicles: number
+  completedServices: number
+  customerSince: string
+  vehicleId: string
+  vehicleModel: string
+  year: string
+  type: string
+  color: string
+  vin: string
+  mileage: string
+  ownedBy: string
+  registrationDate: string
+  serviceOrderReference: { services?: ServiceEntry[] } | null
+  services: ServiceEntry[]
+  roadmap: RoadmapStep[]
+  customerNotes: string | null
+  make?: string
+  model?: string
+}
+
+interface SelectedService {
+  name: string
+  price: number
+}
+
+interface AddServicePayload {
+  selectedServices: SelectedService[]
+  discountPercent: number
+}
+
+interface InspectionConfirmData {
+  title: string
+  message: string
+  onConfirm: (() => void | Promise<void>) | null
+}
+
+interface ProductPrice {
+  name: string
+  suvPrice: number
+  sedanPrice: number
+}
+
+interface BuildInspectionReportArgs {
+  order: JobOrder | undefined
+  detailData: DetailData
+  activeJob: InspectionJob | null
+  inspectionState: InspectionState
+  sectionConfig: InspectionConfigMap
+}
+
+interface InspectionModuleProps {
+  currentUser?: {
+    name?: string
+  } | null
+}
+
+interface AddServiceScreenProps {
+  order: JobOrder
+  products?: ProductPrice[]
+  onClose: () => void
+  onSubmit: (payload: AddServicePayload) => void
+}
+
+const YOUR_PRODUCTS: ProductPrice[] = [
   { name: "Extra Cool Tint", suvPrice: 3200, sedanPrice: 2900 },
   { name: "UV Protection Film", suvPrice: 2500, sedanPrice: 2200 },
   { name: "Cool Shade Tint", suvPrice: 1800, sedanPrice: 1500 },
@@ -39,14 +311,17 @@ const YOUR_PRODUCTS = [
   { name: "Pedal Protection (Each)", suvPrice: 400, sedanPrice: 400 }
 ]
 
-const buildSectionState = (sectionConfig, sectionKey) => {
+const buildSectionState = (
+  sectionConfig: InspectionConfigMap,
+  sectionKey: SectionKey
+): InspectionSectionState => {
   const items = sectionConfig[sectionKey]?.groups
     ? sectionConfig[sectionKey].groups
-    .flatMap((group) => group.items)
-    .reduce((acc, item) => {
-      acc[item.id] = { status: null, comment: '', photos: [] }
-      return acc
-    }, {})
+        .flatMap((group: InspectionGroupConfig) => group.items)
+        .reduce<Record<string, InspectionItemState>>((acc, item: InspectionItemConfig) => {
+          acc[item.id] = { status: null, comment: '', photos: [] }
+          return acc
+        }, {})
     : {}
 
   return {
@@ -58,12 +333,14 @@ const buildSectionState = (sectionConfig, sectionKey) => {
   }
 }
 
-const buildInitialInspectionState = (sectionConfig) => ({
+const buildInitialInspectionState = (
+  sectionConfig: InspectionConfigMap
+): InspectionState => ({
   exterior: buildSectionState(sectionConfig, 'exterior'),
   interior: buildSectionState(sectionConfig, 'interior')
 })
 
-const defaultDetailData = {
+const defaultDetailData: DetailData = {
   jobOrderId: 'JO-2026-176638',
   orderType: 'New Job Order',
   createDate: '2/10/2026, 9:06:33 AM',
@@ -97,45 +374,45 @@ const defaultDetailData = {
   customerNotes: null
 }
 
-const mapOrderToInspectionJob = (order) => ({
+const mapOrderToInspectionJob = (order: JobOrder): InspectionJob => ({
   id: order.id,
   createDate: order.jobOrderSummary?.createDate || order.createDate || 'Not specified',
   orderType: order.orderType || 'New Job Order',
-  customerName: order.customerName,
-  mobile: order.mobile,
+  customerName: order.customerName || 'N/A',
+  mobile: String(order.mobile ?? 'N/A'),
   vehiclePlate: order.vehiclePlate || order.vehicleDetails?.plateNumber || 'Not specified',
   workStatus: order.workStatus || 'New Request',
   status: order.workStatus === 'New Request' ? 'New Job Order' : 'Inspection'
 })
 
-const filterInspectionOrders = (orders) =>
-  orders.filter((order) => ['New Request', 'Inspection'].includes(order.workStatus))
+const filterInspectionOrders = (orders: JobOrder[]): JobOrder[] =>
+  orders.filter((order: JobOrder) => ['New Request', 'Inspection'].includes(order.workStatus || ''))
 
-function InspectionModule({ currentUser }) {
-  const [inspectionConfig, setInspectionConfig] = useState(() => {
+function InspectionModule({ currentUser }: InspectionModuleProps) {
+  const [inspectionConfig, setInspectionConfig] = useState<InspectionCategoryData[]>(() => {
     const stored = localStorage.getItem('inspection_list_config')
     if (stored) {
       try {
-        return JSON.parse(stored)
+        return JSON.parse(stored) as InspectionCategoryData[]
       } catch {
-        return inspectionListConfig
+        return inspectionListConfig as InspectionCategoryData[]
       }
     }
-    return inspectionListConfig
+    return inspectionListConfig as InspectionCategoryData[]
   })
 
   useEffect(() => {
     const handleConfigUpdate = () => {
       const stored = localStorage.getItem('inspection_list_config')
       if (!stored) {
-        setInspectionConfig(inspectionListConfig)
+        setInspectionConfig(inspectionListConfig as InspectionCategoryData[])
         return
       }
 
       try {
-        setInspectionConfig(JSON.parse(stored))
+        setInspectionConfig(JSON.parse(stored) as InspectionCategoryData[])
       } catch {
-        setInspectionConfig(inspectionListConfig)
+        setInspectionConfig(inspectionListConfig as InspectionCategoryData[])
       }
     }
 
@@ -143,7 +420,7 @@ function InspectionModule({ currentUser }) {
     return () => window.removeEventListener('inspection-config-updated', handleConfigUpdate)
   }, [])
 
-  const sectionConfig = useMemo(() => {
+  const sectionConfig = useMemo<InspectionConfigMap>(() => {
     const exterior = inspectionConfig.find(
       (category) => category.category === 'Exterior of the Vehicle'
     )
@@ -179,46 +456,44 @@ function InspectionModule({ currentUser }) {
     }
   }, [inspectionConfig])
 
-  const [jobOrders, setJobOrders] = useState([])
-  const [jobData, setJobData] = useState([])
-  const [filteredJobs, setFilteredJobs] = useState([])
+  const [jobOrders, setJobOrders] = useState<JobOrder[]>([])
+  const [jobData, setJobData] = useState<InspectionJob[]>([])
+  const [filteredJobs, setFilteredJobs] = useState<InspectionJob[]>([])
   const [searchQuery, setSearchQuery] = useState('')
   const [currentPage, setCurrentPage] = useState(1)
   const [pageSize, setPageSize] = useState(20)
-  const [activeJobId, setActiveJobId] = useState(null)
-  const [detailData, setDetailData] = useState(defaultDetailData)
-  const [inspectionState, setInspectionState] = useState(() =>
+  const [activeJobId, setActiveJobId] = useState<string | null>(null)
+  const [detailData, setDetailData] = useState<DetailData>(defaultDetailData)
+  const [inspectionState, setInspectionState] = useState<InspectionState>(() =>
     buildInitialInspectionState(sectionConfig)
   )
-  const [resumeAvailable, setResumeAvailable] = useState({ exterior: false, interior: false })
-  const [expandedGroups, setExpandedGroups] = useState({})
+  const [resumeAvailable, setResumeAvailable] = useState<Record<SectionKey, boolean>>({ exterior: false, interior: false })
+  const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({})
   const [showPopup, setShowPopup] = useState(false)
   const [popupMessage, setPopupMessage] = useState('')
   const [showInspectionConfirmation, setShowInspectionConfirmation] = useState(false)
-  const [inspectionConfirmAction, setInspectionConfirmAction] = useState(null)
-  const [inspectionConfirmData, setInspectionConfirmData] = useState({
+  const [inspectionConfirmData, setInspectionConfirmData] = useState<InspectionConfirmData>({
     title: '',
     message: '',
     onConfirm: null
   })
-  const [screenState, setScreenState] = useState('main')
-  const [currentAddServiceOrder, setCurrentAddServiceOrder] = useState(null)
+  const [screenState, setScreenState] = useState<'main' | 'details' | 'addService'>('main')
+  const [currentAddServiceOrder, setCurrentAddServiceOrder] = useState<JobOrder | null>(null)
   const [showAddServiceSuccessPopup, setShowAddServiceSuccessPopup] = useState(false)
   const [addServiceSuccessData, setAddServiceSuccessData] = useState({ orderId: '', invoiceId: '' })
   const [showCancelConfirmation, setShowCancelConfirmation] = useState(false)
-  const [cancelOrderId, setCancelOrderId] = useState(null)
-  const [activeDropdown, setActiveDropdown] = useState(null)
+  const [cancelOrderId, setCancelOrderId] = useState<string | null>(null)
+  const [activeDropdown, setActiveDropdown] = useState<string | null>(null)
   const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0 })
   const [showSuccessPopup, setShowSuccessPopup] = useState(false)
   const [submittedOrderId, setSubmittedOrderId] = useState('')
   const [lastAction, setLastAction] = useState('cancel')
-  const reportRef = useRef(null)
 
   // Initialize expanded groups based on sectionConfig
   useEffect(() => {
-    const initialExpanded = {}
-    Object.keys(sectionConfig).forEach((sectionKey) => {
-      sectionConfig[sectionKey].groups.forEach((group) => {
+    const initialExpanded: Record<string, boolean> = {}
+    ;(Object.keys(sectionConfig) as SectionKey[]).forEach((sectionKey) => {
+      sectionConfig[sectionKey].groups.forEach((group: InspectionGroupConfig) => {
         const groupKey = `${sectionKey}-${group.title}`
         initialExpanded[groupKey] = false
       })
@@ -226,7 +501,7 @@ function InspectionModule({ currentUser }) {
     setExpandedGroups(initialExpanded)
   }, [sectionConfig])
 
-  const toggleGroupExpand = (sectionKey, groupTitle) => {
+  const toggleGroupExpand = (sectionKey: SectionKey, groupTitle: string) => {
     const groupKey = `${sectionKey}-${groupTitle}`
     setExpandedGroups((prev) => ({
       ...prev,
@@ -240,7 +515,7 @@ function InspectionModule({ currentUser }) {
   }, [sectionConfig])
 
   useEffect(() => {
-    const orders = getStoredJobOrders()
+    const orders = getStoredJobOrders() as JobOrder[]
     const inspectionOrders = filterInspectionOrders(orders)
     setJobOrders(inspectionOrders)
     setJobData(inspectionOrders.map(mapOrderToInspectionJob))
@@ -254,9 +529,10 @@ function InspectionModule({ currentUser }) {
 
   // Close dropdown when clicking outside
   useEffect(() => {
-    const handleClickOutside = (event) => {
-      const isDropdownButton = event.target.closest('.btn-action-dropdown')
-      const isDropdownMenu = event.target.closest('.action-dropdown-menu')
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as HTMLElement | null
+      const isDropdownButton = target?.closest('.btn-action-dropdown')
+      const isDropdownMenu = target?.closest('.action-dropdown-menu')
       
       if (!isDropdownButton && !isDropdownMenu) {
         setActiveDropdown(null)
@@ -271,12 +547,12 @@ function InspectionModule({ currentUser }) {
     }
   }, [activeDropdown])
 
-  const activeJob = useMemo(
+  const activeJob = useMemo<InspectionJob | null>(
     () => jobData.find((job) => job.id === activeJobId) || null,
     [jobData, activeJobId]
   )
 
-  const activeOrder = useMemo(
+  const activeOrder = useMemo<JobOrder | null>(
     () => jobOrders.find((order) => order.id === activeJobId) || null,
     [jobOrders, activeJobId]
   )
@@ -299,7 +575,7 @@ function InspectionModule({ currentUser }) {
     }
 
     const query = searchQuery.toLowerCase()
-    const filtered = jobData.filter((job) => {
+    const filtered = jobData.filter((job: InspectionJob) => {
       return (
         (job.id && job.id.toLowerCase().includes(query)) ||
         (job.createDate && job.createDate.toLowerCase().includes(query)) ||
@@ -318,13 +594,13 @@ function InspectionModule({ currentUser }) {
     applySearch()
   }, [searchQuery, jobData])
 
-  const handleShowCancelConfirmation = (orderId) => {
+  const handleShowCancelConfirmation = (orderId: string) => {
     setCancelOrderId(orderId)
     setShowCancelConfirmation(true)
     setActiveDropdown(null)
   }
 
-  const handleOpenDropdown = (e, jobId) => {
+  const handleOpenDropdown = (e: ReactMouseEvent<HTMLButtonElement>, jobId: string) => {
     const isActive = activeDropdown === jobId
     if (isActive) {
       setActiveDropdown(null)
@@ -347,8 +623,8 @@ function InspectionModule({ currentUser }) {
     if (!cancelOrderId) return
 
     // Find the order to cancel
-    const storedOrders = JSON.parse(localStorage.getItem('jobOrders') || '[]')
-    const orderToCancel = storedOrders.find(order => order.id === cancelOrderId)
+    const storedOrders = JSON.parse(localStorage.getItem('jobOrders') || '[]') as JobOrder[]
+    const orderToCancel = storedOrders.find((order: JobOrder) => order.id === cancelOrderId)
     if (!orderToCancel) return
 
     // Check if order is already cancelled
@@ -366,7 +642,7 @@ function InspectionModule({ currentUser }) {
     }
 
     // Update the order status in jobOrders storage
-    const updatedOrders = storedOrders.map(order =>
+    const updatedOrders = storedOrders.map((order: JobOrder) =>
       order.id === cancelOrderId ? cancelledOrder : order
     )
     localStorage.setItem('jobOrders', JSON.stringify(updatedOrders))
@@ -384,20 +660,21 @@ function InspectionModule({ currentUser }) {
     setCancelOrderId(null)
   }
 
-  const getSectionItems = (sectionKey) =>
-    sectionConfig[sectionKey].groups.flatMap((group) => group.items)
+  const getSectionItems = (sectionKey: SectionKey): InspectionItemConfig[] =>
+    sectionConfig[sectionKey].groups.flatMap((group: InspectionGroupConfig) => group.items)
 
-  const getProgress = (sectionKey) => {
+  const getProgress = (sectionKey: SectionKey): number => {
     const items = getSectionItems(sectionKey)
+    if (items.length === 0) return 0
     const checked = items.filter(
-      (item) => inspectionState[sectionKey].items[item.id]?.status
+      (item: InspectionItemConfig) => inspectionState[sectionKey].items[item.id]?.status
     ).length
     return Math.round((checked / items.length) * 100)
   }
 
-  const isRequirementsMet = (sectionKey) => {
+  const isRequirementsMet = (sectionKey: SectionKey): boolean => {
     const items = getSectionItems(sectionKey)
-    return items.every((item) => {
+    return items.every((item: InspectionItemConfig) => {
       const status = inspectionState[sectionKey].items[item.id]?.status
       const comment = inspectionState[sectionKey].items[item.id]?.comment
       const photos = inspectionState[sectionKey].items[item.id]?.photos || []
@@ -408,15 +685,19 @@ function InspectionModule({ currentUser }) {
     })
   }
 
-  const canCompleteSection = (sectionKey) => {
+  const canCompleteSection = (sectionKey: SectionKey): boolean => {
     const items = getSectionItems(sectionKey)
     const allChecked = items.every(
-      (item) => inspectionState[sectionKey].items[item.id]?.status
+      (item: InspectionItemConfig) => inspectionState[sectionKey].items[item.id]?.status
     )
     return allChecked && isRequirementsMet(sectionKey)
   }
 
-  const updateItemStatus = (sectionKey, itemId, status) => {
+  const updateItemStatus = (
+    sectionKey: SectionKey,
+    itemId: string,
+    status: Exclude<ItemStatus, null>
+  ) => {
     setInspectionState((prev) => {
       const updated = { ...prev }
       const section = { ...updated[sectionKey] }
@@ -434,7 +715,7 @@ function InspectionModule({ currentUser }) {
     })
   }
 
-  const updateItemComment = (sectionKey, itemId, comment) => {
+  const updateItemComment = (sectionKey: SectionKey, itemId: string, comment: string) => {
     setInspectionState((prev) => {
       const updated = { ...prev }
       const section = { ...updated[sectionKey] }
@@ -446,23 +727,28 @@ function InspectionModule({ currentUser }) {
     })
   }
 
-  const handlePhotoUpload = async (sectionKey, itemId, fileList) => {
-    const files = Array.from(fileList || []).filter((file) => file.type.startsWith('image/'))
+  const handlePhotoUpload = async (
+    sectionKey: SectionKey,
+    itemId: string,
+    fileList: FileList | null
+  ) => {
+    const files = Array.from(fileList || []).filter((file: File) => file.type.startsWith('image/'))
     if (files.length === 0) return
 
     const dataUrls = await Promise.all(
       files.map(
-        (file) =>
-          new Promise((resolve) => {
+        (file: File) =>
+          new Promise<string | null>((resolve) => {
             const reader = new FileReader()
-            reader.onload = () => resolve(reader.result)
+            reader.onload = () =>
+              resolve(typeof reader.result === 'string' ? reader.result : null)
             reader.onerror = () => resolve(null)
             reader.readAsDataURL(file)
           })
       )
     )
 
-    const safeUrls = dataUrls.filter(Boolean)
+    const safeUrls = dataUrls.filter((url): url is string => Boolean(url))
     if (safeUrls.length === 0) return
 
     setInspectionState((prev) => {
@@ -479,7 +765,7 @@ function InspectionModule({ currentUser }) {
     })
   }
 
-  const getInspectionStepStatusClass = (stepStatus) => {
+  const getInspectionStepStatusClass = (stepStatus: string): string => {
     switch (stepStatus) {
       case 'Completed': return 'inspection-step-completed'
       case 'Active': return 'inspection-step-active'
@@ -491,7 +777,7 @@ function InspectionModule({ currentUser }) {
     }
   }
 
-  const getInspectionStepIcon = (stepStatus) => {
+  const getInspectionStepIcon = (stepStatus: string): string => {
     switch (stepStatus) {
       case 'Completed': return 'fas fa-check-circle'
       case 'Active': return 'fas fa-play-circle'
@@ -503,7 +789,7 @@ function InspectionModule({ currentUser }) {
     }
   }
 
-  const getInspectionStatusClass = (status) => {
+  const getInspectionStatusClass = (status: string): string => {
     switch (status) {
       case 'Completed': return 'inspection-status-completed'
       case 'InProgress': return 'inspection-status-inprogress'
@@ -513,10 +799,10 @@ function InspectionModule({ currentUser }) {
     }
   }
 
-  const startInspection = (sectionKey) => {
+  const startInspection = (sectionKey: SectionKey) => {
     const saved = localStorage.getItem(`inspection_${sectionKey}_state`)
     if (saved) {
-      const parsed = JSON.parse(saved)
+      const parsed = JSON.parse(saved) as InspectionSectionState
       setInspectionState((prev) => ({
         ...prev,
         [sectionKey]: {
@@ -541,10 +827,10 @@ function InspectionModule({ currentUser }) {
   }
 
   const updateRoadmapOnInspectionStart = () => {
-    const storedOrders = JSON.parse(localStorage.getItem('jobOrders') || '[]')
-    const updatedOrders = storedOrders.map((order) => {
+    const storedOrders = JSON.parse(localStorage.getItem('jobOrders') || '[]') as JobOrder[]
+    const updatedOrders = storedOrders.map((order: JobOrder) => {
       if (order.id === activeJobId && order.roadmap) {
-        const updatedRoadmap = order.roadmap.map((step) => {
+        const updatedRoadmap = order.roadmap.map((step: RoadmapStep) => {
           if (step.step === 'New Order') {
             return {
               ...step,
@@ -581,10 +867,10 @@ function InspectionModule({ currentUser }) {
   }
 
   const updateRoadmapOnInspectionFinish = () => {
-    const storedOrders = JSON.parse(localStorage.getItem('jobOrders') || '[]')
-    const updatedOrders = storedOrders.map((order) => {
+    const storedOrders = JSON.parse(localStorage.getItem('jobOrders') || '[]') as JobOrder[]
+    const updatedOrders = storedOrders.map((order: JobOrder) => {
       if (order.id === activeJobId && order.roadmap) {
-        const updatedRoadmap = order.roadmap.map((step) => {
+        const updatedRoadmap = order.roadmap.map((step: RoadmapStep) => {
           if (step.step === 'Inspection') {
             return {
               ...step,
@@ -620,7 +906,7 @@ function InspectionModule({ currentUser }) {
     setJobData(inspectionOrders.map(mapOrderToInspectionJob))
   }
 
-  const saveAndPause = (sectionKey) => {
+  const saveAndPause = (sectionKey: SectionKey) => {
     setInspectionConfirmData({
       title: 'Save and Pause Inspection',
       message: `Save and pause ${sectionKey} inspection? You can resume later.`,
@@ -642,14 +928,13 @@ function InspectionModule({ currentUser }) {
         setShowInspectionConfirmation(false)
       }
     })
-    setInspectionConfirmAction('pause')
     setShowInspectionConfirmation(true)
   }
 
-  const resumeInspection = (sectionKey) => {
+  const resumeInspection = (sectionKey: SectionKey) => {
     const saved = localStorage.getItem(`inspection_${sectionKey}_state`)
     if (saved) {
-      const parsed = JSON.parse(saved)
+      const parsed = JSON.parse(saved) as InspectionSectionState
       setInspectionState((prev) => ({
         ...prev,
         [sectionKey]: {
@@ -673,7 +958,7 @@ function InspectionModule({ currentUser }) {
     setShowPopup(true)
   }
 
-  const markNotRequired = (sectionKey) => {
+  const markNotRequired = (sectionKey: SectionKey) => {
     setInspectionConfirmData({
       title: 'Mark as Not Required',
       message: `Mark ${sectionKey} inspection as not required?`,
@@ -691,11 +976,10 @@ function InspectionModule({ currentUser }) {
         setShowInspectionConfirmation(false)
       }
     })
-    setInspectionConfirmAction('notRequired')
     setShowInspectionConfirmation(true)
   }
 
-  const completeSection = (sectionKey) => {
+  const completeSection = (sectionKey: SectionKey) => {
     setInspectionConfirmData({
       title: 'Complete Inspection',
       message: `Complete ${sectionKey} inspection?`,
@@ -714,7 +998,6 @@ function InspectionModule({ currentUser }) {
         setShowInspectionConfirmation(false)
       }
     })
-    setInspectionConfirmAction('complete')
     setShowInspectionConfirmation(true)
   }
 
@@ -724,39 +1007,41 @@ function InspectionModule({ currentUser }) {
     setResumeAvailable({ exterior: !!savedExterior, interior: !!savedInterior })
   }
 
-  const viewDetails = (job) => {
+  const viewDetails = (job: InspectionJob | undefined) => {
+    if (!job) return
+
     const order = jobOrders.find((item) => item.id === job.id)
-    const orderSummary = order?.jobOrderSummary || {}
-    const customerDetails = order?.customerDetails || {}
-    const vehicleDetails = order?.vehicleDetails || {}
-    const vehicleModel = vehicleDetails.make && vehicleDetails.model
+    const orderSummary = order?.jobOrderSummary
+    const customerDetails = order?.customerDetails
+    const vehicleDetails = order?.vehicleDetails
+    const vehicleModel = vehicleDetails?.make && vehicleDetails?.model
       ? `${vehicleDetails.make} ${vehicleDetails.model} ${vehicleDetails.year || ''}`.trim()
       : defaultDetailData.vehicleModel
 
     setDetailData({
       jobOrderId: order?.id || job.id,
       orderType: order?.orderType || (job.status === 'New Job Order' ? 'New Job Order' : 'Service Order'),
-      createDate: orderSummary.createDate || order?.createDate || defaultDetailData.createDate,
-      createdBy: orderSummary.createdBy || defaultDetailData.createdBy,
-      expectedDelivery: orderSummary.expectedDelivery || defaultDetailData.expectedDelivery,
+      createDate: orderSummary?.createDate || order?.createDate || defaultDetailData.createDate,
+      createdBy: orderSummary?.createdBy || defaultDetailData.createdBy,
+      expectedDelivery: orderSummary?.expectedDelivery || defaultDetailData.expectedDelivery,
       workStatus: order?.workStatus || (job.status === 'New Job Order' ? 'New Request' : 'Inspection'),
       paymentStatus: order?.paymentStatus || defaultDetailData.paymentStatus,
       exitPermitStatus: order?.exitPermitStatus || (order?.exitPermit ? 'Created' : defaultDetailData.exitPermitStatus),
-      customerId: customerDetails.customerId || defaultDetailData.customerId,
-      email: customerDetails.email || defaultDetailData.email,
-      address: customerDetails.address || defaultDetailData.address,
-      registeredVehicles: customerDetails.registeredVehiclesCount ?? defaultDetailData.registeredVehicles,
-      completedServices: customerDetails.completedServicesCount ?? defaultDetailData.completedServices,
-      customerSince: customerDetails.customerSince || defaultDetailData.customerSince,
-      vehicleId: vehicleDetails.vehicleId || defaultDetailData.vehicleId,
+      customerId: customerDetails?.customerId || defaultDetailData.customerId,
+      email: customerDetails?.email || defaultDetailData.email,
+      address: customerDetails?.address || defaultDetailData.address,
+      registeredVehicles: customerDetails?.registeredVehiclesCount ?? defaultDetailData.registeredVehicles,
+      completedServices: customerDetails?.completedServicesCount ?? defaultDetailData.completedServices,
+      customerSince: customerDetails?.customerSince || defaultDetailData.customerSince,
+      vehicleId: vehicleDetails?.vehicleId || defaultDetailData.vehicleId,
       vehicleModel,
-      year: vehicleDetails.year || defaultDetailData.year,
-      type: vehicleDetails.type || defaultDetailData.type,
-      color: vehicleDetails.color || defaultDetailData.color,
-      vin: vehicleDetails.vin || defaultDetailData.vin,
-      mileage: vehicleDetails.mileage || defaultDetailData.mileage,
-      ownedBy: vehicleDetails.ownedBy || defaultDetailData.ownedBy,
-      registrationDate: vehicleDetails.registrationDate || defaultDetailData.registrationDate,
+      year: vehicleDetails?.year || defaultDetailData.year,
+      type: vehicleDetails?.type || defaultDetailData.type,
+      color: vehicleDetails?.color || defaultDetailData.color,
+      vin: vehicleDetails?.vin || defaultDetailData.vin,
+      mileage: vehicleDetails?.mileage || defaultDetailData.mileage,
+      ownedBy: vehicleDetails?.ownedBy || defaultDetailData.ownedBy,
+      registrationDate: vehicleDetails?.registrationDate || defaultDetailData.registrationDate,
       serviceOrderReference: order?.serviceOrderReference || defaultDetailData.serviceOrderReference,
       services: order?.services || defaultDetailData.services,
       roadmap: order?.roadmap || defaultDetailData.roadmap,
@@ -779,32 +1064,32 @@ function InspectionModule({ currentUser }) {
     (inspectionState.exterior.completed || inspectionState.exterior.notRequired) &&
     (inspectionState.interior.completed || inspectionState.interior.notRequired)
 
-  const parseAmount = (str) => {
+  const parseAmount = (str?: string | number | null): number => {
     if (typeof str === 'number') return str
     if (!str) return 0
     return parseFloat(str.replace(/[^0-9.-]/g, '')) || 0
   }
 
-  const formatAmount = (num) => {
+  const formatAmount = (num: number | string): string => {
     if (typeof num === 'string') num = parseAmount(num)
     return `QAR ${num.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
   }
 
-  const combinedServices = detailData.orderType === 'Service Order'
+  const combinedServices: ServiceEntry[] = detailData.orderType === 'Service Order'
     ? [...(detailData.serviceOrderReference?.services || []), ...(detailData.services || [])]
     : (detailData.services || [])
 
   const handleAddService = () => {
     // Get order from localStorage to ensure we have the full order data
-    const storedOrders = JSON.parse(localStorage.getItem('jobOrders') || '[]')
-    const order = storedOrders.find(o => o.id === activeJobId)
+    const storedOrders = JSON.parse(localStorage.getItem('jobOrders') || '[]') as JobOrder[]
+    const order = storedOrders.find((o: JobOrder) => o.id === activeJobId)
     if (order) {
       setCurrentAddServiceOrder(order)
       setScreenState('addService')
     }
   }
 
-  const handleAddServiceSubmit = ({ selectedServices, discountPercent }) => {
+  const handleAddServiceSubmit = ({ selectedServices, discountPercent }: AddServicePayload) => {
     if (!currentAddServiceOrder || !selectedServices || selectedServices.length === 0) {
       setScreenState('details')
       return
@@ -815,12 +1100,20 @@ function InspectionModule({ currentUser }) {
     const invoiceNumber = `INV-${year}-${String(Math.floor(Math.random() * 1000000)).padStart(6, '0')}`
     const billId = currentAddServiceOrder.billing?.billId || `BILL-${year}-${String(Math.floor(Math.random() * 1000000)).padStart(6, '0')}`
 
-    const subtotal = selectedServices.reduce((sum, s) => sum + (s.price || 0), 0)
-    const discount = (subtotal * (discountPercent || 0)) / 100
-    const netAmount = subtotal - discount
-
     const existingTotal = parseAmount(currentAddServiceOrder.billing?.totalAmount)
     const existingDiscount = parseAmount(currentAddServiceOrder.billing?.discount)
+    const subtotal = selectedServices.reduce((sum: number, s: SelectedService) => sum + (s.price || 0), 0)
+    const addServiceDiscountAllowance = getDiscountAllowance({
+      optionId: 'inspection_discount_percent',
+      totalAmount: existingTotal + subtotal,
+      existingDiscountAmount: existingDiscount,
+      currentDiscountBaseAmount: subtotal,
+      fallbackPercent: 100,
+    })
+    const safeDiscountPercent = clampDiscountPercent(discountPercent || 0, addServiceDiscountAllowance.maxAdditionalPercent)
+    const discount = (subtotal * safeDiscountPercent) / 100
+    const netAmount = subtotal - discount
+
     const existingNet = parseAmount(currentAddServiceOrder.billing?.netAmount)
     const existingPaid = parseAmount(currentAddServiceOrder.billing?.amountPaid)
 
@@ -840,12 +1133,12 @@ function InspectionModule({ currentUser }) {
           discount: formatAmount(discount),
           status: 'Unpaid',
           paymentMethod: null,
-          services: selectedServices.map(s => s.name)
+          services: selectedServices.map((s: SelectedService) => s.name)
         }
       ]
     }
 
-    const newServiceEntries = selectedServices.map((service) => ({
+    const newServiceEntries: ServiceObject[] = selectedServices.map((service: SelectedService) => ({
       name: service.name,
       status: 'New',
       started: 'Not started',
@@ -861,8 +1154,8 @@ function InspectionModule({ currentUser }) {
       billing: updatedBilling
     }
 
-    const storedOrders = JSON.parse(localStorage.getItem('jobOrders') || '[]')
-    const updatedOrders = storedOrders.map((order) =>
+    const storedOrders = JSON.parse(localStorage.getItem('jobOrders') || '[]') as JobOrder[]
+    const updatedOrders = storedOrders.map((order: JobOrder) =>
       order.id === currentAddServiceOrder.id ? updatedOrder : order
     )
 
@@ -872,7 +1165,7 @@ function InspectionModule({ currentUser }) {
     setJobData(inspectionOrders.map(mapOrderToInspectionJob))
     
     // Update detail data
-    setDetailData(prev => ({
+    setDetailData((prev: DetailData) => ({
       ...prev,
       services: updatedOrder.services || []
     }))
@@ -890,8 +1183,8 @@ function InspectionModule({ currentUser }) {
       title: 'Finish Inspection',
       message: 'Finish the inspection? Status will change to Work in Progress.',
       onConfirm: async () => {
-        const storedOrders = JSON.parse(localStorage.getItem('jobOrders') || '[]')
-        const targetOrder = storedOrders.find((order) => order.id === activeJobId)
+        const storedOrders = JSON.parse(localStorage.getItem('jobOrders') || '[]') as JobOrder[]
+        const targetOrder = storedOrders.find((order: JobOrder) => order.id === activeJobId)
         const inspectionReport = await buildInspectionReportDocument({
           order: targetOrder,
           detailData,
@@ -900,10 +1193,10 @@ function InspectionModule({ currentUser }) {
           sectionConfig
         })
 
-        const updatedOrders = storedOrders.map((order) => {
+        const updatedOrders = storedOrders.map((order: JobOrder) => {
           if (order.id !== activeJobId) return order
-          const documents = Array.isArray(order.documents) ? order.documents : []
-          const filteredDocuments = documents.filter((doc) => doc.type !== 'inspection-report')
+          const documents: DocumentInfo[] = Array.isArray(order.documents) ? order.documents : []
+          const filteredDocuments = documents.filter((doc: DocumentInfo) => doc.type !== 'inspection-report')
 
           return {
             ...order,
@@ -931,11 +1224,10 @@ function InspectionModule({ currentUser }) {
         setShowInspectionConfirmation(false)
       }
     })
-    setInspectionConfirmAction('finish')
     setShowInspectionConfirmation(true)
   }
 
-  const formatServiceStatus = (status) => {
+  const formatServiceStatus = (status: string): string => {
     switch (status) {
       case 'Completed': return 'pim-status-completed'
       case 'InProgress': return 'pim-status-inprogress'
@@ -948,9 +1240,19 @@ function InspectionModule({ currentUser }) {
     }
   }
 
-  const generateStyledInspectionPdf = async (order, detailData, activeJob, inspectionState, sectionConfig) => {
+  const generateStyledInspectionPdf = async (
+    order: JobOrder | undefined,
+    detailData: DetailData,
+    activeJob: InspectionJob | null,
+    inspectionState: InspectionState,
+    sectionConfig: InspectionConfigMap
+  ): Promise<string> => {
     const orderId = order?.id || detailData?.jobOrderId || 'N/A'
-    const statusLabels = { pass: 'Pass', attention: 'Attention', failed: 'Failed' }
+    const statusLabels: Record<string, string> = {
+      pass: 'Pass',
+      attention: 'Attention',
+      failed: 'Failed'
+    }
 
     const reportStyles = `
       body { font-family: 'Segoe UI', sans-serif; margin: 0; padding: 20mm; background: #f3f6fb; color: #2c3e50; }
@@ -1034,14 +1336,14 @@ function InspectionModule({ currentUser }) {
         <h2 class="card-title orange">✓ Inspection Results</h2>
     `
 
-    ;['exterior', 'interior'].forEach((sectionKey) => {
+    ;(['exterior', 'interior'] as SectionKey[]).forEach((sectionKey: SectionKey) => {
       const section = sectionConfig?.[sectionKey]
       if (!section) return
       inspectionResultsHtml += `<div class="section-title">${section.title}</div>`
-      section.groups.forEach((group) => {
+      section.groups.forEach((group: InspectionGroupConfig) => {
         inspectionResultsHtml += `<div class="group-title">${group.title}</div>`
         inspectionResultsHtml += `<div>`
-        group.items.forEach((item) => {
+        group.items.forEach((item: InspectionItemConfig) => {
           const itemState = inspectionState?.[sectionKey]?.items?.[item.id]
           const status = itemState?.status || 'not-checked'
           const statusLabel = statusLabels[status] || 'Not Checked'
@@ -1055,7 +1357,7 @@ function InspectionModule({ currentUser }) {
           const photoHtml = photos.length
             ? `
               <div class="photo-grid">
-                ${photos.map((photo) => `<img src="${photo}" alt="Inspection photo" />`).join('')}
+                ${photos.map((photo: string) => `<img src="${photo}" alt="Inspection photo" />`).join('')}
               </div>
             `
             : ''
@@ -1101,7 +1403,13 @@ function InspectionModule({ currentUser }) {
     return `data:text/html;base64,${encoded}`
   }
 
-  const buildInspectionReportDocument = async ({ order, detailData, activeJob, inspectionState, sectionConfig }) => {
+  const buildInspectionReportDocument = async ({
+    order,
+    detailData,
+    activeJob,
+    inspectionState,
+    sectionConfig
+  }: BuildInspectionReportArgs): Promise<DocumentInfo | null> => {
     if (!order) return null
 
     const dataUrl = await generateStyledInspectionPdf(order, detailData, activeJob, inspectionState, sectionConfig)
@@ -1396,11 +1704,11 @@ function InspectionModule({ currentUser }) {
                   </div>
                   <div className="epm-info-item">
                     <span className="epm-info-label">Customer Name</span>
-                    <span className="epm-info-value">{activeJob.customerName}</span>
+                    <span className="epm-info-value">{activeJob?.customerName || 'N/A'}</span>
                   </div>
                   <div className="epm-info-item">
                     <span className="epm-info-label">Mobile Number</span>
-                    <span className="epm-info-value">{activeJob.mobile}</span>
+                    <span className="epm-info-value">{activeJob?.mobile || 'N/A'}</span>
                   </div>
                   <div className="epm-info-item">
                     <span className="epm-info-label">Email Address</span>
@@ -1490,8 +1798,8 @@ function InspectionModule({ currentUser }) {
                       <div key={idx} className="pim-service-item">
                         <div className="pim-service-header">
                           <span className="pim-service-name">{typeof service === 'string' ? service : service.name}</span>
-                          <span className={`pim-status-badge ${formatServiceStatus(typeof service === 'string' ? 'New' : service.status)}`}>
-                            {typeof service === 'string' ? 'New' : service.status}
+                          <span className={`pim-status-badge ${formatServiceStatus(typeof service === 'string' ? 'New' : service.status || 'New')}`}>
+                            {typeof service === 'string' ? 'New' : service.status || 'New'}
                           </span>
                         </div>
                         <div className="pim-service-timeline">
@@ -1557,7 +1865,7 @@ function InspectionModule({ currentUser }) {
                   </PermissionGate>
                 </div>
                 <div className="inspection-section">
-                {(['exterior', 'interior']).map((sectionKey) => {
+                {(['exterior', 'interior'] as SectionKey[]).map((sectionKey: SectionKey) => {
                 const sectionState = inspectionState[sectionKey]
                 const progress = getProgress(sectionKey)
                 const progressText = `${progress}%`
@@ -2120,12 +2428,13 @@ function InspectionModule({ currentUser }) {
                         <PermissionGate moduleId="inspection" optionId="inspection_download">
                           <button
                             onClick={() => {
-                              if (doc.url || doc.fileData) {
-                                const link = document.createElement('a')
-                                link.href = doc.fileData || doc.url
-                                link.download = doc.name || 'document'
-                                link.click()
-                              }
+                              const downloadUrl: string = doc.fileData ?? doc.url ?? ''
+                              if (!downloadUrl) return
+
+                              const link = document.createElement('a')
+                              link.href = downloadUrl
+                              link.download = doc.name || 'document'
+                              link.click()
                             }}
                             style={{
                               padding: '8px 16px',
@@ -2267,14 +2576,28 @@ function InspectionModule({ currentUser }) {
           }}
         >
           <PermissionGate moduleId="inspection" optionId="inspection_viewdetails">
-            <button className="dropdown-item view" onClick={() => { viewDetails(filteredJobs.find(j => j.id === activeDropdown)); setActiveDropdown(null); }}>
+            <button
+              className="dropdown-item view"
+              onClick={() => {
+                const selectedJob = filteredJobs.find((j: InspectionJob) => j.id === activeDropdown)
+                viewDetails(selectedJob)
+                setActiveDropdown(null)
+              }}
+            >
               <i className="fas fa-eye"></i> View Details
             </button>
           </PermissionGate>
           <PermissionGate moduleId="inspection" optionId="inspection_cancel">
             <>
               <div className="dropdown-divider"></div>
-              <button className="dropdown-item delete" onClick={() => { handleShowCancelConfirmation(activeDropdown); }}>
+              <button
+                className="dropdown-item delete"
+                onClick={() => {
+                  if (activeDropdown) {
+                    handleShowCancelConfirmation(activeDropdown)
+                  }
+                }}
+              >
                 <i className="fas fa-times-circle"></i> Cancel Order
               </button>
             </>
@@ -2286,22 +2609,51 @@ function InspectionModule({ currentUser }) {
   )
 }
 
-function AddServiceScreen({ order, products = [], onClose, onSubmit }) {
-  const [selectedServices, setSelectedServices] = useState([])
+function AddServiceScreen({
+  order,
+  products = [],
+  onClose,
+  onSubmit
+}: AddServiceScreenProps) {
+  const [selectedServices, setSelectedServices] = useState<SelectedService[]>([])
   const [discountPercent, setDiscountPercent] = useState(0)
   const vehicleType = order?.vehicleDetails?.type || 'SUV'
 
-  const handleToggleService = (product) => {
+  const handleToggleService = (product: ProductPrice) => {
     const price = vehicleType === 'SUV' ? product.suvPrice : product.sedanPrice
-    if (selectedServices.some(s => s.name === product.name)) {
-      setSelectedServices(selectedServices.filter(s => s.name !== product.name))
+    if (selectedServices.some((s: SelectedService) => s.name === product.name)) {
+      setSelectedServices(selectedServices.filter((s: SelectedService) => s.name !== product.name))
     } else {
       setSelectedServices([...selectedServices, { name: product.name, price }])
     }
   }
 
-  const formatPrice = (price) => `QAR ${price.toLocaleString()}`
-  const subtotal = selectedServices.reduce((sum, s) => sum + s.price, 0)
+  const formatPrice = (price: number): string => `QAR ${price.toLocaleString()}`
+  const subtotal = selectedServices.reduce((sum: number, s: SelectedService) => sum + s.price, 0)
+  const existingOrderTotal = parseCurrencyValue(order?.billing?.totalAmount)
+  const existingOrderDiscount = parseCurrencyValue(order?.billing?.discount)
+  const discountAllowance = useMemo(
+    () =>
+      getDiscountAllowance({
+        optionId: 'inspection_discount_percent',
+        totalAmount: existingOrderTotal + subtotal,
+        existingDiscountAmount: existingOrderDiscount,
+        currentDiscountBaseAmount: subtotal,
+        fallbackPercent: 100,
+      }),
+    [existingOrderTotal, existingOrderDiscount, subtotal]
+  )
+
+  useEffect(() => {
+    setDiscountPercent((prev) => clampDiscountPercent(prev, discountAllowance.maxAdditionalPercent))
+  }, [discountAllowance.maxAdditionalPercent])
+
+  const handleDiscountChange = (rawValue: string) => {
+    const requestedPercent = parseFloat(rawValue)
+    const safeRequestedPercent = Number.isFinite(requestedPercent) ? requestedPercent : 0
+    setDiscountPercent(clampDiscountPercent(safeRequestedPercent, discountAllowance.maxAdditionalPercent))
+  }
+
   const discount = (subtotal * discountPercent) / 100
   const total = subtotal - discount
 
@@ -2329,7 +2681,7 @@ function AddServiceScreen({ order, products = [], onClose, onSubmit }) {
               {products.map((product) => (
                 <div
                   key={product.name}
-                  className={`service-checkbox ${selectedServices.some(s => s.name === product.name) ? 'selected' : ''}`}
+                  className={`service-checkbox ${selectedServices.some((s: SelectedService) => s.name === product.name) ? 'selected' : ''}`}
                   onClick={() => handleToggleService(product)}
                 >
                   <div className="service-info">
@@ -2358,12 +2710,15 @@ function AddServiceScreen({ order, products = [], onClose, onSubmit }) {
                       <input
                         type="number"
                         min="0"
-                        max="100"
+                        max={discountAllowance.maxAdditionalPercent}
                         value={discountPercent}
-                        onChange={(e) => setDiscountPercent(parseFloat(e.target.value) || 0)}
+                        onChange={(e: ChangeEvent<HTMLInputElement>) => handleDiscountChange(e.target.value)}
                         style={{ width: '80px' }}
                       />
                       <span> %</span>
+                      <div style={{ fontSize: '12px', color: '#64748b', marginTop: '4px' }}>
+                        Max now: {discountAllowance.maxAdditionalPercent.toFixed(2)}% (Remaining {formatPrice(discountAllowance.remainingAmount)})
+                      </div>
                     </PermissionGate>
                   </div>
                 </div>
@@ -2394,8 +2749,8 @@ function AddServiceScreen({ order, products = [], onClose, onSubmit }) {
 }
 
 // Helper functions for status classes
-function getWorkStatusClass(status) {
-  const statusMap = {
+function getWorkStatusClass(status: string): string {
+  const statusMap: Record<string, string> = {
     'New Request': 'status-new-request',
     'Inspection': 'status-inspection',
     'Inprogress': 'status-inprogress',
@@ -2403,23 +2758,23 @@ function getWorkStatusClass(status) {
     'Ready': 'status-ready',
     'Completed': 'status-completed',
     'Cancelled': 'status-cancelled'
-  };
-  return statusMap[status] || 'status-inprogress';
+  }
+  return statusMap[status] || 'status-inprogress'
 }
 
-function getPaymentStatusClass(status) {
-  if (status === 'Fully Paid') return 'payment-full';
-  if (status === 'Partially Paid') return 'payment-partial';
-  return 'payment-unpaid';
+function getPaymentStatusClass(status: string): string {
+  if (status === 'Fully Paid') return 'payment-full'
+  if (status === 'Partially Paid') return 'payment-partial'
+  return 'payment-unpaid'
 }
 
-function getPaymentMethodClass(method) {
-  if (!method) return '';
-  const normalized = method.toLowerCase();
-  if (normalized.includes('cash')) return 'epm-payment-method-cash';
-  if (normalized.includes('card')) return 'epm-payment-method-card';
-  if (normalized.includes('transfer')) return 'epm-payment-method-transfer';
-  return 'epm-payment-method-card';
+function getPaymentMethodClass(method?: string | null): string {
+  if (!method) return ''
+  const normalized = method.toLowerCase()
+  if (normalized.includes('cash')) return 'epm-payment-method-cash'
+  if (normalized.includes('card')) return 'epm-payment-method-card'
+  if (normalized.includes('transfer')) return 'epm-payment-method-transfer'
+  return 'epm-payment-method-card'
 }
 
 export default InspectionModule

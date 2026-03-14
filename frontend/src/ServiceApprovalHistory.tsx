@@ -1,10 +1,10 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import './ServiceApprovalHistory.css';
 import PermissionGate from './PermissionGate';
 
 const ServiceApprovalHistory = () => {
   const [showHistoryDetails, setShowHistoryDetails] = useState(false);
-  const [currentRequestId, setCurrentRequestId] = useState(null);
+  const [currentRequestId, setCurrentRequestId] = useState<string | null>(null);
   
   // Filter states
   const [historySearch, setHistorySearch] = useState('');
@@ -133,7 +133,7 @@ const ServiceApprovalHistory = () => {
     return requestHistory.find(req => req.id === currentRequestId);
   };
 
-  const viewHistoryDetails = (requestId) => {
+  const viewHistoryDetails = (requestId: string) => {
     setCurrentRequestId(requestId);
     setShowHistoryDetails(true);
   };

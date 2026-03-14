@@ -148,10 +148,15 @@ function App() {
     setNavigationData(null)
   }
 
-  const handleNavigateBack = (section: string, returnId: string | null = null): void => {
+  const handleNavigateBack = (section?: string, returnId?: string | null): void => {
+    if (!section) {
+      setNavigationData(null)
+      return
+    }
+
     setActiveSection(section)
     if (section === 'Customers Management') {
-      setReturnToCustomerId(returnId)
+      setReturnToCustomerId(returnId || null)
       setNavigationData(null)
       return
     }
@@ -160,6 +165,10 @@ function App() {
       return
     }
     setNavigationData(null)
+  }
+
+  const handleVehicleNavigateBack = (source: string, returnToCustomerId?: string | null): void => {
+    handleNavigateBack(source, returnToCustomerId)
   }
 
   const dashboardItems = [
@@ -296,8 +305,7 @@ function App() {
       }
       return (
         <JobOrderHistory
-          currentUser={user}
-          navigationData={navigationData}
+          navigationData={navigationData || undefined}
           onClearNavigation={handleClearNavigation}
           onNavigateBack={handleNavigateBack}
         />
@@ -338,7 +346,7 @@ function App() {
         <VehicleManagement
           navigationData={navigationData}
           onClearNavigation={handleClearNavigation}
-          onNavigateBack={handleNavigateBack}
+          onNavigateBack={handleVehicleNavigateBack}
           onNavigate={handleNavigate}
         />
       )

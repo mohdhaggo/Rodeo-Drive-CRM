@@ -1,17 +1,34 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import './SalesLeadHistory.css';
 import PermissionGate from './PermissionGate';
 
+type SalesLeadHistoryItem = {
+  id: string;
+  customerName: string;
+  mobile: string;
+  make: string;
+  model: string;
+  plate: string;
+  source: string;
+  service: string;
+  createdBy: string;
+  assignedTo: string;
+  status: string;
+  created: string;
+  outcome: string;
+  closedDate: string;
+};
+
 const SalesLeadHistory = () => {
   const [showHistoryDetails, setShowHistoryDetails] = useState(false);
-  const [currentLeadId, setCurrentLeadId] = useState(null);
+  const [currentLeadId, setCurrentLeadId] = useState<string | null>(null);
   
   // Filter states
   const [historySearch, setHistorySearch] = useState('');
   const [outcomeFilter, setOutcomeFilter] = useState('');
 
   // Sample history data
-  const [leadHistory] = useState([
+  const [leadHistory] = useState<SalesLeadHistoryItem[]>([
     {
       id: "LD-2023-00101",
       customerName: "William Taylor",
@@ -78,7 +95,7 @@ const SalesLeadHistory = () => {
     }
   ]);
 
-  const getOutcomeClass = (outcome) => {
+  const getOutcomeClass = (outcome: string) => {
     switch(outcome) {
       case 'Interested': return 'slh-outcome-interested';
       case 'Not interested': return 'slh-outcome-notinterested';
@@ -102,7 +119,7 @@ const SalesLeadHistory = () => {
     });
   };
 
-  const viewHistoryDetails = (leadId) => {
+  const viewHistoryDetails = (leadId: string) => {
     setCurrentLeadId(leadId);
     setShowHistoryDetails(true);
   };
