@@ -4,6 +4,7 @@ import SuccessPopup from './SuccessPopup'
 import './RoleAccessControl.css'
 
 const ROLE_STORAGE_KEY = 'department_roles'
+const DEPARTMENT_ROLES_UPDATED_EVENT = 'department-roles-updated'
 
 type RoleOption = {
   value: string
@@ -46,41 +47,72 @@ type PermissionsState = Record<string, PermissionModuleState>
 type ExpandedModulesState = Record<string, boolean>
 type PercentValuesState = Record<string, number | ''>
 
-const DEFAULT_ROLE_OPTIONS: RoleOption[] = [
-  { value: 'admin', label: 'Administrator' },
-  { value: 'manager', label: 'Service Manager' },
-  { value: 'technician', label: 'Service Technician' },
-  { value: 'advisor', label: 'Service Advisor' },
-  { value: 'cashier', label: 'Cashier' },
-  { value: 'viewer', label: 'View Only' },
+const DEFAULT_DEPARTMENTS: DepartmentRecord[] = [
+  {
+    name: 'IT',
+    roles: [
+      { id: 101, name: 'Administrator' },
+      { id: 102, name: 'IT helpdesk' },
+    ],
+  },
+  {
+    name: 'Sales',
+    roles: [
+      { id: 201, name: 'Sales Manager' },
+      { id: 202, name: 'Sales Agent' },
+      { id: 203, name: 'Receiptioant' },
+      { id: 204, name: 'Seinor receiptant' },
+      { id: 205, name: 'Cashir' },
+    ],
+  },
+  {
+    name: 'Management',
+    roles: [
+      { id: 301, name: 'General manger' },
+      { id: 302, name: 'CEO' },
+      { id: 303, name: 'Director' },
+    ],
+  },
+  {
+    name: 'Operation',
+    roles: [
+      { id: 401, name: 'Operation Manager' },
+      { id: 402, name: 'Supervisor' },
+      { id: 403, name: 'Techinician' },
+      { id: 404, name: 'professional Techinician' },
+      { id: 405, name: 'Seinor Techinician' },
+      { id: 406, name: 'Quality Inspector' },
+      { id: 407, name: 'Service Inspector' },
+      { id: 408, name: 'Inspection Supoervsior' },
+      { id: 409, name: 'Qulaity Supervior' },
+    ],
+  },
 ]
 
 const buildRoleOptions = (departments: unknown): RoleOption[] => {
-  if (!Array.isArray(departments)) {
-    return DEFAULT_ROLE_OPTIONS
-  }
+  const departmentList = Array.isArray(departments) ? departments : DEFAULT_DEPARTMENTS
 
-  const options = departments.flatMap((dept: DepartmentRecord) =>
+  const options = departmentList.flatMap((dept: DepartmentRecord) =>
     (Array.isArray(dept.roles) ? dept.roles : []).map((role: DepartmentRole) => ({
       value: `role_${role.id}`,
       label: `${role.name} (${dept.name})`,
     }))
   )
 
-  return options.length > 0 ? options : DEFAULT_ROLE_OPTIONS
+  return options.length > 0 ? options : buildRoleOptions(DEFAULT_DEPARTMENTS)
 }
 
 const loadRoleOptions = (): RoleOption[] => {
   const stored = localStorage.getItem(ROLE_STORAGE_KEY)
   if (!stored) {
-    return DEFAULT_ROLE_OPTIONS
+    return buildRoleOptions(DEFAULT_DEPARTMENTS)
   }
 
   try {
     return buildRoleOptions(JSON.parse(stored))
   } catch (error) {
     console.warn('Failed to parse stored roles:', error)
-    return DEFAULT_ROLE_OPTIONS
+    return buildRoleOptions(DEFAULT_DEPARTMENTS)
   }
 }
 
@@ -1063,10 +1095,30 @@ const RoleAccessControl = () => {
   }, [currentRole])
 
   useEffect(() => {
-    const nextOptions = loadRoleOptions()
-    setRoleOptions(nextOptions)
-    if (!nextOptions.find((role) => role.value === currentRole)) {
-      setCurrentRole(nextOptions[0]?.value || '')
+    const syncRoleOptions = () => {
+      const nextOptions = loadRoleOptions()
+      setRoleOptions(nextOptions)
+      setCurrentRole((prevRole) => {
+        if (nextOptions.find((role) => role.value === prevRole)) {
+          return prevRole
+        }
+        return nextOptions[0]?.value || ''
+      })
+    }
+
+    const handleStorage = (event: StorageEvent) => {
+      if (event.key === ROLE_STORAGE_KEY) {
+        syncRoleOptions()
+      }
+    }
+
+    syncRoleOptions()
+    window.addEventListener('storage', handleStorage)
+    window.addEventListener(DEPARTMENT_ROLES_UPDATED_EVENT, syncRoleOptions)
+
+    return () => {
+      window.removeEventListener('storage', handleStorage)
+      window.removeEventListener(DEPARTMENT_ROLES_UPDATED_EVENT, syncRoleOptions)
     }
   }, [])
 

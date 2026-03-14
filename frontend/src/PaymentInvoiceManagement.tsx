@@ -16,7 +16,8 @@ type PaymentFormState = {
   orderId: string;
   netAmount: number;
   amountPaid: number;
-  discount: string;
+  existingDiscount: number;
+  additionalDiscount: string;
   amountToPay: string;
   paymentMethod: string;
   transferProof: string | ArrayBuffer | null;
@@ -521,7 +522,8 @@ export default function PaymentInvoiceManagement({ currentUser }: PaymentInvoice
     orderId: '',
     netAmount: 0,
     amountPaid: 0,
-    discount: '0',
+    existingDiscount: 0,
+    additionalDiscount: '0',
     amountToPay: '',
     paymentMethod: '',
     transferProof: null,
@@ -587,7 +589,7 @@ export default function PaymentInvoiceManagement({ currentUser }: PaymentInvoice
 
   useEffect(() => {
     const orders = getStoredJobOrders();
-    const normalizedOrders = orders.length > 0 ? orders : createCompleteJobOrders();
+    const normalizedOrders = Array.isArray(orders) ? orders : createCompleteJobOrders();
     setAllOrders(normalizedOrders);
   }, []);
 
@@ -684,7 +686,7 @@ export default function PaymentInvoiceManagement({ currentUser }: PaymentInvoice
       const netAmount = parseCurrencyValue(order.billing.netAmount);
       const amountPaid = parseCurrencyValue(order.billing.amountPaid);
       const discount = parseCurrencyValue(order.billing.discount);
-      const balance = netAmount - amountPaid - discount;
+      const balance = netAmount - amountPaid;
       const discountMeta = getPaymentDiscountMeta(order, discount);
 
       setPaymentDiscountLimit(discountMeta.maxEditableDiscount);
@@ -696,7 +698,8 @@ export default function PaymentInvoiceManagement({ currentUser }: PaymentInvoice
         orderId,
         netAmount,
         amountPaid,
-        discount: discount.toString(),
+        existingDiscount: discount,
+        additionalDiscount: '0',
         amountToPay: '',
         paymentMethod: order.billing.paymentMethod || '',
         transferProof: null,
@@ -719,7 +722,8 @@ export default function PaymentInvoiceManagement({ currentUser }: PaymentInvoice
       orderId: '',
       netAmount: 0,
       amountPaid: 0,
-      discount: '0',
+      existingDiscount: 0,
+      additionalDiscount: '0',
       amountToPay: '',
       paymentMethod: '',
       transferProof: null,
@@ -1016,12 +1020,16 @@ export default function PaymentInvoiceManagement({ currentUser }: PaymentInvoice
     const { name, value } = e.target;
     setPaymentForm((prev: PaymentFormState) => {
       const updated = { ...prev, [name]: value } as PaymentFormState;
-      const clampedDiscount = clampDiscountAmount(parseFloat(updated.discount) || 0, paymentDiscountLimit);
-      updated.discount = clampedDiscount.toString();
+      const maxAdditionalDiscount = Math.max(0, paymentDiscountLimit - prev.existingDiscount);
+      const clampedAdditionalDiscount = clampDiscountAmount(
+        parseFloat(updated.additionalDiscount) || 0,
+        maxAdditionalDiscount
+      );
+      updated.additionalDiscount = clampedAdditionalDiscount.toString();
 
-      if (name === 'discount' || name === 'amountToPay') {
+      if (name === 'additionalDiscount' || name === 'amountToPay') {
         const amountToPay = parseFloat(updated.amountToPay) || 0;
-        const balance = prev.netAmount - prev.amountPaid - clampedDiscount - amountToPay;
+        const balance = updated.netAmount - updated.amountPaid - clampedAdditionalDiscount - amountToPay;
         updated.balance = balance > 0 ? balance : 0;
       }
       // Clear file when payment method changes from Transfer
@@ -1128,11 +1136,14 @@ export default function PaymentInvoiceManagement({ currentUser }: PaymentInvoice
     const updatedOrders = allOrders.map(order => {
       if (order.id === paymentForm.orderId) {
         const paymentDiscountMeta = getPaymentDiscountMeta(order);
-        const discount = clampDiscountAmount(parseFloat(paymentForm.discount) || 0, paymentDiscountMeta.maxEditableDiscount);
+        const existingDiscount = parseCurrencyValue(order.billing?.discount);
+        const maxAdditionalDiscount = Math.max(0, paymentDiscountMeta.maxEditableDiscount - existingDiscount);
+        const additionalDiscount = clampDiscountAmount(parseFloat(paymentForm.additionalDiscount) || 0, maxAdditionalDiscount);
+        const totalDiscount = existingDiscount + additionalDiscount;
         const amountToPay = amountToPayValue;
         const netAmount = paymentForm.netAmount;
         const totalPaid = paymentForm.amountPaid + amountToPay;
-        const adjustedNetAmount = netAmount - discount;
+        const adjustedNetAmount = Math.max(0, netAmount - additionalDiscount);
 
         let paymentStatus = 'Unpaid';
         if (totalPaid > 0 && totalPaid < adjustedNetAmount) {
@@ -1168,7 +1179,7 @@ export default function PaymentInvoiceManagement({ currentUser }: PaymentInvoice
           documents,
           billing: {
             ...order.billing,
-            discount: `QAR ${discount.toFixed(2)}`,
+            discount: `QAR ${totalDiscount.toFixed(2)}`,
             amountPaid: `QAR ${totalPaid.toFixed(2)}`,
             balanceDue: `QAR ${Math.max(0, adjustedNetAmount - totalPaid).toFixed(2)}`,
             paymentMethod: paymentForm.paymentMethod
@@ -1178,7 +1189,7 @@ export default function PaymentInvoiceManagement({ currentUser }: PaymentInvoice
             {
               serial: (order.paymentActivityLog?.length || 0) + 1,
               amount: `QAR ${amountToPay.toFixed(2)}`,
-              discount: `QAR ${discount.toFixed(2)}`,
+              discount: `QAR ${additionalDiscount.toFixed(2)}`,
               paymentMethod: paymentForm.paymentMethod,
               cashierName: currentUser?.name || 'System User',
               timestamp: new Date().toLocaleDateString('en-US', {
@@ -2246,6 +2257,10 @@ export default function PaymentInvoiceManagement({ currentUser }: PaymentInvoice
                     <div style={{ marginBottom: '20px', padding: '15px', backgroundColor: '#f0f9ff', borderRadius: '8px', border: '1px solid #bfdbfe' }}>
                       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', fontSize: '14px' }}>
                         <div>
+                          <strong>Existing Discount:</strong>
+                          <div style={{ color: '#16a34a', fontWeight: '600', fontSize: '16px' }}>QAR {paymentForm.existingDiscount?.toFixed(2)}</div>
+                        </div>
+                        <div>
                           <strong>Net Amount:</strong>
                           <div style={{ color: '#1e40af', fontWeight: '600', fontSize: '16px' }}>QAR {paymentForm.netAmount?.toFixed(2)}</div>
                         </div>
@@ -2263,14 +2278,14 @@ export default function PaymentInvoiceManagement({ currentUser }: PaymentInvoice
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
                       <PermissionGate moduleId="payment" optionId="payment_discountfield">
                         <div>
-                          <label style={{ display: 'block', marginBottom: '5px', fontWeight: '600' }}>Additional Discount (QAR)</label>
+                          <label style={{ display: 'block', marginBottom: '5px', fontWeight: '600' }}>New Additional Discount (QAR)</label>
                           <input
                             type="number"
-                            name="discount"
-                            value={paymentForm.discount}
+                            name="additionalDiscount"
+                            value={paymentForm.additionalDiscount}
                             onChange={handlePaymentChange}
                             min="0"
-                            max={paymentDiscountLimit}
+                            max={Math.max(0, paymentDiscountLimit - paymentForm.existingDiscount)}
                             step="0.01"
                             style={{ width: '100%', padding: '10px', border: '1px solid #d1d5db', borderRadius: '6px', fontSize: '14px' }}
                           />

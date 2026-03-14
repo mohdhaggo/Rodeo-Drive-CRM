@@ -12,6 +12,11 @@ interface Customer {
   mobile: string;
   email?: string;
   address?: string | null;
+  heardOfUs?: string;
+  referredByName?: string;
+  referredByMobile?: string;
+  socialMediaPlatform?: string;
+  otherSource?: string;
   registeredVehiclesCount: number;
   completedServicesCount: number;
   customerSince: string;
@@ -66,6 +71,11 @@ interface FormData {
   mobile: string;
   email: string;
   address: string;
+  heardOfUs: string;
+  referredByName: string;
+  referredByMobile: string;
+  socialMediaPlatform: string;
+  otherSource: string;
 }
 
 interface VehicleFormData {
@@ -83,8 +93,44 @@ interface FormErrors {
   mobile?: string;
   email?: string;
   address?: string;
+  heardOfUs?: string;
+  referredByName?: string;
+  referredByMobile?: string;
+  socialMediaPlatform?: string;
+  otherSource?: string;
   vehicle?: string;
 }
+
+const INITIAL_CUSTOMER_FORM_DATA: FormData = {
+  name: '',
+  mobile: '',
+  email: '',
+  address: '',
+  heardOfUs: '',
+  referredByName: '',
+  referredByMobile: '',
+  socialMediaPlatform: '',
+  otherSource: ''
+};
+
+const HEARD_OF_US_OPTIONS = [
+  { value: '', label: 'Select source' },
+  { value: 'Referred by Person', label: 'Referred by Person' },
+  { value: 'Social Media', label: 'Social Media' },
+  { value: 'Walk-in', label: 'Walk-in' },
+  { value: 'Other', label: 'Other' }
+];
+
+const SOCIAL_MEDIA_PLATFORM_OPTIONS = [
+  { value: '', label: 'Select platform' },
+  { value: 'Instagram', label: 'Instagram' },
+  { value: 'Facebook', label: 'Facebook' },
+  { value: 'TikTok', label: 'TikTok' },
+  { value: 'Snapchat', label: 'Snapchat' },
+  { value: 'X (Twitter)', label: 'X (Twitter)' },
+  { value: 'YouTube', label: 'YouTube' },
+  { value: 'LinkedIn', label: 'LinkedIn' }
+];
 
 // Utility function to build completed service counts
 const buildCompletedServiceCounts = (orders: JobOrder[], customers: Customer[]) => {
@@ -565,6 +611,34 @@ const DetailsView: React.FC<DetailsViewProps> = ({
                 <span className="pim-info-value">{customer.address || 'Not provided'}</span>
               </div>
               <div className="pim-info-item">
+                <span className="pim-info-label">Heard Of Us</span>
+                <span className="pim-info-value">{customer.heardOfUs || 'Not provided'}</span>
+              </div>
+              {customer.heardOfUs === 'Referred by Person' && (
+                <>
+                  <div className="pim-info-item">
+                    <span className="pim-info-label">Referrer Name</span>
+                    <span className="pim-info-value">{customer.referredByName || 'Not provided'}</span>
+                  </div>
+                  <div className="pim-info-item">
+                    <span className="pim-info-label">Referrer Mobile</span>
+                    <span className="pim-info-value">{customer.referredByMobile || 'Not provided'}</span>
+                  </div>
+                </>
+              )}
+              {customer.heardOfUs === 'Social Media' && (
+                <div className="pim-info-item">
+                  <span className="pim-info-label">Social Media Platform</span>
+                  <span className="pim-info-value">{customer.socialMediaPlatform || 'Not provided'}</span>
+                </div>
+              )}
+              {customer.heardOfUs === 'Other' && (
+                <div className="pim-info-item">
+                  <span className="pim-info-label">Other Source</span>
+                  <span className="pim-info-value">{customer.otherSource || 'Not provided'}</span>
+                </div>
+              )}
+              <div className="pim-info-item">
                 <span className="pim-info-label">Registered Vehicles</span>
                 <span className="pim-info-value">
                   <span className="count-badge">{customer.registeredVehiclesCount} vehicles</span>
@@ -791,7 +865,22 @@ const CustomerManagement: React.FC<CustomerManagementProps> = ({ onNavigate, ret
         
         // Also merge with any locally saved customers that might not be in the cloud yet
         const savedCustomers = JSON.parse(localStorage.getItem('jobOrderCustomers') || '[]') as Customer[];
-        const allCustomers: Customer[] = [...mappedCustomers];
+        const savedCustomerById = new Map(savedCustomers.map((saved) => [saved.id, saved]));
+        const allCustomers: Customer[] = mappedCustomers.map((customer) => {
+          const saved = savedCustomerById.get(customer.id);
+          if (!saved) {
+            return customer;
+          }
+
+          return {
+            ...customer,
+            heardOfUs: saved.heardOfUs || '',
+            referredByName: saved.referredByName || '',
+            referredByMobile: saved.referredByMobile || '',
+            socialMediaPlatform: saved.socialMediaPlatform || '',
+            otherSource: saved.otherSource || ''
+          };
+        });
         savedCustomers.forEach((saved: Customer) => {
           if (!allCustomers.some(customer => customer.id === saved.id)) {
             allCustomers.push(saved);
@@ -834,7 +923,7 @@ const CustomerManagement: React.FC<CustomerManagementProps> = ({ onNavigate, ret
 
   // Form states
   const [formData, setFormData] = useState<FormData>({
-    name: '', mobile: '', email: '', address: ''
+    ...INITIAL_CUSTOMER_FORM_DATA
   });
   
   const [vehicleData, setVehicleData] = useState<VehicleFormData>({
@@ -1026,12 +1115,36 @@ const CustomerManagement: React.FC<CustomerManagementProps> = ({ onNavigate, ret
     
     if (!formData.mobile.trim()) {
       errors.mobile = 'Mobile number is required';
-    } else if (!/^\d{10,}$/.test(formData.mobile.replace(/\D/g, ''))) {
+    } else if (!/^\d{8,}$/.test(formData.mobile.replace(/\D/g, ''))) {
       errors.mobile = 'Please enter a valid mobile number';
     }
     
     if (formData.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
       errors.email = 'Please enter a valid email address';
+    }
+
+    if (!formData.heardOfUs.trim()) {
+      errors.heardOfUs = 'Please select how the customer heard about us';
+    }
+
+    if (formData.heardOfUs === 'Referred by Person') {
+      if (!formData.referredByName.trim()) {
+        errors.referredByName = 'Referrer name is required';
+      }
+
+      if (!formData.referredByMobile.trim()) {
+        errors.referredByMobile = 'Referrer mobile number is required';
+      } else if (!/^\d{8,}$/.test(formData.referredByMobile.replace(/\D/g, ''))) {
+        errors.referredByMobile = 'Please enter a valid referrer mobile number';
+      }
+    }
+
+    if (formData.heardOfUs === 'Social Media' && !formData.socialMediaPlatform.trim()) {
+      errors.socialMediaPlatform = 'Please select a social media platform';
+    }
+
+    if (formData.heardOfUs === 'Other' && !formData.otherSource.trim()) {
+      errors.otherSource = 'Please provide details';
     }
     
     setFormErrors(errors);
@@ -1061,6 +1174,11 @@ const CustomerManagement: React.FC<CustomerManagementProps> = ({ onNavigate, ret
         mobile: formData.mobile.trim(),
         email: formData.email.trim(),
         address: formData.address.trim(),
+        heardOfUs: formData.heardOfUs,
+        referredByName: formData.heardOfUs === 'Referred by Person' ? formData.referredByName.trim() : '',
+        referredByMobile: formData.heardOfUs === 'Referred by Person' ? formData.referredByMobile.trim() : '',
+        socialMediaPlatform: formData.heardOfUs === 'Social Media' ? formData.socialMediaPlatform : '',
+        otherSource: formData.heardOfUs === 'Other' ? formData.otherSource.trim() : '',
         registeredVehiclesCount: 0,
         completedServicesCount: 0,
         customerSince: new Date().toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' }),
@@ -1095,18 +1213,32 @@ const CustomerManagement: React.FC<CustomerManagementProps> = ({ onNavigate, ret
             mobile: createdCustomer.mobile || '',
             email: createdCustomer.email || undefined,
             address: createdCustomer.address || null,
+            heardOfUs: newCustomer.heardOfUs,
+            referredByName: newCustomer.referredByName,
+            referredByMobile: newCustomer.referredByMobile,
+            socialMediaPlatform: newCustomer.socialMediaPlatform,
+            otherSource: newCustomer.otherSource,
             registeredVehiclesCount: 0,
             completedServicesCount: 0,
             customerSince: new Date().toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' }),
             vehicles: []
           };
+
+          const currentSaved = JSON.parse(localStorage.getItem('jobOrderCustomers') || '[]') as Customer[];
+          const existingSavedIndex = currentSaved.findIndex((customer) => customer.id === mappedCustomer.id);
+          if (existingSavedIndex >= 0) {
+            currentSaved[existingSavedIndex] = { ...currentSaved[existingSavedIndex], ...mappedCustomer };
+          } else {
+            currentSaved.push(mappedCustomer);
+          }
+          localStorage.setItem('jobOrderCustomers', JSON.stringify(currentSaved));
           
           const updatedCustomers = [mappedCustomer, ...customers];
           setCustomers(updatedCustomers);
           setSearchResults(prev => [mappedCustomer, ...prev]);
           
           setShowAddCustomerModal(false);
-          setFormData({ name: '', mobile: '', email: '', address: '' });
+          setFormData({ ...INITIAL_CUSTOMER_FORM_DATA });
           setFormErrors({});
           setSaving(false);
           await showAlert('Success', `Customer "${mappedCustomer.name}" added successfully!`, 'success');
@@ -1122,7 +1254,7 @@ const CustomerManagement: React.FC<CustomerManagementProps> = ({ onNavigate, ret
           localStorage.setItem('jobOrderCustomers', JSON.stringify(currentSaved));
           
           setShowAddCustomerModal(false);
-          setFormData({ name: '', mobile: '', email: '', address: '' });
+          setFormData({ ...INITIAL_CUSTOMER_FORM_DATA });
           setFormErrors({});
           setSaving(false);
           await showAlert('Success', `Customer "${newCustomer.name}" added successfully (offline)!`, 'success');
@@ -1156,11 +1288,25 @@ const CustomerManagement: React.FC<CustomerManagementProps> = ({ onNavigate, ret
               mobile: createdCustomer.mobile || '',
               email: createdCustomer.email || undefined,
               address: createdCustomer.address || null,
+              heardOfUs: pendingCustomer.heardOfUs,
+              referredByName: pendingCustomer.referredByName,
+              referredByMobile: pendingCustomer.referredByMobile,
+              socialMediaPlatform: pendingCustomer.socialMediaPlatform,
+              otherSource: pendingCustomer.otherSource,
               registeredVehiclesCount: 0,
               completedServicesCount: 0,
               customerSince: new Date().toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' }),
               vehicles: []
             };
+
+            const savedCustomers = JSON.parse(localStorage.getItem('jobOrderCustomers') || '[]') as Customer[];
+            const existingSavedIndex = savedCustomers.findIndex((customer) => customer.id === mappedCustomer.id);
+            if (existingSavedIndex >= 0) {
+              savedCustomers[existingSavedIndex] = { ...savedCustomers[existingSavedIndex], ...mappedCustomer };
+            } else {
+              savedCustomers.push(mappedCustomer);
+            }
+            localStorage.setItem('jobOrderCustomers', JSON.stringify(savedCustomers));
             
             const updatedCustomers = [mappedCustomer, ...customers];
             setCustomers(updatedCustomers);
@@ -1181,7 +1327,7 @@ const CustomerManagement: React.FC<CustomerManagementProps> = ({ onNavigate, ret
         }
         
         setShowAddCustomerModal(false);
-        setFormData({ name: '', mobile: '', email: '', address: '' });
+        setFormData({ ...INITIAL_CUSTOMER_FORM_DATA });
         setFormErrors({});
         setShowDuplicateWarning(false);
         setPendingCustomer(null);
@@ -1209,7 +1355,12 @@ const CustomerManagement: React.FC<CustomerManagementProps> = ({ onNavigate, ret
         name: customer.name, 
         mobile: customer.mobile, 
         email: customer.email || '', 
-        address: customer.address || '' 
+        address: customer.address || '',
+        heardOfUs: customer.heardOfUs || '',
+        referredByName: customer.referredByName || '',
+        referredByMobile: customer.referredByMobile || '',
+        socialMediaPlatform: customer.socialMediaPlatform || '',
+        otherSource: customer.otherSource || ''
       });
       setShowEditCustomerModal(true);
       setFormErrors({});
@@ -1249,11 +1400,20 @@ const CustomerManagement: React.FC<CustomerManagementProps> = ({ onNavigate, ret
       const customerIndex = savedCustomers.findIndex((c: Customer) => c.id === editingCustomerId);
       if (customerIndex !== -1) {
         savedCustomers[customerIndex] = { ...savedCustomers[customerIndex], ...formData };
-        localStorage.setItem('jobOrderCustomers', JSON.stringify(savedCustomers));
+      } else if (editingCustomerId) {
+        savedCustomers.push({
+          ...formData,
+          id: editingCustomerId,
+          registeredVehiclesCount: selectedCustomer?.registeredVehiclesCount || 0,
+          completedServicesCount: selectedCustomer?.completedServicesCount || 0,
+          customerSince: selectedCustomer?.customerSince || new Date().toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' }),
+          vehicles: selectedCustomer?.vehicles || []
+        });
       }
+      localStorage.setItem('jobOrderCustomers', JSON.stringify(savedCustomers));
       
       setShowEditCustomerModal(false);
-      setFormData({ name: '', mobile: '', email: '', address: '' });
+      setFormData({ ...INITIAL_CUSTOMER_FORM_DATA });
       setFormErrors({});
       await showAlert('Success', 'Customer updated successfully!', 'success');
     } catch (error) {
@@ -1562,6 +1722,81 @@ const CustomerManagement: React.FC<CustomerManagementProps> = ({ onNavigate, ret
     { value: 'Motorcycle', label: 'Motorcycle' }
   ];
 
+  const handleHeardOfUsChange = (heardOfUs: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      heardOfUs,
+      referredByName: heardOfUs === 'Referred by Person' ? prev.referredByName : '',
+      referredByMobile: heardOfUs === 'Referred by Person' ? prev.referredByMobile : '',
+      socialMediaPlatform: heardOfUs === 'Social Media' ? prev.socialMediaPlatform : '',
+      otherSource: heardOfUs === 'Other' ? prev.otherSource : ''
+    }));
+  };
+
+  const renderHeardOfUsFields = (idPrefix: string) => (
+    <>
+      <FormField
+        label="Heard Of Us"
+        id={`${idPrefix}HeardOfUs`}
+        type="select"
+        value={formData.heardOfUs}
+        onChange={(e) => handleHeardOfUsChange(e.target.value)}
+        options={HEARD_OF_US_OPTIONS}
+        error={formErrors.heardOfUs}
+        required
+      />
+
+      {formData.heardOfUs === 'Referred by Person' && (
+        <>
+          <FormField
+            label="Referrer Name"
+            id={`${idPrefix}ReferredByName`}
+            placeholder="Enter referrer name"
+            value={formData.referredByName}
+            onChange={(e) => setFormData(prev => ({ ...prev, referredByName: e.target.value }))}
+            error={formErrors.referredByName}
+            required
+          />
+          <FormField
+            label="Referrer Mobile Number"
+            id={`${idPrefix}ReferredByMobile`}
+            type="tel"
+            placeholder="Enter referrer mobile number"
+            value={formData.referredByMobile}
+            onChange={(e) => setFormData(prev => ({ ...prev, referredByMobile: e.target.value }))}
+            error={formErrors.referredByMobile}
+            required
+          />
+        </>
+      )}
+
+      {formData.heardOfUs === 'Social Media' && (
+        <FormField
+          label="Social Media Platform"
+          id={`${idPrefix}SocialMediaPlatform`}
+          type="select"
+          value={formData.socialMediaPlatform}
+          onChange={(e) => setFormData(prev => ({ ...prev, socialMediaPlatform: e.target.value }))}
+          options={SOCIAL_MEDIA_PLATFORM_OPTIONS}
+          error={formErrors.socialMediaPlatform}
+          required
+        />
+      )}
+
+      {formData.heardOfUs === 'Other' && (
+        <FormField
+          label="Other Source Details"
+          id={`${idPrefix}OtherSource`}
+          placeholder="Enter source details"
+          value={formData.otherSource}
+          onChange={(e) => setFormData(prev => ({ ...prev, otherSource: e.target.value }))}
+          error={formErrors.otherSource}
+          required
+        />
+      )}
+    </>
+  );
+
   if (viewMode === 'details' && selectedCustomer) {
     return (
       <>
@@ -1624,6 +1859,7 @@ const CustomerManagement: React.FC<CustomerManagementProps> = ({ onNavigate, ret
               onChange={(e) => setFormData(prev => ({ ...prev, address: e.target.value }))}
               error={formErrors.address}
             />
+            {renderHeardOfUsFields('detailsEditCustomer')}
           </form>
         </Modal>
 
@@ -1775,7 +2011,7 @@ const CustomerManagement: React.FC<CustomerManagementProps> = ({ onNavigate, ret
               <button
                 className="btn-new-customer"
                 onClick={() => {
-                  setFormData({ name: '', mobile: '', email: '', address: '' });
+                  setFormData({ ...INITIAL_CUSTOMER_FORM_DATA });
                   setFormErrors({});
                   setShowAddCustomerModal(true);
                 }}
@@ -1894,6 +2130,7 @@ const CustomerManagement: React.FC<CustomerManagementProps> = ({ onNavigate, ret
             onChange={(e) => setFormData(prev => ({ ...prev, address: e.target.value }))}
             error={formErrors.address}
           />
+          {renderHeardOfUsFields('newCustomer')}
         </form>
       </Modal>
 
@@ -1945,6 +2182,7 @@ const CustomerManagement: React.FC<CustomerManagementProps> = ({ onNavigate, ret
             onChange={(e) => setFormData(prev => ({ ...prev, address: e.target.value }))}
             error={formErrors.address}
           />
+          {renderHeardOfUsFields('editCustomer')}
         </form>
       </Modal>
 

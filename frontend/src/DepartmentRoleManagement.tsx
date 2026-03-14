@@ -3,6 +3,7 @@ import './DepartmentRoleManagement.css'
 import PermissionGate from './PermissionGate'
 
 const ROLE_STORAGE_KEY = 'department_roles'
+const DEPARTMENT_ROLES_UPDATED_EVENT = 'department-roles-updated'
 
 interface Role {
   id: number
@@ -613,6 +614,7 @@ function DepartmentRoleManagement() {
 
   useEffect(() => {
     localStorage.setItem(ROLE_STORAGE_KEY, JSON.stringify(departments))
+    window.dispatchEvent(new Event(DEPARTMENT_ROLES_UPDATED_EVENT))
   }, [departments])
 
   const openAddDepartmentModal = () => {

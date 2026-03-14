@@ -64,6 +64,25 @@ const mergeJobOrders = (localOrders: any[], amplifyOrders: any[]): any[] => {
   return Array.from(orderMap.values());
 };
 
+const HEARD_OF_US_OPTIONS = [
+  { value: '', label: 'Select source' },
+  { value: 'Referred by Person', label: 'Referred by Person' },
+  { value: 'Social Media', label: 'Social Media' },
+  { value: 'Walk-in', label: 'Walk-in' },
+  { value: 'Other', label: 'Other' }
+];
+
+const SOCIAL_MEDIA_PLATFORM_OPTIONS = [
+  { value: '', label: 'Select platform' },
+  { value: 'Instagram', label: 'Instagram' },
+  { value: 'Facebook', label: 'Facebook' },
+  { value: 'TikTok', label: 'TikTok' },
+  { value: 'Snapchat', label: 'Snapchat' },
+  { value: 'X (Twitter)', label: 'X (Twitter)' },
+  { value: 'YouTube', label: 'YouTube' },
+  { value: 'LinkedIn', label: 'LinkedIn' }
+];
+
 // ============================================
 // MAIN COMPONENT
 // ============================================
@@ -980,6 +999,11 @@ function NewJobScreen({ currentUser, onClose, onSubmit, prefill }: NewJobScreenP
         customerId: customerData.id,
         email: customerData.email,
         address: customerData.address || null,
+        heardOfUs: customerData.heardOfUs || null,
+        referredByName: customerData.referredByName || null,
+        referredByMobile: customerData.referredByMobile || null,
+        socialMediaPlatform: customerData.socialMediaPlatform || null,
+        otherSource: customerData.otherSource || null,
         registeredVehicles: (() => {
           const count = customerData.registeredVehiclesCount ?? customerData.vehicles?.length ?? 1;
           return `${count} ${count === 1 ? 'vehicle' : 'vehicles'}`;
@@ -1929,6 +1953,11 @@ function StepOneCustomer({ customerType, setCustomerType, customerData, setCusto
   const [email, setEmail] = useState<string>('');
   const [phone, setPhone] = useState<string>('');
   const [address, setAddress] = useState<string>('');
+  const [heardOfUs, setHeardOfUs] = useState<string>('');
+  const [referredByName, setReferredByName] = useState<string>('');
+  const [referredByMobile, setReferredByMobile] = useState<string>('');
+  const [socialMediaPlatform, setSocialMediaPlatform] = useState<string>('');
+  const [otherSource, setOtherSource] = useState<string>('');
   const [smartSearch, setSmartSearch] = useState<string>('');
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [showResults, setShowResults] = useState<boolean>(false);
@@ -1937,18 +1966,32 @@ function StepOneCustomer({ customerType, setCustomerType, customerData, setCusto
   const [pendingCustomer, setPendingCustomer] = useState<any>(null);
   const [saving, setSaving] = useState<boolean>(false);
 
+  const requiresReferrer = heardOfUs === 'Referred by Person';
+  const requiresSocialMedia = heardOfUs === 'Social Media';
+  const requiresOtherSource = heardOfUs === 'Other';
+  const isSourceDataValid =
+    !!heardOfUs &&
+    (!requiresReferrer || (!!referredByName.trim() && !!referredByMobile.trim())) &&
+    (!requiresSocialMedia || !!socialMediaPlatform) &&
+    (!requiresOtherSource || !!otherSource.trim());
+
   useEffect(() => {
     setCustomerData(null);
     setSmartSearch('');
     setSearchResults([]);
     setShowResults(false);
     setVerifiedCustomer(null);
+    setHeardOfUs('');
+    setReferredByName('');
+    setReferredByMobile('');
+    setSocialMediaPlatform('');
+    setOtherSource('');
   }, [customerType, setCustomerData]);
 
   const handleSave = () => {
     if (saving) return; // Prevent multiple clicks
     
-    if (fullName && phone) {
+    if (fullName && phone && isSourceDataValid) {
       setSaving(true);
       
       // Get fresh customer list directly from localStorage + demo data
@@ -1971,6 +2014,11 @@ function StepOneCustomer({ customerType, setCustomerType, customerData, setCusto
           email,
           mobile: phone,
           address: address || null,
+          heardOfUs,
+          referredByName: requiresReferrer ? referredByName : '',
+          referredByMobile: requiresReferrer ? referredByMobile : '',
+          socialMediaPlatform: requiresSocialMedia ? socialMediaPlatform : '',
+          otherSource: requiresOtherSource ? otherSource : '',
           registeredVehiclesCount: 0,
           completedServicesCount: 0,
           customerSince: new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }),
@@ -1987,6 +2035,11 @@ function StepOneCustomer({ customerType, setCustomerType, customerData, setCusto
           email,
           mobile: phone,
           address: address || null,
+          heardOfUs,
+          referredByName: requiresReferrer ? referredByName : '',
+          referredByMobile: requiresReferrer ? referredByMobile : '',
+          socialMediaPlatform: requiresSocialMedia ? socialMediaPlatform : '',
+          otherSource: requiresOtherSource ? otherSource : '',
           registeredVehiclesCount: 0,
           completedServicesCount: 0,
           customerSince: new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }),
@@ -2114,7 +2167,85 @@ function StepOneCustomer({ customerType, setCustomerType, customerData, setCusto
                 <input value={address} onChange={(e) => setAddress(e.target.value)} placeholder="Optional" />
               </div>
             </div>
-            <button className="btn btn-primary" onClick={handleSave} disabled={saving || !fullName ||  !phone}>
+
+            <div className="form-row">
+              <div className="form-group">
+                <label>Heard Of Us *</label>
+                <select
+                  value={heardOfUs}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    setHeardOfUs(value);
+                    if (value !== 'Referred by Person') {
+                      setReferredByName('');
+                      setReferredByMobile('');
+                    }
+                    if (value !== 'Social Media') {
+                      setSocialMediaPlatform('');
+                    }
+                    if (value !== 'Other') {
+                      setOtherSource('');
+                    }
+                  }}
+                >
+                  {HEARD_OF_US_OPTIONS.map((option) => (
+                    <option key={option.value} value={option.value}>{option.label}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            {requiresReferrer && (
+              <div className="form-row">
+                <div className="form-group">
+                  <label>Referrer Name *</label>
+                  <input
+                    value={referredByName}
+                    onChange={(e) => setReferredByName(e.target.value)}
+                    placeholder="Enter referrer name"
+                  />
+                </div>
+                <div className="form-group">
+                  <label>Referrer Mobile *</label>
+                  <input
+                    value={referredByMobile}
+                    onChange={(e) => setReferredByMobile(e.target.value)}
+                    placeholder="Enter referrer mobile number"
+                  />
+                </div>
+              </div>
+            )}
+
+            {requiresSocialMedia && (
+              <div className="form-row">
+                <div className="form-group">
+                  <label>Social Media Platform *</label>
+                  <select
+                    value={socialMediaPlatform}
+                    onChange={(e) => setSocialMediaPlatform(e.target.value)}
+                  >
+                    {SOCIAL_MEDIA_PLATFORM_OPTIONS.map((option) => (
+                      <option key={option.value} value={option.value}>{option.label}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+            )}
+
+            {requiresOtherSource && (
+              <div className="form-row">
+                <div className="form-group">
+                  <label>Other Source Details *</label>
+                  <input
+                    value={otherSource}
+                    onChange={(e) => setOtherSource(e.target.value)}
+                    placeholder="Enter source details"
+                  />
+                </div>
+              </div>
+            )}
+
+            <button className="btn btn-primary" onClick={handleSave} disabled={saving || !fullName ||  !phone || !isSourceDataValid}>
               {saving ? 'Saving...' : 'Save Customer'}
             </button>
           </div>
@@ -2215,6 +2346,34 @@ function StepOneCustomer({ customerType, setCustomerType, customerData, setCusto
                     </div>
                   )}
                   <div className="verified-row">
+                    <span className="verified-label">Heard Of Us:</span>
+                    <span className="verified-value">{verifiedCustomer.heardOfUs || 'Not provided'}</span>
+                  </div>
+                  {verifiedCustomer.heardOfUs === 'Referred by Person' && (
+                    <>
+                      <div className="verified-row">
+                        <span className="verified-label">Referrer Name:</span>
+                        <span className="verified-value">{verifiedCustomer.referredByName || 'Not provided'}</span>
+                      </div>
+                      <div className="verified-row">
+                        <span className="verified-label">Referrer Mobile:</span>
+                        <span className="verified-value">{verifiedCustomer.referredByMobile || 'Not provided'}</span>
+                      </div>
+                    </>
+                  )}
+                  {verifiedCustomer.heardOfUs === 'Social Media' && (
+                    <div className="verified-row">
+                      <span className="verified-label">Social Platform:</span>
+                      <span className="verified-value">{verifiedCustomer.socialMediaPlatform || 'Not provided'}</span>
+                    </div>
+                  )}
+                  {verifiedCustomer.heardOfUs === 'Other' && (
+                    <div className="verified-row">
+                      <span className="verified-label">Other Source:</span>
+                      <span className="verified-value">{verifiedCustomer.otherSource || 'Not provided'}</span>
+                    </div>
+                  )}
+                  <div className="verified-row">
                     <span className="verified-label">Registered Vehicles:</span>
                     <span className="verified-value">{verifiedCustomer.registeredVehiclesCount}</span>
                   </div>
@@ -2274,6 +2433,34 @@ function StepOneCustomer({ customerType, setCustomerType, customerData, setCusto
                 </div>
               )}
               <div className="verified-row">
+                <span className="verified-label">Heard Of Us:</span>
+                <span className="verified-value">{verifiedCustomer.heardOfUs || 'Not provided'}</span>
+              </div>
+              {verifiedCustomer.heardOfUs === 'Referred by Person' && (
+                <>
+                  <div className="verified-row">
+                    <span className="verified-label">Referrer Name:</span>
+                    <span className="verified-value">{verifiedCustomer.referredByName || 'Not provided'}</span>
+                  </div>
+                  <div className="verified-row">
+                    <span className="verified-label">Referrer Mobile:</span>
+                    <span className="verified-value">{verifiedCustomer.referredByMobile || 'Not provided'}</span>
+                  </div>
+                </>
+              )}
+              {verifiedCustomer.heardOfUs === 'Social Media' && (
+                <div className="verified-row">
+                  <span className="verified-label">Social Platform:</span>
+                  <span className="verified-value">{verifiedCustomer.socialMediaPlatform || 'Not provided'}</span>
+                </div>
+              )}
+              {verifiedCustomer.heardOfUs === 'Other' && (
+                <div className="verified-row">
+                  <span className="verified-label">Other Source:</span>
+                  <span className="verified-value">{verifiedCustomer.otherSource || 'Not provided'}</span>
+                </div>
+              )}
+              <div className="verified-row">
                 <span className="verified-label">Registered Vehicles:</span>
                 <span className="verified-value">{verifiedCustomer.registeredVehiclesCount}</span>
               </div>
@@ -2295,6 +2482,11 @@ function StepOneCustomer({ customerType, setCustomerType, customerData, setCusto
                 setEmail('');
                 setPhone('');
                 setAddress('');
+                setHeardOfUs('');
+                setReferredByName('');
+                setReferredByMobile('');
+                setSocialMediaPlatform('');
+                setOtherSource('');
               }}
             >
               <i className="fas fa-edit"></i> Edit Customer
@@ -3051,6 +3243,34 @@ function StepFourConfirm({ customerData, vehicleData, orderType, selectedComplet
                 <span className="pim-info-value">{customerData.address || 'Not provided'}</span>
               </div>
               <div className="pim-info-item">
+                <span className="pim-info-label">Heard Of Us</span>
+                <span className="pim-info-value">{customerData.heardOfUs || 'Not provided'}</span>
+              </div>
+              {customerData.heardOfUs === 'Referred by Person' && (
+                <>
+                  <div className="pim-info-item">
+                    <span className="pim-info-label">Referrer Name</span>
+                    <span className="pim-info-value">{customerData.referredByName || 'Not provided'}</span>
+                  </div>
+                  <div className="pim-info-item">
+                    <span className="pim-info-label">Referrer Mobile</span>
+                    <span className="pim-info-value">{customerData.referredByMobile || 'Not provided'}</span>
+                  </div>
+                </>
+              )}
+              {customerData.heardOfUs === 'Social Media' && (
+                <div className="pim-info-item">
+                  <span className="pim-info-label">Social Media Platform</span>
+                  <span className="pim-info-value">{customerData.socialMediaPlatform || 'Not provided'}</span>
+                </div>
+              )}
+              {customerData.heardOfUs === 'Other' && (
+                <div className="pim-info-item">
+                  <span className="pim-info-label">Other Source</span>
+                  <span className="pim-info-value">{customerData.otherSource || 'Not provided'}</span>
+                </div>
+              )}
+              <div className="pim-info-item">
                 <span className="pim-info-label">Registered Vehicles</span>
                 <span className="pim-info-value">
                   <span className="count-badge">{customerData.registeredVehiclesCount || 0} vehicles</span>
@@ -3441,6 +3661,34 @@ function CustomerDetailsCard({ order }: OrderCardProps) {
           <span className="pim-info-label">Home Address</span>
           <span className="pim-info-value">{order.customerDetails?.address || 'Not provided'}</span>
         </div>
+        <div className="pim-info-item">
+          <span className="pim-info-label">Heard Of Us</span>
+          <span className="pim-info-value">{order.customerDetails?.heardOfUs || 'Not provided'}</span>
+        </div>
+        {order.customerDetails?.heardOfUs === 'Referred by Person' && (
+          <>
+            <div className="pim-info-item">
+              <span className="pim-info-label">Referrer Name</span>
+              <span className="pim-info-value">{order.customerDetails?.referredByName || 'Not provided'}</span>
+            </div>
+            <div className="pim-info-item">
+              <span className="pim-info-label">Referrer Mobile</span>
+              <span className="pim-info-value">{order.customerDetails?.referredByMobile || 'Not provided'}</span>
+            </div>
+          </>
+        )}
+        {order.customerDetails?.heardOfUs === 'Social Media' && (
+          <div className="pim-info-item">
+            <span className="pim-info-label">Social Media Platform</span>
+            <span className="pim-info-value">{order.customerDetails?.socialMediaPlatform || 'Not provided'}</span>
+          </div>
+        )}
+        {order.customerDetails?.heardOfUs === 'Other' && (
+          <div className="pim-info-item">
+            <span className="pim-info-label">Other Source</span>
+            <span className="pim-info-value">{order.customerDetails?.otherSource || 'Not provided'}</span>
+          </div>
+        )}
         <div className="pim-info-item">
           <span className="pim-info-label">Registered Vehicles</span>
           <span className="pim-info-value">

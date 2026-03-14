@@ -994,6 +994,58 @@
   margin-top: 15px;
 }
 
+.inspection-module .bulk-status-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 4px 0 14px;
+  padding: 10px 12px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  background: #f8fafc;
+}
+
+.inspection-module .bulk-status-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--primary-color);
+  margin-right: 2px;
+}
+
+.inspection-module .bulk-status-btn {
+  border: 1px solid transparent;
+  background: #fff;
+  border-radius: 6px;
+  padding: 6px 10px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.inspection-module .bulk-status-btn:hover {
+  transform: translateY(-1px);
+}
+
+.inspection-module .bulk-status-btn.pass {
+  color: #1e8449;
+  border-color: #b7e1c2;
+  background: #ecfdf3;
+}
+
+.inspection-module .bulk-status-btn.attention {
+  color: #b36b00;
+  border-color: #f4d28c;
+  background: #fff8e6;
+}
+
+.inspection-module .bulk-status-btn.failed {
+  color: #c0392b;
+  border-color: #f2b8b5;
+  background: #fff1f0;
+}
+
 .inspection-module .inspection-item-wrapper {
   width: 100%;
   background-color: #f8f9fa;

@@ -1278,10 +1278,7 @@ const ExitPermitManagement = ({ currentUser }: ExitPermitManagementProps) => {
 
   useEffect(() => {
     const storedOrders = getStoredJobOrders() as JobOrder[];
-    const orders = Array.isArray(storedOrders) && storedOrders.length > 0
-      ? storedOrders
-      : createCompleteJobOrders();
-    setAllOrders(orders);
+    setAllOrders(Array.isArray(storedOrders) ? storedOrders : []);
   }, []);
 
   // Click outside handler for dropdown

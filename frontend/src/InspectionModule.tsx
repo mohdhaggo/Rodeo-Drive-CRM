@@ -715,6 +715,35 @@ function InspectionModule({ currentUser }: InspectionModuleProps) {
     })
   }
 
+  const updateGroupItemsStatus = (
+    sectionKey: SectionKey,
+    itemIds: string[],
+    status: Exclude<ItemStatus, null>
+  ) => {
+    if (itemIds.length === 0) return
+
+    setInspectionState((prev) => {
+      const updated = { ...prev }
+      const section = { ...updated[sectionKey] }
+      const items = { ...section.items }
+
+      itemIds.forEach((itemId) => {
+        const current = items[itemId] || { status: null, comment: '', photos: [] }
+        const nextItem: InspectionItemState = { ...current, status }
+
+        if (status === 'pass') {
+          nextItem.comment = ''
+        }
+
+        items[itemId] = nextItem
+      })
+
+      section.items = items
+      updated[sectionKey] = section
+      return updated
+    })
+  }
+
   const updateItemComment = (sectionKey: SectionKey, itemId: string, comment: string) => {
     setInspectionState((prev) => {
       const updated = { ...prev }
@@ -1971,6 +2000,7 @@ function InspectionModule({ currentUser }: InspectionModuleProps) {
                         {sectionConfig[sectionKey].groups.map((group) => {
                           const groupKey = `${sectionKey}-${group.title}`
                           const isGroupExpanded = expandedGroups[groupKey] !== false
+                          const groupItemIds = group.items.map((item) => item.id)
                           return (
                             <div className="side-section" key={group.title}>
                               <div className="side-title">
@@ -1985,6 +2015,30 @@ function InspectionModule({ currentUser }: InspectionModuleProps) {
                               </div>
                               {isGroupExpanded && (
                                 <div className="section-items-row">
+                                  <div className="bulk-status-actions">
+                                    <span className="bulk-status-label">Select all:</span>
+                                    <button
+                                      type="button"
+                                      className="bulk-status-btn pass"
+                                      onClick={() => updateGroupItemsStatus(sectionKey, groupItemIds, 'pass')}
+                                    >
+                                      All Pass
+                                    </button>
+                                    <button
+                                      type="button"
+                                      className="bulk-status-btn attention"
+                                      onClick={() => updateGroupItemsStatus(sectionKey, groupItemIds, 'attention')}
+                                    >
+                                      All Attention
+                                    </button>
+                                    <button
+                                      type="button"
+                                      className="bulk-status-btn failed"
+                                      onClick={() => updateGroupItemsStatus(sectionKey, groupItemIds, 'failed')}
+                                    >
+                                      All Failed
+                                    </button>
+                                  </div>
                                   {group.items.map((item) => {
                                     const itemState = sectionState.items[item.id]
                                     const showComments =
