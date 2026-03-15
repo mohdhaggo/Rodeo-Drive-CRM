@@ -1,0 +1,2270 @@
+{
+ "Parameters": {
+  "DynamoDBModelTableReadIOPS": {
+   "Type": "Number",
+   "Default": 5,
+   "Description": "The number of read IOPS the table should support."
+  },
+  "DynamoDBModelTableWriteIOPS": {
+   "Type": "Number",
+   "Default": 5,
+   "Description": "The number of write IOPS the table should support."
+  },
+  "DynamoDBBillingMode": {
+   "Type": "String",
+   "Default": "PAY_PER_REQUEST",
+   "AllowedValues": [
+    "PAY_PER_REQUEST",
+    "PROVISIONED"
+   ],
+   "Description": "Configure @model types to create DynamoDB tables with PAY_PER_REQUEST or PROVISIONED billing modes."
+  },
+  "DynamoDBEnablePointInTimeRecovery": {
+   "Type": "String",
+   "Default": "false",
+   "AllowedValues": [
+    "true",
+    "false"
+   ],
+   "Description": "Whether to enable Point in Time Recovery on the table."
+  },
+  "DynamoDBEnableServerSideEncryption": {
+   "Type": "String",
+   "Default": "true",
+   "AllowedValues": [
+    "true",
+    "false"
+   ],
+   "Description": "Enable server side encryption powered by KMS."
+  },
+  "referencetoamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280ddataamplifyDataAmplifyTableManagerNestedStackAmplifyTableManagerNestedStackResource033501A2OutputsamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280ddataamplifyDataAmplifyTableMana2E80881B": {
+   "Type": "String"
+  },
+  "referencetoamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280ddataamplifyDataGraphQLAPI6DE5F511ApiId": {
+   "Type": "String"
+  },
+  "referencetoamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280ddataamplifyDataGraphQLAPINONEDSCE5F7ADEName": {
+   "Type": "String"
+  },
+  "referencetoamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280dauthNestedStackauthNestedStackResourceFFA1AE91OutputsamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280dauthamplifyAuthauthenticatedUserRole815DEA42Ref": {
+   "Type": "String"
+  },
+  "referencetoamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280dauthNestedStackauthNestedStackResourceFFA1AE91OutputsamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280dauthamplifyAuthunauthenticatedUserRole472A33C2Ref": {
+   "Type": "String"
+  },
+  "referencetoamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280dauthNestedStackauthNestedStackResourceFFA1AE91OutputsamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280dauthamplifyAuthIdentityPool4CA00EA7Ref": {
+   "Type": "String"
+  }
+ },
+ "Conditions": {
+  "HasEnvironmentParameter": {
+   "Fn::Not": [
+    {
+     "Fn::Equals": [
+      "NONE",
+      "NONE"
+     ]
+    }
+   ]
+  },
+  "ShouldUsePayPerRequestBilling": {
+   "Fn::Equals": [
+    {
+     "Ref": "DynamoDBBillingMode"
+    },
+    "PAY_PER_REQUEST"
+   ]
+  },
+  "ShouldUsePointInTimeRecovery": {
+   "Fn::Equals": [
+    {
+     "Ref": "DynamoDBEnablePointInTimeRecovery"
+    },
+    "true"
+   ]
+  },
+  "CDKMetadataAvailable": {
+   "Fn::Or": [
+    {
+     "Fn::Or": [
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "af-south-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ap-east-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ap-northeast-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ap-northeast-2"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ap-northeast-3"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ap-south-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ap-south-2"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ap-southeast-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ap-southeast-2"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ap-southeast-3"
+       ]
+      }
+     ]
+    },
+    {
+     "Fn::Or": [
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ap-southeast-4"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ca-central-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ca-west-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "cn-north-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "cn-northwest-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "eu-central-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "eu-central-2"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "eu-north-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "eu-south-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "eu-south-2"
+       ]
+      }
+     ]
+    },
+    {
+     "Fn::Or": [
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "eu-west-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "eu-west-2"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "eu-west-3"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "il-central-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "me-central-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "me-south-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "sa-east-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "us-east-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "us-east-2"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "us-west-1"
+       ]
+      }
+     ]
+    },
+    {
+     "Fn::Equals": [
+      {
+       "Ref": "AWS::Region"
+      },
+      "us-west-2"
+     ]
+    }
+   ]
+  }
+ },
+ "Resources": {
+  "SalesApprovalTable": {
+   "Type": "Custom::AmplifyDynamoDBTable",
+   "Properties": {
+    "ServiceToken": {
+     "Ref": "referencetoamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280ddataamplifyDataAmplifyTableManagerNestedStackAmplifyTableManagerNestedStackResource033501A2OutputsamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280ddataamplifyDataAmplifyTableMana2E80881B"
+    },
+    "tableName": {
+     "Fn::Join": [
+      "",
+      [
+       "SalesApproval-",
+       {
+        "Ref": "referencetoamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280ddataamplifyDataGraphQLAPI6DE5F511ApiId"
+       },
+       "-NONE"
+      ]
+     ]
+    },
+    "attributeDefinitions": [
+     {
+      "attributeName": "id",
+      "attributeType": "S"
+     },
+     {
+      "attributeName": "leadId",
+      "attributeType": "S"
+     }
+    ],
+    "keySchema": [
+     {
+      "attributeName": "id",
+      "keyType": "HASH"
+     }
+    ],
+    "globalSecondaryIndexes": [
+     {
+      "indexName": "gsi-SalesLead.approvals",
+      "keySchema": [
+       {
+        "attributeName": "leadId",
+        "keyType": "HASH"
+       }
+      ],
+      "projection": {
+       "projectionType": "ALL"
+      },
+      "provisionedThroughput": {
+       "Fn::If": [
+        "ShouldUsePayPerRequestBilling",
+        {
+         "Ref": "AWS::NoValue"
+        },
+        {
+         "ReadCapacityUnits": {
+          "Ref": "DynamoDBModelTableReadIOPS"
+         },
+         "WriteCapacityUnits": {
+          "Ref": "DynamoDBModelTableWriteIOPS"
+         }
+        }
+       ]
+      }
+     }
+    ],
+    "provisionedThroughput": {
+     "Fn::If": [
+      "ShouldUsePayPerRequestBilling",
+      {
+       "Ref": "AWS::NoValue"
+      },
+      {
+       "ReadCapacityUnits": {
+        "Ref": "DynamoDBModelTableReadIOPS"
+       },
+       "WriteCapacityUnits": {
+        "Ref": "DynamoDBModelTableWriteIOPS"
+       }
+      }
+     ]
+    },
+    "sseSpecification": {
+     "sseEnabled": false
+    },
+    "streamSpecification": {
+     "streamViewType": "NEW_AND_OLD_IMAGES"
+    },
+    "deletionProtectionEnabled": false,
+    "allowDestructiveGraphqlSchemaUpdates": true,
+    "replaceTableUponGsiUpdate": true,
+    "pointInTimeRecoverySpecification": {
+     "Fn::If": [
+      "ShouldUsePointInTimeRecovery",
+      {
+       "PointInTimeRecoveryEnabled": true
+      },
+      {
+       "Ref": "AWS::NoValue"
+      }
+     ]
+    },
+    "billingMode": {
+     "Fn::If": [
+      "ShouldUsePayPerRequestBilling",
+      "PAY_PER_REQUEST",
+      {
+       "Ref": "AWS::NoValue"
+      }
+     ]
+    }
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/SalesApproval/SalesApprovalTable/Default/Default"
+   }
+  },
+  "SalesApprovalIAMRole005E8B91": {
+   "Type": "AWS::IAM::Role",
+   "Properties": {
+    "AssumeRolePolicyDocument": {
+     "Statement": [
+      {
+       "Action": "sts:AssumeRole",
+       "Effect": "Allow",
+       "Principal": {
+        "Service": "appsync.amazonaws.com"
+       }
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "Policies": [
+     {
+      "PolicyDocument": {
+       "Statement": [
+        {
+         "Action": [
+          "dynamodb:BatchGetItem",
+          "dynamodb:BatchWriteItem",
+          "dynamodb:PutItem",
+          "dynamodb:DeleteItem",
+          "dynamodb:GetItem",
+          "dynamodb:Scan",
+          "dynamodb:Query",
+          "dynamodb:UpdateItem",
+          "dynamodb:ConditionCheckItem",
+          "dynamodb:DescribeTable",
+          "dynamodb:GetRecords",
+          "dynamodb:GetShardIterator"
+         ],
+         "Effect": "Allow",
+         "Resource": [
+          {
+           "Fn::Sub": [
+            "arn:${AWS::Partition}:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${tablename}",
+            {
+             "tablename": {
+              "Fn::Join": [
+               "",
+               [
+                "SalesApproval-",
+                {
+                 "Ref": "referencetoamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280ddataamplifyDataGraphQLAPI6DE5F511ApiId"
+                },
+                "-NONE"
+               ]
+              ]
+             }
+            }
+           ]
+          },
+          {
+           "Fn::Sub": [
+            "arn:${AWS::Partition}:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${tablename}/*",
+            {
+             "tablename": {
+              "Fn::Join": [
+               "",
+               [
+                "SalesApproval-",
+                {
+                 "Ref": "referencetoamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280ddataamplifyDataGraphQLAPI6DE5F511ApiId"
+                },
+                "-NONE"
+               ]
+              ]
+             }
+            }
+           ]
+          }
+         ]
+        }
+       ],
+       "Version": "2012-10-17"
+      },
+      "PolicyName": "DynamoDBAccess"
+     }
+    ],
+    "RoleName": {
+     "Fn::Join": [
+      "",
+      [
+       "SalesApprovalIAMRoleae572e-",
+       {
+        "Ref": "referencetoamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280ddataamplifyDataGraphQLAPI6DE5F511ApiId"
+       },
+       "-NONE"
+      ]
+     ]
+    },
+    "Tags": [
+     {
+      "Key": "amplify:deployment-type",
+      "Value": "sandbox"
+     },
+     {
+      "Key": "amplify:friendly-name",
+      "Value": "amplifyData"
+     },
+     {
+      "Key": "created-by",
+      "Value": "amplify"
+     }
+    ]
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/SalesApproval/SalesApprovalIAMRole/Resource"
+   }
+  },
+  "SalesApprovalDataSource": {
+   "Type": "AWS::AppSync::DataSource",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280ddataamplifyDataGraphQLAPI6DE5F511ApiId"
+    },
+    "DynamoDBConfig": {
+     "AwsRegion": {
+      "Ref": "AWS::Region"
+     },
+     "TableName": {
+      "Fn::Select": [
+       1,
+       {
+        "Fn::Split": [
+         "/",
+         {
+          "Fn::Select": [
+           5,
+           {
+            "Fn::Split": [
+             ":",
+             {
+              "Fn::GetAtt": [
+               "SalesApprovalTable",
+               "TableArn"
+              ]
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     }
+    },
+    "Name": "SalesApprovalTable",
+    "ServiceRoleArn": {
+     "Fn::GetAtt": [
+      "SalesApprovalIAMRole005E8B91",
+      "Arn"
+     ]
+    },
+    "Type": "AMAZON_DYNAMODB"
+   },
+   "DependsOn": [
+    "SalesApprovalIAMRole005E8B91"
+   ],
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/SalesApproval/SalesApprovalDataSource/Resource"
+   }
+  },
+  "QuerygetSalesApprovalpreAuth0FunctionQuerygetSalesApprovalpreAuth0FunctionAppSyncFunction702B7D84": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280ddataamplifyDataGraphQLAPI6DE5F511ApiId"
+    },
+    "DataSourceName": {
+     "Ref": "referencetoamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280ddataamplifyDataGraphQLAPINONEDSCE5F7ADEName"
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "QuerygetSalesApprovalpreAuth0Function",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/ffc597e18023b530e6afcbe02cee647d49550fa9e77bd06f1dee09d8b1be8de3.vtl"
+    },
+    "ResponseMappingTemplate": "$util.toJson({})"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/SalesApproval/QuerygetSalesApprovalpreAuth0Function/QuerygetSalesApprovalpreAuth0Function.AppSyncFunction"
+   }
+  },
+  "QuerygetSalesApprovalauth0FunctionQuerygetSalesApprovalauth0FunctionAppSyncFunction7158E4C7": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280ddataamplifyDataGraphQLAPI6DE5F511ApiId"
+    },
+    "DataSourceName": {
+     "Ref": "referencetoamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280ddataamplifyDataGraphQLAPINONEDSCE5F7ADEName"
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "QuerygetSalesApprovalauth0Function",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/6677b1986afebbf1f4026c57099890e32ab4e450e422c5e3c930b085a73b6b60.vtl"
+    },
+    "ResponseMappingTemplate": "$util.toJson({})"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/SalesApproval/QuerygetSalesApprovalauth0Function/QuerygetSalesApprovalauth0Function.AppSyncFunction"
+   }
+  },
+  "QuerygetSalesApprovalpostAuth0FunctionQuerygetSalesApprovalpostAuth0FunctionAppSyncFunction750E2B04": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280ddataamplifyDataGraphQLAPI6DE5F511ApiId"
+    },
+    "DataSourceName": {
+     "Ref": "referencetoamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280ddataamplifyDataGraphQLAPINONEDSCE5F7ADEName"
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "QuerygetSalesApprovalpostAuth0Function",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/c1721bcd774e27c514d3454b5be4f9bdd094c0161b57ddf053d618e3b0086a77.vtl"
+    },
+    "ResponseMappingTemplate": "$util.toJson({})"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/SalesApproval/QuerygetSalesApprovalpostAuth0Function/QuerygetSalesApprovalpostAuth0Function.AppSyncFunction"
+   }
+  },
+  "QueryGetSalesApprovalDataResolverFnQueryGetSalesApprovalDataResolverFnAppSyncFunction90946EB9": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280ddataamplifyDataGraphQLAPI6DE5F511ApiId"
+    },
+    "DataSourceName": {
+     "Fn::GetAtt": [
+      "SalesApprovalDataSource",
+      "Name"
+     ]
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "QueryGetSalesApprovalDataResolverFn",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/08f4d557693d96c1a4efba0f9dc91330e4b19772fd5477c156468843e3d9cb5e.vtl"
+    },
+    "ResponseMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/4c6a2d29f01c6091bd1d9afe16e5849d456c96f17c3b215938c8067399532719.vtl"
+    }
+   },
+   "DependsOn": [
+    "SalesApprovalDataSource"
+   ],
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/SalesApproval/QueryGetSalesApprovalDataResolverFn/QueryGetSalesApprovalDataResolverFn.AppSyncFunction"
+   }
+  },
+  "GetSalesApprovalResolver": {
+   "Type": "AWS::AppSync::Resolver",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280ddataamplifyDataGraphQLAPI6DE5F511ApiId"
+    },
+    "FieldName": "getSalesApproval",
+    "Kind": "PIPELINE",
+    "PipelineConfig": {
+     "Functions": [
+      {
+       "Fn::GetAtt": [
+        "QuerygetSalesApprovalpreAuth0FunctionQuerygetSalesApprovalpreAuth0FunctionAppSyncFunction702B7D84",
+        "FunctionId"
+       ]
+      },
+      {
+       "Fn::GetAtt": [
+        "QuerygetSalesApprovalauth0FunctionQuerygetSalesApprovalauth0FunctionAppSyncFunction7158E4C7",
+        "FunctionId"
+       ]
+      },
+      {
+       "Fn::GetAtt": [
+        "QuerygetSalesApprovalpostAuth0FunctionQuerygetSalesApprovalpostAuth0FunctionAppSyncFunction750E2B04",
+        "FunctionId"
+       ]
+      },
+      {
+       "Fn::GetAtt": [
+        "QueryGetSalesApprovalDataResolverFnQueryGetSalesApprovalDataResolverFnAppSyncFunction90946EB9",
+        "FunctionId"
+       ]
+      }
+     ]
+    },
+    "RequestMappingTemplate": {
+     "Fn::Join": [
+      "",
+      [
+       "$util.qr($ctx.stash.put(\"typeName\", \"Query\"))\n$util.qr($ctx.stash.put(\"fieldName\", \"getSalesApproval\"))\n$util.qr($ctx.stash.put(\"conditions\", []))\n$util.qr($ctx.stash.put(\"metadata\", {}))\n$util.qr($ctx.stash.metadata.put(\"dataSourceType\", \"AMAZON_DYNAMODB\"))\n$util.qr($ctx.stash.metadata.put(\"apiId\", \"",
+       {
+        "Ref": "referencetoamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280ddataamplifyDataGraphQLAPI6DE5F511ApiId"
+       },
+       "\"))\n$util.qr($ctx.stash.put(\"connectionAttributes\", {}))\n$util.qr($ctx.stash.put(\"tableName\", \"",
+       {
+        "Fn::Select": [
+         1,
+         {
+          "Fn::Split": [
+           "/",
+           {
+            "Fn::Select": [
+             5,
+             {
+              "Fn::Split": [
+               ":",
+               {
+                "Fn::GetAtt": [
+                 "SalesApprovalTable",
+                 "TableArn"
+                ]
+               }
+              ]
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       },
+       "\"))\n$util.qr($ctx.stash.put(\"authRole\", \"arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":sts::",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":assumed-role/",
+       {
+        "Ref": "referencetoamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280dauthNestedStackauthNestedStackResourceFFA1AE91OutputsamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280dauthamplifyAuthauthenticatedUserRole815DEA42Ref"
+       },
+       "/CognitoIdentityCredentials\"))\n$util.qr($ctx.stash.put(\"unauthRole\", \"arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":sts::",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":assumed-role/",
+       {
+        "Ref": "referencetoamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280dauthNestedStackauthNestedStackResourceFFA1AE91OutputsamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280dauthamplifyAuthunauthenticatedUserRole472A33C2Ref"
+       },
+       "/CognitoIdentityCredentials\"))\n$util.qr($ctx.stash.put(\"identityPoolId\", \"",
+       {
+        "Ref": "referencetoamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280dauthNestedStackauthNestedStackResourceFFA1AE91OutputsamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280dauthamplifyAuthIdentityPool4CA00EA7Ref"
+       },
+       "\"))\n$util.qr($ctx.stash.put(\"adminRoles\", []))\n$util.toJson({})"
+      ]
+     ]
+    },
+    "ResponseMappingTemplate": "$util.toJson($ctx.prev.result)",
+    "TypeName": "Query"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/SalesApproval/queryGetSalesApprovalResolver"
+   }
+  },
+  "QuerylistSalesApprovalspreAuth0FunctionQuerylistSalesApprovalspreAuth0FunctionAppSyncFunctionFC5E8E89": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280ddataamplifyDataGraphQLAPI6DE5F511ApiId"
+    },
+    "DataSourceName": {
+     "Ref": "referencetoamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280ddataamplifyDataGraphQLAPINONEDSCE5F7ADEName"
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "QuerylistSalesApprovalspreAuth0Function",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/3e81312d4c75951808eda9fcd5f854c1925c0b819de0939f09c4fe2eebb190b8.vtl"
+    },
+    "ResponseMappingTemplate": "$util.toJson({})"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/SalesApproval/QuerylistSalesApprovalspreAuth0Function/QuerylistSalesApprovalspreAuth0Function.AppSyncFunction"
+   }
+  },
+  "QuerylistSalesApprovalsauth0FunctionQuerylistSalesApprovalsauth0FunctionAppSyncFunctionA4B830A7": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280ddataamplifyDataGraphQLAPI6DE5F511ApiId"
+    },
+    "DataSourceName": {
+     "Ref": "referencetoamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280ddataamplifyDataGraphQLAPINONEDSCE5F7ADEName"
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "QuerylistSalesApprovalsauth0Function",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/6677b1986afebbf1f4026c57099890e32ab4e450e422c5e3c930b085a73b6b60.vtl"
+    },
+    "ResponseMappingTemplate": "$util.toJson({})"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/SalesApproval/QuerylistSalesApprovalsauth0Function/QuerylistSalesApprovalsauth0Function.AppSyncFunction"
+   }
+  },
+  "QuerylistSalesApprovalspostAuth0FunctionQuerylistSalesApprovalspostAuth0FunctionAppSyncFunctionD2A16BDA": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280ddataamplifyDataGraphQLAPI6DE5F511ApiId"
+    },
+    "DataSourceName": {
+     "Ref": "referencetoamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280ddataamplifyDataGraphQLAPINONEDSCE5F7ADEName"
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "QuerylistSalesApprovalspostAuth0Function",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/c1721bcd774e27c514d3454b5be4f9bdd094c0161b57ddf053d618e3b0086a77.vtl"
+    },
+    "ResponseMappingTemplate": "$util.toJson({})"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/SalesApproval/QuerylistSalesApprovalspostAuth0Function/QuerylistSalesApprovalspostAuth0Function.AppSyncFunction"
+   }
+  },
+  "QueryListSalesApprovalsDataResolverFnQueryListSalesApprovalsDataResolverFnAppSyncFunctionCF3C6C1F": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280ddataamplifyDataGraphQLAPI6DE5F511ApiId"
+    },
+    "DataSourceName": {
+     "Fn::GetAtt": [
+      "SalesApprovalDataSource",
+      "Name"
+     ]
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "QueryListSalesApprovalsDataResolverFn",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/9fcbe070ecd3023c5bf5b966fa9584757db9762eef123bad0820bd87591b2174.vtl"
+    },
+    "ResponseMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/cc01911d0269d4080ea57505dc445dfc315ef7ad85d3d9d4ea1357858bff451d.vtl"
+    }
+   },
+   "DependsOn": [
+    "SalesApprovalDataSource"
+   ],
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/SalesApproval/QueryListSalesApprovalsDataResolverFn/QueryListSalesApprovalsDataResolverFn.AppSyncFunction"
+   }
+  },
+  "ListSalesApprovalResolver": {
+   "Type": "AWS::AppSync::Resolver",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280ddataamplifyDataGraphQLAPI6DE5F511ApiId"
+    },
+    "FieldName": "listSalesApprovals",
+    "Kind": "PIPELINE",
+    "PipelineConfig": {
+     "Functions": [
+      {
+       "Fn::GetAtt": [
+        "QuerylistSalesApprovalspreAuth0FunctionQuerylistSalesApprovalspreAuth0FunctionAppSyncFunctionFC5E8E89",
+        "FunctionId"
+       ]
+      },
+      {
+       "Fn::GetAtt": [
+        "QuerylistSalesApprovalsauth0FunctionQuerylistSalesApprovalsauth0FunctionAppSyncFunctionA4B830A7",
+        "FunctionId"
+       ]
+      },
+      {
+       "Fn::GetAtt": [
+        "QuerylistSalesApprovalspostAuth0FunctionQuerylistSalesApprovalspostAuth0FunctionAppSyncFunctionD2A16BDA",
+        "FunctionId"
+       ]
+      },
+      {
+       "Fn::GetAtt": [
+        "QueryListSalesApprovalsDataResolverFnQueryListSalesApprovalsDataResolverFnAppSyncFunctionCF3C6C1F",
+        "FunctionId"
+       ]
+      }
+     ]
+    },
+    "RequestMappingTemplate": {
+     "Fn::Join": [
+      "",
+      [
+       "$util.qr($ctx.stash.put(\"typeName\", \"Query\"))\n$util.qr($ctx.stash.put(\"fieldName\", \"listSalesApprovals\"))\n$util.qr($ctx.stash.put(\"conditions\", []))\n$util.qr($ctx.stash.put(\"metadata\", {}))\n$util.qr($ctx.stash.metadata.put(\"dataSourceType\", \"AMAZON_DYNAMODB\"))\n$util.qr($ctx.stash.metadata.put(\"apiId\", \"",
+       {
+        "Ref": "referencetoamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280ddataamplifyDataGraphQLAPI6DE5F511ApiId"
+       },
+       "\"))\n$util.qr($ctx.stash.put(\"connectionAttributes\", {}))\n$util.qr($ctx.stash.put(\"tableName\", \"",
+       {
+        "Fn::Select": [
+         1,
+         {
+          "Fn::Split": [
+           "/",
+           {
+            "Fn::Select": [
+             5,
+             {
+              "Fn::Split": [
+               ":",
+               {
+                "Fn::GetAtt": [
+                 "SalesApprovalTable",
+                 "TableArn"
+                ]
+               }
+              ]
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       },
+       "\"))\n$util.qr($ctx.stash.put(\"authRole\", \"arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":sts::",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":assumed-role/",
+       {
+        "Ref": "referencetoamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280dauthNestedStackauthNestedStackResourceFFA1AE91OutputsamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280dauthamplifyAuthauthenticatedUserRole815DEA42Ref"
+       },
+       "/CognitoIdentityCredentials\"))\n$util.qr($ctx.stash.put(\"unauthRole\", \"arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":sts::",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":assumed-role/",
+       {
+        "Ref": "referencetoamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280dauthNestedStackauthNestedStackResourceFFA1AE91OutputsamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280dauthamplifyAuthunauthenticatedUserRole472A33C2Ref"
+       },
+       "/CognitoIdentityCredentials\"))\n$util.qr($ctx.stash.put(\"identityPoolId\", \"",
+       {
+        "Ref": "referencetoamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280dauthNestedStackauthNestedStackResourceFFA1AE91OutputsamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280dauthamplifyAuthIdentityPool4CA00EA7Ref"
+       },
+       "\"))\n$util.qr($ctx.stash.put(\"adminRoles\", []))\n$util.toJson({})"
+      ]
+     ]
+    },
+    "ResponseMappingTemplate": "$util.toJson($ctx.prev.result)",
+    "TypeName": "Query"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/SalesApproval/queryListSalesApprovalsResolver"
+   }
+  },
+  "MutationcreateSalesApprovalinit0FunctionMutationcreateSalesApprovalinit0FunctionAppSyncFunctionA69A3832": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280ddataamplifyDataGraphQLAPI6DE5F511ApiId"
+    },
+    "DataSourceName": {
+     "Ref": "referencetoamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280ddataamplifyDataGraphQLAPINONEDSCE5F7ADEName"
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "MutationcreateSalesApprovalinit0Function",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/a183ddccbd956316c38ef97177b8f088ef0826f62023323f5ae6053d348ccffc.vtl"
+    },
+    "ResponseMappingTemplate": "$util.toJson({})"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/SalesApproval/MutationcreateSalesApprovalinit0Function/MutationcreateSalesApprovalinit0Function.AppSyncFunction"
+   }
+  },
+  "MutationcreateSalesApprovalpreAuth0FunctionMutationcreateSalesApprovalpreAuth0FunctionAppSyncFunction2263D6DD": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280ddataamplifyDataGraphQLAPI6DE5F511ApiId"
+    },
+    "DataSourceName": {
+     "Ref": "referencetoamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280ddataamplifyDataGraphQLAPINONEDSCE5F7ADEName"
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "MutationcreateSalesApprovalpreAuth0Function",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/39fb35c6f8e8573ffe3a63ba867cf543b05af129a104b387a44f03c3d85da0c3.vtl"
+    },
+    "ResponseMappingTemplate": "$util.toJson({})"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/SalesApproval/MutationcreateSalesApprovalpreAuth0Function/MutationcreateSalesApprovalpreAuth0Function.AppSyncFunction"
+   }
+  },
+  "MutationcreateSalesApprovalauth0FunctionMutationcreateSalesApprovalauth0FunctionAppSyncFunction36652712": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280ddataamplifyDataGraphQLAPI6DE5F511ApiId"
+    },
+    "DataSourceName": {
+     "Ref": "referencetoamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280ddataamplifyDataGraphQLAPINONEDSCE5F7ADEName"
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "MutationcreateSalesApprovalauth0Function",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/163f1e92c10dcaf85e4690f19146fc5a18d1291ad6a6ad84db40c0c36d101fe9.vtl"
+    },
+    "ResponseMappingTemplate": "$util.toJson({})"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/SalesApproval/MutationcreateSalesApprovalauth0Function/MutationcreateSalesApprovalauth0Function.AppSyncFunction"
+   }
+  },
+  "MutationcreateSalesApprovalpostAuth0FunctionMutationcreateSalesApprovalpostAuth0FunctionAppSyncFunction91C893C8": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280ddataamplifyDataGraphQLAPI6DE5F511ApiId"
+    },
+    "DataSourceName": {
+     "Ref": "referencetoamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280ddataamplifyDataGraphQLAPINONEDSCE5F7ADEName"
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "MutationcreateSalesApprovalpostAuth0Function",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/c1721bcd774e27c514d3454b5be4f9bdd094c0161b57ddf053d618e3b0086a77.vtl"
+    },
+    "ResponseMappingTemplate": "$util.toJson({})"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/SalesApproval/MutationcreateSalesApprovalpostAuth0Function/MutationcreateSalesApprovalpostAuth0Function.AppSyncFunction"
+   }
+  },
+  "MutationCreateSalesApprovalDataResolverFnMutationCreateSalesApprovalDataResolverFnAppSyncFunction56321B89": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280ddataamplifyDataGraphQLAPI6DE5F511ApiId"
+    },
+    "DataSourceName": {
+     "Fn::GetAtt": [
+      "SalesApprovalDataSource",
+      "Name"
+     ]
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "MutationCreateSalesApprovalDataResolverFn",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/79a5cfcded10fb147c7c62015638e899944ec090b764175c6742a9c6eaf1b33e.vtl"
+    },
+    "ResponseMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/f4a52b72209a9dfa197b5e7367a5c378c5bb86de6e29ddd9e48b49a3fe54b249.vtl"
+    }
+   },
+   "DependsOn": [
+    "SalesApprovalDataSource"
+   ],
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/SalesApproval/MutationCreateSalesApprovalDataResolverFn/MutationCreateSalesApprovalDataResolverFn.AppSyncFunction"
+   }
+  },
+  "CreateSalesApprovalResolver": {
+   "Type": "AWS::AppSync::Resolver",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280ddataamplifyDataGraphQLAPI6DE5F511ApiId"
+    },
+    "FieldName": "createSalesApproval",
+    "Kind": "PIPELINE",
+    "PipelineConfig": {
+     "Functions": [
+      {
+       "Fn::GetAtt": [
+        "MutationcreateSalesApprovalinit0FunctionMutationcreateSalesApprovalinit0FunctionAppSyncFunctionA69A3832",
+        "FunctionId"
+       ]
+      },
+      {
+       "Fn::GetAtt": [
+        "MutationcreateSalesApprovalpreAuth0FunctionMutationcreateSalesApprovalpreAuth0FunctionAppSyncFunction2263D6DD",
+        "FunctionId"
+       ]
+      },
+      {
+       "Fn::GetAtt": [
+        "MutationcreateSalesApprovalauth0FunctionMutationcreateSalesApprovalauth0FunctionAppSyncFunction36652712",
+        "FunctionId"
+       ]
+      },
+      {
+       "Fn::GetAtt": [
+        "MutationcreateSalesApprovalpostAuth0FunctionMutationcreateSalesApprovalpostAuth0FunctionAppSyncFunction91C893C8",
+        "FunctionId"
+       ]
+      },
+      {
+       "Fn::GetAtt": [
+        "MutationCreateSalesApprovalDataResolverFnMutationCreateSalesApprovalDataResolverFnAppSyncFunction56321B89",
+        "FunctionId"
+       ]
+      }
+     ]
+    },
+    "RequestMappingTemplate": {
+     "Fn::Join": [
+      "",
+      [
+       "$util.qr($ctx.stash.put(\"typeName\", \"Mutation\"))\n$util.qr($ctx.stash.put(\"fieldName\", \"createSalesApproval\"))\n$util.qr($ctx.stash.put(\"conditions\", []))\n$util.qr($ctx.stash.put(\"metadata\", {}))\n$util.qr($ctx.stash.metadata.put(\"dataSourceType\", \"AMAZON_DYNAMODB\"))\n$util.qr($ctx.stash.metadata.put(\"apiId\", \"",
+       {
+        "Ref": "referencetoamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280ddataamplifyDataGraphQLAPI6DE5F511ApiId"
+       },
+       "\"))\n$util.qr($ctx.stash.put(\"connectionAttributes\", {}))\n$util.qr($ctx.stash.put(\"tableName\", \"",
+       {
+        "Fn::Select": [
+         1,
+         {
+          "Fn::Split": [
+           "/",
+           {
+            "Fn::Select": [
+             5,
+             {
+              "Fn::Split": [
+               ":",
+               {
+                "Fn::GetAtt": [
+                 "SalesApprovalTable",
+                 "TableArn"
+                ]
+               }
+              ]
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       },
+       "\"))\n$util.qr($ctx.stash.put(\"authRole\", \"arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":sts::",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":assumed-role/",
+       {
+        "Ref": "referencetoamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280dauthNestedStackauthNestedStackResourceFFA1AE91OutputsamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280dauthamplifyAuthauthenticatedUserRole815DEA42Ref"
+       },
+       "/CognitoIdentityCredentials\"))\n$util.qr($ctx.stash.put(\"unauthRole\", \"arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":sts::",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":assumed-role/",
+       {
+        "Ref": "referencetoamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280dauthNestedStackauthNestedStackResourceFFA1AE91OutputsamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280dauthamplifyAuthunauthenticatedUserRole472A33C2Ref"
+       },
+       "/CognitoIdentityCredentials\"))\n$util.qr($ctx.stash.put(\"identityPoolId\", \"",
+       {
+        "Ref": "referencetoamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280dauthNestedStackauthNestedStackResourceFFA1AE91OutputsamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280dauthamplifyAuthIdentityPool4CA00EA7Ref"
+       },
+       "\"))\n$util.qr($ctx.stash.put(\"adminRoles\", []))\n$util.toJson({})"
+      ]
+     ]
+    },
+    "ResponseMappingTemplate": "$util.toJson($ctx.prev.result)",
+    "TypeName": "Mutation"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/SalesApproval/mutationCreateSalesApprovalResolver"
+   }
+  },
+  "MutationupdateSalesApprovalinit0FunctionMutationupdateSalesApprovalinit0FunctionAppSyncFunction9030F637": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280ddataamplifyDataGraphQLAPI6DE5F511ApiId"
+    },
+    "DataSourceName": {
+     "Ref": "referencetoamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280ddataamplifyDataGraphQLAPINONEDSCE5F7ADEName"
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "MutationupdateSalesApprovalinit0Function",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/06db846fd14e6fc371f22b12b5545ba8e2dbfeda85d8c8d586c71c282166657b.vtl"
+    },
+    "ResponseMappingTemplate": "$util.toJson({})"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/SalesApproval/MutationupdateSalesApprovalinit0Function/MutationupdateSalesApprovalinit0Function.AppSyncFunction"
+   }
+  },
+  "MutationupdateSalesApprovalpreAuth0FunctionMutationupdateSalesApprovalpreAuth0FunctionAppSyncFunction51B3DF24": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280ddataamplifyDataGraphQLAPI6DE5F511ApiId"
+    },
+    "DataSourceName": {
+     "Ref": "referencetoamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280ddataamplifyDataGraphQLAPINONEDSCE5F7ADEName"
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "MutationupdateSalesApprovalpreAuth0Function",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/39fb35c6f8e8573ffe3a63ba867cf543b05af129a104b387a44f03c3d85da0c3.vtl"
+    },
+    "ResponseMappingTemplate": "$util.toJson({})"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/SalesApproval/MutationupdateSalesApprovalpreAuth0Function/MutationupdateSalesApprovalpreAuth0Function.AppSyncFunction"
+   }
+  },
+  "MutationupdateSalesApprovalauth0FunctionMutationupdateSalesApprovalauth0FunctionAppSyncFunction6F9763DF": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280ddataamplifyDataGraphQLAPI6DE5F511ApiId"
+    },
+    "DataSourceName": {
+     "Fn::GetAtt": [
+      "SalesApprovalDataSource",
+      "Name"
+     ]
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "MutationupdateSalesApprovalauth0Function",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/1f5fed297da9c32ae3af922bf3a38ccf23b956078887d16891ec06c20c64722c.vtl"
+    },
+    "ResponseMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/58a246af4be16a1ddccdbae460faba9ba768ae2655833a75797307311c63ad0f.vtl"
+    }
+   },
+   "DependsOn": [
+    "SalesApprovalDataSource"
+   ],
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/SalesApproval/MutationupdateSalesApprovalauth0Function/MutationupdateSalesApprovalauth0Function.AppSyncFunction"
+   }
+  },
+  "MutationupdateSalesApprovalpostAuth0FunctionMutationupdateSalesApprovalpostAuth0FunctionAppSyncFunctionC5094A5F": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280ddataamplifyDataGraphQLAPI6DE5F511ApiId"
+    },
+    "DataSourceName": {
+     "Ref": "referencetoamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280ddataamplifyDataGraphQLAPINONEDSCE5F7ADEName"
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "MutationupdateSalesApprovalpostAuth0Function",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/c1721bcd774e27c514d3454b5be4f9bdd094c0161b57ddf053d618e3b0086a77.vtl"
+    },
+    "ResponseMappingTemplate": "$util.toJson({})"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/SalesApproval/MutationupdateSalesApprovalpostAuth0Function/MutationupdateSalesApprovalpostAuth0Function.AppSyncFunction"
+   }
+  },
+  "MutationUpdateSalesApprovalDataResolverFnMutationUpdateSalesApprovalDataResolverFnAppSyncFunction9E968D3B": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280ddataamplifyDataGraphQLAPI6DE5F511ApiId"
+    },
+    "DataSourceName": {
+     "Fn::GetAtt": [
+      "SalesApprovalDataSource",
+      "Name"
+     ]
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "MutationUpdateSalesApprovalDataResolverFn",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/474bf0776ec2164a13191d1a0a9e057154931e4918fea5086f49850d02a5371b.vtl"
+    },
+    "ResponseMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/f4a52b72209a9dfa197b5e7367a5c378c5bb86de6e29ddd9e48b49a3fe54b249.vtl"
+    }
+   },
+   "DependsOn": [
+    "SalesApprovalDataSource"
+   ],
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/SalesApproval/MutationUpdateSalesApprovalDataResolverFn/MutationUpdateSalesApprovalDataResolverFn.AppSyncFunction"
+   }
+  },
+  "UpdateSalesApprovalResolver": {
+   "Type": "AWS::AppSync::Resolver",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280ddataamplifyDataGraphQLAPI6DE5F511ApiId"
+    },
+    "FieldName": "updateSalesApproval",
+    "Kind": "PIPELINE",
+    "PipelineConfig": {
+     "Functions": [
+      {
+       "Fn::GetAtt": [
+        "MutationupdateSalesApprovalinit0FunctionMutationupdateSalesApprovalinit0FunctionAppSyncFunction9030F637",
+        "FunctionId"
+       ]
+      },
+      {
+       "Fn::GetAtt": [
+        "MutationupdateSalesApprovalpreAuth0FunctionMutationupdateSalesApprovalpreAuth0FunctionAppSyncFunction51B3DF24",
+        "FunctionId"
+       ]
+      },
+      {
+       "Fn::GetAtt": [
+        "MutationupdateSalesApprovalauth0FunctionMutationupdateSalesApprovalauth0FunctionAppSyncFunction6F9763DF",
+        "FunctionId"
+       ]
+      },
+      {
+       "Fn::GetAtt": [
+        "MutationupdateSalesApprovalpostAuth0FunctionMutationupdateSalesApprovalpostAuth0FunctionAppSyncFunctionC5094A5F",
+        "FunctionId"
+       ]
+      },
+      {
+       "Fn::GetAtt": [
+        "MutationUpdateSalesApprovalDataResolverFnMutationUpdateSalesApprovalDataResolverFnAppSyncFunction9E968D3B",
+        "FunctionId"
+       ]
+      }
+     ]
+    },
+    "RequestMappingTemplate": {
+     "Fn::Join": [
+      "",
+      [
+       "$util.qr($ctx.stash.put(\"typeName\", \"Mutation\"))\n$util.qr($ctx.stash.put(\"fieldName\", \"updateSalesApproval\"))\n$util.qr($ctx.stash.put(\"conditions\", []))\n$util.qr($ctx.stash.put(\"metadata\", {}))\n$util.qr($ctx.stash.metadata.put(\"dataSourceType\", \"AMAZON_DYNAMODB\"))\n$util.qr($ctx.stash.metadata.put(\"apiId\", \"",
+       {
+        "Ref": "referencetoamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280ddataamplifyDataGraphQLAPI6DE5F511ApiId"
+       },
+       "\"))\n$util.qr($ctx.stash.put(\"connectionAttributes\", {}))\n$util.qr($ctx.stash.put(\"tableName\", \"",
+       {
+        "Fn::Select": [
+         1,
+         {
+          "Fn::Split": [
+           "/",
+           {
+            "Fn::Select": [
+             5,
+             {
+              "Fn::Split": [
+               ":",
+               {
+                "Fn::GetAtt": [
+                 "SalesApprovalTable",
+                 "TableArn"
+                ]
+               }
+              ]
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       },
+       "\"))\n$util.qr($ctx.stash.put(\"authRole\", \"arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":sts::",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":assumed-role/",
+       {
+        "Ref": "referencetoamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280dauthNestedStackauthNestedStackResourceFFA1AE91OutputsamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280dauthamplifyAuthauthenticatedUserRole815DEA42Ref"
+       },
+       "/CognitoIdentityCredentials\"))\n$util.qr($ctx.stash.put(\"unauthRole\", \"arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":sts::",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":assumed-role/",
+       {
+        "Ref": "referencetoamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280dauthNestedStackauthNestedStackResourceFFA1AE91OutputsamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280dauthamplifyAuthunauthenticatedUserRole472A33C2Ref"
+       },
+       "/CognitoIdentityCredentials\"))\n$util.qr($ctx.stash.put(\"identityPoolId\", \"",
+       {
+        "Ref": "referencetoamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280dauthNestedStackauthNestedStackResourceFFA1AE91OutputsamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280dauthamplifyAuthIdentityPool4CA00EA7Ref"
+       },
+       "\"))\n$util.qr($ctx.stash.put(\"adminRoles\", []))\n$util.toJson({})"
+      ]
+     ]
+    },
+    "ResponseMappingTemplate": "$util.toJson($ctx.prev.result)",
+    "TypeName": "Mutation"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/SalesApproval/mutationUpdateSalesApprovalResolver"
+   }
+  },
+  "MutationdeleteSalesApprovalpreAuth0FunctionMutationdeleteSalesApprovalpreAuth0FunctionAppSyncFunctionB72D458A": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280ddataamplifyDataGraphQLAPI6DE5F511ApiId"
+    },
+    "DataSourceName": {
+     "Ref": "referencetoamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280ddataamplifyDataGraphQLAPINONEDSCE5F7ADEName"
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "MutationdeleteSalesApprovalpreAuth0Function",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/a2c0f8a4d76f659d130c8a445801845ae9d33e5cc2c5ecd610edc272d4bd46e3.vtl"
+    },
+    "ResponseMappingTemplate": "$util.toJson({})"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/SalesApproval/MutationdeleteSalesApprovalpreAuth0Function/MutationdeleteSalesApprovalpreAuth0Function.AppSyncFunction"
+   }
+  },
+  "MutationdeleteSalesApprovalauth0FunctionMutationdeleteSalesApprovalauth0FunctionAppSyncFunction407DE3EE": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280ddataamplifyDataGraphQLAPI6DE5F511ApiId"
+    },
+    "DataSourceName": {
+     "Fn::GetAtt": [
+      "SalesApprovalDataSource",
+      "Name"
+     ]
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "MutationdeleteSalesApprovalauth0Function",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/1f5fed297da9c32ae3af922bf3a38ccf23b956078887d16891ec06c20c64722c.vtl"
+    },
+    "ResponseMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/d9026b39b763f6e1ba5a06488ea2fbfe6eb653fb4c7ebeb3d0aafabe2928d34b.vtl"
+    }
+   },
+   "DependsOn": [
+    "SalesApprovalDataSource"
+   ],
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/SalesApproval/MutationdeleteSalesApprovalauth0Function/MutationdeleteSalesApprovalauth0Function.AppSyncFunction"
+   }
+  },
+  "MutationdeleteSalesApprovalpostAuth0FunctionMutationdeleteSalesApprovalpostAuth0FunctionAppSyncFunction467885D0": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280ddataamplifyDataGraphQLAPI6DE5F511ApiId"
+    },
+    "DataSourceName": {
+     "Ref": "referencetoamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280ddataamplifyDataGraphQLAPINONEDSCE5F7ADEName"
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "MutationdeleteSalesApprovalpostAuth0Function",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/c1721bcd774e27c514d3454b5be4f9bdd094c0161b57ddf053d618e3b0086a77.vtl"
+    },
+    "ResponseMappingTemplate": "$util.toJson({})"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/SalesApproval/MutationdeleteSalesApprovalpostAuth0Function/MutationdeleteSalesApprovalpostAuth0Function.AppSyncFunction"
+   }
+  },
+  "MutationDeleteSalesApprovalDataResolverFnMutationDeleteSalesApprovalDataResolverFnAppSyncFunction258584D8": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280ddataamplifyDataGraphQLAPI6DE5F511ApiId"
+    },
+    "DataSourceName": {
+     "Fn::GetAtt": [
+      "SalesApprovalDataSource",
+      "Name"
+     ]
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "MutationDeleteSalesApprovalDataResolverFn",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/4f7907d1209a2c9953a0c053df402c634e359546d70c7cc5c2e8e21ea734880f.vtl"
+    },
+    "ResponseMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/f4a52b72209a9dfa197b5e7367a5c378c5bb86de6e29ddd9e48b49a3fe54b249.vtl"
+    }
+   },
+   "DependsOn": [
+    "SalesApprovalDataSource"
+   ],
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/SalesApproval/MutationDeleteSalesApprovalDataResolverFn/MutationDeleteSalesApprovalDataResolverFn.AppSyncFunction"
+   }
+  },
+  "DeleteSalesApprovalResolver": {
+   "Type": "AWS::AppSync::Resolver",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280ddataamplifyDataGraphQLAPI6DE5F511ApiId"
+    },
+    "FieldName": "deleteSalesApproval",
+    "Kind": "PIPELINE",
+    "PipelineConfig": {
+     "Functions": [
+      {
+       "Fn::GetAtt": [
+        "MutationdeleteSalesApprovalpreAuth0FunctionMutationdeleteSalesApprovalpreAuth0FunctionAppSyncFunctionB72D458A",
+        "FunctionId"
+       ]
+      },
+      {
+       "Fn::GetAtt": [
+        "MutationdeleteSalesApprovalauth0FunctionMutationdeleteSalesApprovalauth0FunctionAppSyncFunction407DE3EE",
+        "FunctionId"
+       ]
+      },
+      {
+       "Fn::GetAtt": [
+        "MutationdeleteSalesApprovalpostAuth0FunctionMutationdeleteSalesApprovalpostAuth0FunctionAppSyncFunction467885D0",
+        "FunctionId"
+       ]
+      },
+      {
+       "Fn::GetAtt": [
+        "MutationDeleteSalesApprovalDataResolverFnMutationDeleteSalesApprovalDataResolverFnAppSyncFunction258584D8",
+        "FunctionId"
+       ]
+      }
+     ]
+    },
+    "RequestMappingTemplate": {
+     "Fn::Join": [
+      "",
+      [
+       "$util.qr($ctx.stash.put(\"typeName\", \"Mutation\"))\n$util.qr($ctx.stash.put(\"fieldName\", \"deleteSalesApproval\"))\n$util.qr($ctx.stash.put(\"conditions\", []))\n$util.qr($ctx.stash.put(\"metadata\", {}))\n$util.qr($ctx.stash.metadata.put(\"dataSourceType\", \"AMAZON_DYNAMODB\"))\n$util.qr($ctx.stash.metadata.put(\"apiId\", \"",
+       {
+        "Ref": "referencetoamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280ddataamplifyDataGraphQLAPI6DE5F511ApiId"
+       },
+       "\"))\n$util.qr($ctx.stash.put(\"connectionAttributes\", {}))\n$util.qr($ctx.stash.put(\"tableName\", \"",
+       {
+        "Fn::Select": [
+         1,
+         {
+          "Fn::Split": [
+           "/",
+           {
+            "Fn::Select": [
+             5,
+             {
+              "Fn::Split": [
+               ":",
+               {
+                "Fn::GetAtt": [
+                 "SalesApprovalTable",
+                 "TableArn"
+                ]
+               }
+              ]
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       },
+       "\"))\n$util.qr($ctx.stash.put(\"authRole\", \"arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":sts::",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":assumed-role/",
+       {
+        "Ref": "referencetoamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280dauthNestedStackauthNestedStackResourceFFA1AE91OutputsamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280dauthamplifyAuthauthenticatedUserRole815DEA42Ref"
+       },
+       "/CognitoIdentityCredentials\"))\n$util.qr($ctx.stash.put(\"unauthRole\", \"arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":sts::",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":assumed-role/",
+       {
+        "Ref": "referencetoamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280dauthNestedStackauthNestedStackResourceFFA1AE91OutputsamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280dauthamplifyAuthunauthenticatedUserRole472A33C2Ref"
+       },
+       "/CognitoIdentityCredentials\"))\n$util.qr($ctx.stash.put(\"identityPoolId\", \"",
+       {
+        "Ref": "referencetoamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280dauthNestedStackauthNestedStackResourceFFA1AE91OutputsamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280dauthamplifyAuthIdentityPool4CA00EA7Ref"
+       },
+       "\"))\n$util.qr($ctx.stash.put(\"adminRoles\", []))\n$util.toJson({})"
+      ]
+     ]
+    },
+    "ResponseMappingTemplate": "$util.toJson($ctx.prev.result)",
+    "TypeName": "Mutation"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/SalesApproval/mutationDeleteSalesApprovalResolver"
+   }
+  },
+  "SubscriptiononCreateSalesApprovalauth0FunctionSubscriptiononCreateSalesApprovalauth0FunctionAppSyncFunction1157B5D5": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280ddataamplifyDataGraphQLAPI6DE5F511ApiId"
+    },
+    "DataSourceName": {
+     "Ref": "referencetoamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280ddataamplifyDataGraphQLAPINONEDSCE5F7ADEName"
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "SubscriptiononCreateSalesApprovalauth0Function",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/4843bc77043eb1b2460e9b1e3df9218ebee2b5c86adc9e9f789a60b4f3a02049.vtl"
+    },
+    "ResponseMappingTemplate": "$util.toJson({})"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/SalesApproval/SubscriptiononCreateSalesApprovalauth0Function/SubscriptiononCreateSalesApprovalauth0Function.AppSyncFunction"
+   }
+  },
+  "SubscriptiononCreateSalesApprovalpostAuth0FunctionSubscriptiononCreateSalesApprovalpostAuth0FunctionAppSyncFunction4F6522A6": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280ddataamplifyDataGraphQLAPI6DE5F511ApiId"
+    },
+    "DataSourceName": {
+     "Ref": "referencetoamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280ddataamplifyDataGraphQLAPINONEDSCE5F7ADEName"
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "SubscriptiononCreateSalesApprovalpostAuth0Function",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/c1721bcd774e27c514d3454b5be4f9bdd094c0161b57ddf053d618e3b0086a77.vtl"
+    },
+    "ResponseMappingTemplate": "$util.toJson({})"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/SalesApproval/SubscriptiononCreateSalesApprovalpostAuth0Function/SubscriptiononCreateSalesApprovalpostAuth0Function.AppSyncFunction"
+   }
+  },
+  "SubscriptionOnCreateSalesApprovalDataResolverFnSubscriptionOnCreateSalesApprovalDataResolverFnAppSyncFunctionF5CF1A0D": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280ddataamplifyDataGraphQLAPI6DE5F511ApiId"
+    },
+    "DataSourceName": {
+     "Ref": "referencetoamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280ddataamplifyDataGraphQLAPINONEDSCE5F7ADEName"
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "SubscriptionOnCreateSalesApprovalDataResolverFn",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/fe3c43ada4b9d681a5e2312663ef7a73386424d73b73e51f8e2e9d4b50f7c502.vtl"
+    },
+    "ResponseMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/e0cff47fb007f0bbf2a4e43ca256d6aa7ec109821769fd79fa7c5e83f0e7f9fc.vtl"
+    }
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/SalesApproval/SubscriptionOnCreateSalesApprovalDataResolverFn/SubscriptionOnCreateSalesApprovalDataResolverFn.AppSyncFunction"
+   }
+  },
+  "SubscriptiononCreateSalesApprovalResolver": {
+   "Type": "AWS::AppSync::Resolver",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280ddataamplifyDataGraphQLAPI6DE5F511ApiId"
+    },
+    "FieldName": "onCreateSalesApproval",
+    "Kind": "PIPELINE",
+    "PipelineConfig": {
+     "Functions": [
+      {
+       "Fn::GetAtt": [
+        "SubscriptiononCreateSalesApprovalauth0FunctionSubscriptiononCreateSalesApprovalauth0FunctionAppSyncFunction1157B5D5",
+        "FunctionId"
+       ]
+      },
+      {
+       "Fn::GetAtt": [
+        "SubscriptiononCreateSalesApprovalpostAuth0FunctionSubscriptiononCreateSalesApprovalpostAuth0FunctionAppSyncFunction4F6522A6",
+        "FunctionId"
+       ]
+      },
+      {
+       "Fn::GetAtt": [
+        "SubscriptionOnCreateSalesApprovalDataResolverFnSubscriptionOnCreateSalesApprovalDataResolverFnAppSyncFunctionF5CF1A0D",
+        "FunctionId"
+       ]
+      }
+     ]
+    },
+    "RequestMappingTemplate": {
+     "Fn::Join": [
+      "",
+      [
+       "$util.qr($ctx.stash.put(\"typeName\", \"Subscription\"))\n$util.qr($ctx.stash.put(\"fieldName\", \"onCreateSalesApproval\"))\n$util.qr($ctx.stash.put(\"conditions\", []))\n$util.qr($ctx.stash.put(\"metadata\", {}))\n$util.qr($ctx.stash.metadata.put(\"dataSourceType\", \"NONE\"))\n$util.qr($ctx.stash.metadata.put(\"apiId\", \"",
+       {
+        "Ref": "referencetoamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280ddataamplifyDataGraphQLAPI6DE5F511ApiId"
+       },
+       "\"))\n$util.qr($ctx.stash.put(\"connectionAttributes\", {}))\n\n$util.qr($ctx.stash.put(\"authRole\", \"arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":sts::",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":assumed-role/",
+       {
+        "Ref": "referencetoamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280dauthNestedStackauthNestedStackResourceFFA1AE91OutputsamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280dauthamplifyAuthauthenticatedUserRole815DEA42Ref"
+       },
+       "/CognitoIdentityCredentials\"))\n$util.qr($ctx.stash.put(\"unauthRole\", \"arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":sts::",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":assumed-role/",
+       {
+        "Ref": "referencetoamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280dauthNestedStackauthNestedStackResourceFFA1AE91OutputsamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280dauthamplifyAuthunauthenticatedUserRole472A33C2Ref"
+       },
+       "/CognitoIdentityCredentials\"))\n$util.qr($ctx.stash.put(\"identityPoolId\", \"",
+       {
+        "Ref": "referencetoamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280dauthNestedStackauthNestedStackResourceFFA1AE91OutputsamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280dauthamplifyAuthIdentityPool4CA00EA7Ref"
+       },
+       "\"))\n$util.qr($ctx.stash.put(\"adminRoles\", []))\n$util.toJson({})"
+      ]
+     ]
+    },
+    "ResponseMappingTemplate": "$util.toJson($ctx.prev.result)",
+    "TypeName": "Subscription"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/SalesApproval/subscriptionOnCreateSalesApprovalResolver"
+   }
+  },
+  "SubscriptiononUpdateSalesApprovalauth0FunctionSubscriptiononUpdateSalesApprovalauth0FunctionAppSyncFunctionAA88A865": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280ddataamplifyDataGraphQLAPI6DE5F511ApiId"
+    },
+    "DataSourceName": {
+     "Ref": "referencetoamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280ddataamplifyDataGraphQLAPINONEDSCE5F7ADEName"
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "SubscriptiononUpdateSalesApprovalauth0Function",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/4843bc77043eb1b2460e9b1e3df9218ebee2b5c86adc9e9f789a60b4f3a02049.vtl"
+    },
+    "ResponseMappingTemplate": "$util.toJson({})"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/SalesApproval/SubscriptiononUpdateSalesApprovalauth0Function/SubscriptiononUpdateSalesApprovalauth0Function.AppSyncFunction"
+   }
+  },
+  "SubscriptiononUpdateSalesApprovalpostAuth0FunctionSubscriptiononUpdateSalesApprovalpostAuth0FunctionAppSyncFunction7C5C00BC": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280ddataamplifyDataGraphQLAPI6DE5F511ApiId"
+    },
+    "DataSourceName": {
+     "Ref": "referencetoamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280ddataamplifyDataGraphQLAPINONEDSCE5F7ADEName"
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "SubscriptiononUpdateSalesApprovalpostAuth0Function",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/c1721bcd774e27c514d3454b5be4f9bdd094c0161b57ddf053d618e3b0086a77.vtl"
+    },
+    "ResponseMappingTemplate": "$util.toJson({})"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/SalesApproval/SubscriptiononUpdateSalesApprovalpostAuth0Function/SubscriptiononUpdateSalesApprovalpostAuth0Function.AppSyncFunction"
+   }
+  },
+  "SubscriptionOnUpdateSalesApprovalDataResolverFnSubscriptionOnUpdateSalesApprovalDataResolverFnAppSyncFunction660DE092": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280ddataamplifyDataGraphQLAPI6DE5F511ApiId"
+    },
+    "DataSourceName": {
+     "Ref": "referencetoamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280ddataamplifyDataGraphQLAPINONEDSCE5F7ADEName"
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "SubscriptionOnUpdateSalesApprovalDataResolverFn",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/fe3c43ada4b9d681a5e2312663ef7a73386424d73b73e51f8e2e9d4b50f7c502.vtl"
+    },
+    "ResponseMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/e0cff47fb007f0bbf2a4e43ca256d6aa7ec109821769fd79fa7c5e83f0e7f9fc.vtl"
+    }
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/SalesApproval/SubscriptionOnUpdateSalesApprovalDataResolverFn/SubscriptionOnUpdateSalesApprovalDataResolverFn.AppSyncFunction"
+   }
+  },
+  "SubscriptiononUpdateSalesApprovalResolver": {
+   "Type": "AWS::AppSync::Resolver",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280ddataamplifyDataGraphQLAPI6DE5F511ApiId"
+    },
+    "FieldName": "onUpdateSalesApproval",
+    "Kind": "PIPELINE",
+    "PipelineConfig": {
+     "Functions": [
+      {
+       "Fn::GetAtt": [
+        "SubscriptiononUpdateSalesApprovalauth0FunctionSubscriptiononUpdateSalesApprovalauth0FunctionAppSyncFunctionAA88A865",
+        "FunctionId"
+       ]
+      },
+      {
+       "Fn::GetAtt": [
+        "SubscriptiononUpdateSalesApprovalpostAuth0FunctionSubscriptiononUpdateSalesApprovalpostAuth0FunctionAppSyncFunction7C5C00BC",
+        "FunctionId"
+       ]
+      },
+      {
+       "Fn::GetAtt": [
+        "SubscriptionOnUpdateSalesApprovalDataResolverFnSubscriptionOnUpdateSalesApprovalDataResolverFnAppSyncFunction660DE092",
+        "FunctionId"
+       ]
+      }
+     ]
+    },
+    "RequestMappingTemplate": {
+     "Fn::Join": [
+      "",
+      [
+       "$util.qr($ctx.stash.put(\"typeName\", \"Subscription\"))\n$util.qr($ctx.stash.put(\"fieldName\", \"onUpdateSalesApproval\"))\n$util.qr($ctx.stash.put(\"conditions\", []))\n$util.qr($ctx.stash.put(\"metadata\", {}))\n$util.qr($ctx.stash.metadata.put(\"dataSourceType\", \"NONE\"))\n$util.qr($ctx.stash.metadata.put(\"apiId\", \"",
+       {
+        "Ref": "referencetoamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280ddataamplifyDataGraphQLAPI6DE5F511ApiId"
+       },
+       "\"))\n$util.qr($ctx.stash.put(\"connectionAttributes\", {}))\n\n$util.qr($ctx.stash.put(\"authRole\", \"arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":sts::",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":assumed-role/",
+       {
+        "Ref": "referencetoamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280dauthNestedStackauthNestedStackResourceFFA1AE91OutputsamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280dauthamplifyAuthauthenticatedUserRole815DEA42Ref"
+       },
+       "/CognitoIdentityCredentials\"))\n$util.qr($ctx.stash.put(\"unauthRole\", \"arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":sts::",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":assumed-role/",
+       {
+        "Ref": "referencetoamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280dauthNestedStackauthNestedStackResourceFFA1AE91OutputsamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280dauthamplifyAuthunauthenticatedUserRole472A33C2Ref"
+       },
+       "/CognitoIdentityCredentials\"))\n$util.qr($ctx.stash.put(\"identityPoolId\", \"",
+       {
+        "Ref": "referencetoamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280dauthNestedStackauthNestedStackResourceFFA1AE91OutputsamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280dauthamplifyAuthIdentityPool4CA00EA7Ref"
+       },
+       "\"))\n$util.qr($ctx.stash.put(\"adminRoles\", []))\n$util.toJson({})"
+      ]
+     ]
+    },
+    "ResponseMappingTemplate": "$util.toJson($ctx.prev.result)",
+    "TypeName": "Subscription"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/SalesApproval/subscriptionOnUpdateSalesApprovalResolver"
+   }
+  },
+  "SubscriptiononDeleteSalesApprovalauth0FunctionSubscriptiononDeleteSalesApprovalauth0FunctionAppSyncFunction224B6807": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280ddataamplifyDataGraphQLAPI6DE5F511ApiId"
+    },
+    "DataSourceName": {
+     "Ref": "referencetoamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280ddataamplifyDataGraphQLAPINONEDSCE5F7ADEName"
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "SubscriptiononDeleteSalesApprovalauth0Function",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/4843bc77043eb1b2460e9b1e3df9218ebee2b5c86adc9e9f789a60b4f3a02049.vtl"
+    },
+    "ResponseMappingTemplate": "$util.toJson({})"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/SalesApproval/SubscriptiononDeleteSalesApprovalauth0Function/SubscriptiononDeleteSalesApprovalauth0Function.AppSyncFunction"
+   }
+  },
+  "SubscriptiononDeleteSalesApprovalpostAuth0FunctionSubscriptiononDeleteSalesApprovalpostAuth0FunctionAppSyncFunction61F949BD": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280ddataamplifyDataGraphQLAPI6DE5F511ApiId"
+    },
+    "DataSourceName": {
+     "Ref": "referencetoamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280ddataamplifyDataGraphQLAPINONEDSCE5F7ADEName"
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "SubscriptiononDeleteSalesApprovalpostAuth0Function",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/c1721bcd774e27c514d3454b5be4f9bdd094c0161b57ddf053d618e3b0086a77.vtl"
+    },
+    "ResponseMappingTemplate": "$util.toJson({})"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/SalesApproval/SubscriptiononDeleteSalesApprovalpostAuth0Function/SubscriptiononDeleteSalesApprovalpostAuth0Function.AppSyncFunction"
+   }
+  },
+  "SubscriptionOnDeleteSalesApprovalDataResolverFnSubscriptionOnDeleteSalesApprovalDataResolverFnAppSyncFunction0D4F6FF2": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280ddataamplifyDataGraphQLAPI6DE5F511ApiId"
+    },
+    "DataSourceName": {
+     "Ref": "referencetoamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280ddataamplifyDataGraphQLAPINONEDSCE5F7ADEName"
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "SubscriptionOnDeleteSalesApprovalDataResolverFn",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/fe3c43ada4b9d681a5e2312663ef7a73386424d73b73e51f8e2e9d4b50f7c502.vtl"
+    },
+    "ResponseMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/e0cff47fb007f0bbf2a4e43ca256d6aa7ec109821769fd79fa7c5e83f0e7f9fc.vtl"
+    }
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/SalesApproval/SubscriptionOnDeleteSalesApprovalDataResolverFn/SubscriptionOnDeleteSalesApprovalDataResolverFn.AppSyncFunction"
+   }
+  },
+  "SubscriptiononDeleteSalesApprovalResolver": {
+   "Type": "AWS::AppSync::Resolver",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280ddataamplifyDataGraphQLAPI6DE5F511ApiId"
+    },
+    "FieldName": "onDeleteSalesApproval",
+    "Kind": "PIPELINE",
+    "PipelineConfig": {
+     "Functions": [
+      {
+       "Fn::GetAtt": [
+        "SubscriptiononDeleteSalesApprovalauth0FunctionSubscriptiononDeleteSalesApprovalauth0FunctionAppSyncFunction224B6807",
+        "FunctionId"
+       ]
+      },
+      {
+       "Fn::GetAtt": [
+        "SubscriptiononDeleteSalesApprovalpostAuth0FunctionSubscriptiononDeleteSalesApprovalpostAuth0FunctionAppSyncFunction61F949BD",
+        "FunctionId"
+       ]
+      },
+      {
+       "Fn::GetAtt": [
+        "SubscriptionOnDeleteSalesApprovalDataResolverFnSubscriptionOnDeleteSalesApprovalDataResolverFnAppSyncFunction0D4F6FF2",
+        "FunctionId"
+       ]
+      }
+     ]
+    },
+    "RequestMappingTemplate": {
+     "Fn::Join": [
+      "",
+      [
+       "$util.qr($ctx.stash.put(\"typeName\", \"Subscription\"))\n$util.qr($ctx.stash.put(\"fieldName\", \"onDeleteSalesApproval\"))\n$util.qr($ctx.stash.put(\"conditions\", []))\n$util.qr($ctx.stash.put(\"metadata\", {}))\n$util.qr($ctx.stash.metadata.put(\"dataSourceType\", \"NONE\"))\n$util.qr($ctx.stash.metadata.put(\"apiId\", \"",
+       {
+        "Ref": "referencetoamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280ddataamplifyDataGraphQLAPI6DE5F511ApiId"
+       },
+       "\"))\n$util.qr($ctx.stash.put(\"connectionAttributes\", {}))\n\n$util.qr($ctx.stash.put(\"authRole\", \"arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":sts::",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":assumed-role/",
+       {
+        "Ref": "referencetoamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280dauthNestedStackauthNestedStackResourceFFA1AE91OutputsamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280dauthamplifyAuthauthenticatedUserRole815DEA42Ref"
+       },
+       "/CognitoIdentityCredentials\"))\n$util.qr($ctx.stash.put(\"unauthRole\", \"arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":sts::",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":assumed-role/",
+       {
+        "Ref": "referencetoamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280dauthNestedStackauthNestedStackResourceFFA1AE91OutputsamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280dauthamplifyAuthunauthenticatedUserRole472A33C2Ref"
+       },
+       "/CognitoIdentityCredentials\"))\n$util.qr($ctx.stash.put(\"identityPoolId\", \"",
+       {
+        "Ref": "referencetoamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280dauthNestedStackauthNestedStackResourceFFA1AE91OutputsamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280dauthamplifyAuthIdentityPool4CA00EA7Ref"
+       },
+       "\"))\n$util.qr($ctx.stash.put(\"adminRoles\", []))\n$util.toJson({})"
+      ]
+     ]
+    },
+    "ResponseMappingTemplate": "$util.toJson($ctx.prev.result)",
+    "TypeName": "Subscription"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/SalesApproval/subscriptionOnDeleteSalesApprovalResolver"
+   }
+  },
+  "CDKMetadata": {
+   "Type": "AWS::CDK::Metadata",
+   "Properties": {
+    "Analytics": "v2:deflate64:H4sIAAAAAAAA/1WOwW6DMAyGn6X34AmYtPMK2rGbYPfKJAalhATFTqsK8e4TdOq00+9P/mT/BRTlG+QHvHGmzZg528FyIhYyraAeVdX7L4w4kVDcoAreWLHBq4Y4pKhJVYklTH/Y++eMNz4v5u5xCqaDb+wcHZFJWZxgaYJ72MHRqnCe+e41LPWu112Ngu3z5H/6SF5vJargezukiHuj38/uSnFVXJ6RmYThfQvFJRyTHkm2AuvmfiaZk6h93QoO1g+r8sEQXPjlWrxCnkN+uLC1WUxe7ETQPPIHUItKRjYBAAA="
+   },
+   "Metadata": {
+    "aws:cdk:path": "amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/SalesApproval/CDKMetadata/Default"
+   },
+   "Condition": "CDKMetadataAvailable"
+  }
+ },
+ "Outputs": {
+  "GetAttSalesApprovalTableStreamArn": {
+   "Description": "Your DynamoDB table StreamArn.",
+   "Value": {
+    "Fn::GetAtt": [
+     "SalesApprovalTable",
+     "TableStreamArn"
+    ]
+   },
+   "Export": {
+    "Name": {
+     "Fn::Join": [
+      ":",
+      [
+       {
+        "Ref": "referencetoamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280ddataamplifyDataGraphQLAPI6DE5F511ApiId"
+       },
+       "GetAtt:SalesApprovalTable:StreamArn"
+      ]
+     ]
+    }
+   }
+  },
+  "GetAttSalesApprovalTableName": {
+   "Description": "Your DynamoDB table name.",
+   "Value": {
+    "Fn::Join": [
+     "",
+     [
+      "SalesApproval-",
+      {
+       "Ref": "referencetoamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280ddataamplifyDataGraphQLAPI6DE5F511ApiId"
+      },
+      "-NONE"
+     ]
+    ]
+   },
+   "Export": {
+    "Name": {
+     "Fn::Join": [
+      ":",
+      [
+       {
+        "Ref": "referencetoamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280ddataamplifyDataGraphQLAPI6DE5F511ApiId"
+       },
+       "GetAtt:SalesApprovalTable:Name"
+      ]
+     ]
+    }
+   }
+  },
+  "amplifyrodeodrivecrmbackendMHaggosandboxbe3aab280ddataamplifyDataSalesApprovalSalesApprovalDataSource2B699E60Name": {
+   "Value": {
+    "Fn::GetAtt": [
+     "SalesApprovalDataSource",
+     "Name"
+    ]
+   }
+  },
+  "amplifyrodeodrivecrmbackendMHaggosandboxbe3aab280ddataamplifyDataSalesApprovalSalesApprovalTable12AD2573TableArn": {
+   "Value": {
+    "Fn::GetAtt": [
+     "SalesApprovalTable",
+     "TableArn"
+    ]
+   }
+  }
+ }
+}

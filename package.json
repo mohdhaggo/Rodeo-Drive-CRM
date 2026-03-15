@@ -11,5 +11,8 @@
     "@aws-amplify/backend-cli": "^1.8.2",
     "aws-cdk-lib": "^2.0.0",
     "constructs": "^10.0.0"
+  },
+  "dependencies": {
+    "@aws-sdk/client-cognito-identity-provider": "^3.1009.0"
   }
 }

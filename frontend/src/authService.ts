@@ -4,12 +4,99 @@
  * Handles graceful fallback when Amplify is not available
  */
 
+import { generateClient } from 'aws-amplify/api'
+import type { Schema } from '../../amplify/data/resource'
+
+const apiClient = generateClient<Schema>()
+
+const isRecord = (value: unknown): value is Record<string, unknown> => {
+  return typeof value === 'object' && value !== null
+}
+
+const getMessageFromErrorsArray = (value: unknown): string | null => {
+  if (!Array.isArray(value)) {
+    return null
+  }
+
+  const messages = value
+    .map((entry) => {
+      if (!isRecord(entry)) return null
+      const message = entry.message
+      return typeof message === 'string' && message.trim() ? message.trim() : null
+    })
+    .filter((message): message is string => Boolean(message))
+
+  return messages.length ? messages.join(' | ') : null
+}
+
+const extractErrorMessage = (error: unknown): string => {
+  if (typeof error === 'string' && error.trim()) {
+    return error
+  }
+
+  if (error instanceof Error && error.message.trim()) {
+    return error.message
+  }
+
+  if (isRecord(error)) {
+    const directMessage = error.message
+    if (typeof directMessage === 'string' && directMessage.trim()) {
+      return directMessage
+    }
+
+    const errorsMessage = getMessageFromErrorsArray(error.errors)
+    if (errorsMessage) {
+      return errorsMessage
+    }
+
+    const causeMessage = extractErrorMessage(error.cause)
+    if (causeMessage !== 'Unknown error') {
+      return causeMessage
+    }
+
+    try {
+      const serialized = JSON.stringify(error)
+      if (serialized && serialized !== '{}') {
+        return serialized
+      }
+    } catch {
+      // ignore JSON serialization failures
+    }
+  }
+
+  return 'Unknown error'
+}
+
+const inviteUserMutation = /* GraphQL */ `
+  mutation InviteUserToCognito(
+    $email: AWSEmail!
+    $fullName: String!
+    $phoneNumber: String!
+    $temporaryPassword: String!
+  ) {
+    inviteUserToCognito(
+      email: $email
+      fullName: $fullName
+      phoneNumber: $phoneNumber
+      temporaryPassword: $temporaryPassword
+    ) {
+      success
+      message
+      invitationSent
+      invitationResent
+      userAlreadyExists
+    }
+  }
+`
+
 // Lazy load Amplify auth to avoid import errors
 let signUp: any = null
 let signIn: any = null
 let signOut: any = null
 let getCurrentUser: any = null
 let confirmSignUp: any = null
+let resendSignUpCodeFn: any = null
+let resetPasswordFn: any = null
 let fetchUserAttributes: any = null
 let userService: any = null
 
@@ -22,6 +109,8 @@ const loadAuthModules = async () => {
     signOut = authModule.signOut
     getCurrentUser = authModule.getCurrentUser
     confirmSignUp = authModule.confirmSignUp
+    resendSignUpCodeFn = authModule.resendSignUpCode
+    resetPasswordFn = authModule.resetPassword
     fetchUserAttributes = authModule.fetchUserAttributes
   } catch (err) {
     console.warn('⚠️ Amplify auth not available:', err)
@@ -56,11 +145,28 @@ export interface SignUpInput {
   password: string;
   firstName?: string;
   lastName?: string;
+  fullName?: string;
+  phoneNumber?: string;
 }
 
 export interface SignInInput {
   email: string;
   password: string;
+}
+
+export interface InviteUserInput {
+  email: string;
+  fullName: string;
+  phoneNumber: string;
+  temporaryPassword: string;
+}
+
+export interface InviteUserResult {
+  success: boolean;
+  message: string;
+  invitationSent?: boolean;
+  invitationResent?: boolean;
+  userAlreadyExists?: boolean;
 }
 
 class AuthenticationService {
@@ -114,15 +220,31 @@ class AuthenticationService {
         throw new Error('Amplify auth not available')
       }
 
+      const userAttributes: Record<string, string> = {
+        email: input.email,
+      }
+
+      if (input.firstName) {
+        userAttributes.given_name = input.firstName
+      }
+
+      if (input.lastName) {
+        userAttributes.family_name = input.lastName
+      }
+
+      if (input.fullName) {
+        userAttributes.name = input.fullName
+      }
+
+      if (input.phoneNumber) {
+        userAttributes.phone_number = input.phoneNumber
+      }
+
       const result = await signUp({
         username: input.email,
         password: input.password,
         options: {
-          userAttributes: {
-            email: input.email,
-            given_name: input.firstName,
-            family_name: input.lastName,
-          },
+          userAttributes,
         },
       })
 
@@ -141,6 +263,74 @@ class AuthenticationService {
   }
 
   /**
+   * Send Cognito invitation using backend AdminCreateUser mutation
+   */
+  async sendUserInvitation(input: InviteUserInput): Promise<InviteUserResult> {
+    const variables = {
+      email: input.email.trim().toLowerCase(),
+      fullName: input.fullName.trim(),
+      phoneNumber: input.phoneNumber.trim(),
+      temporaryPassword: input.temporaryPassword,
+    }
+
+    const runMutation = async (authMode?: 'apiKey' | 'userPool') => {
+      return apiClient.graphql({
+        query: inviteUserMutation,
+        variables,
+        ...(authMode ? { authMode } : {}),
+      }) as Promise<{
+        data?: {
+          inviteUserToCognito?: InviteUserResult
+        }
+        errors?: Array<{ message?: string }>
+      }>
+    }
+
+    try {
+      const authModes: Array<'apiKey' | 'userPool' | undefined> = ['apiKey', 'userPool', undefined]
+      let result: {
+        data?: {
+          inviteUserToCognito?: InviteUserResult
+        }
+        errors?: Array<{ message?: string }>
+      } | null = null
+      let lastError: unknown = null
+
+      for (const authMode of authModes) {
+        try {
+          result = await runMutation(authMode)
+          break
+        } catch (authError) {
+          lastError = authError
+        }
+      }
+
+      if (!result) {
+        throw new Error(extractErrorMessage(lastError))
+      }
+
+      if (result.errors?.length) {
+        const message =
+          result.errors
+            .map((entry) => entry.message)
+            .filter((entry): entry is string => Boolean(entry && entry.trim()))
+            .join(' | ') || 'Unknown GraphQL error'
+        throw new Error(message)
+      }
+
+      const response = result.data?.inviteUserToCognito
+      if (!response) {
+        throw new Error('No response returned from inviteUserToCognito mutation')
+      }
+
+      return response
+    } catch (error) {
+      console.error('Send user invitation error:', error)
+      throw new Error(extractErrorMessage(error))
+    }
+  }
+
+  /**
    * Confirm sign up with confirmation code
    */
   async confirmSignUp(email: string, confirmationCode: string): Promise<void> {
@@ -155,6 +345,46 @@ class AuthenticationService {
       })
     } catch (error) {
       console.error('Confirm sign up error:', error)
+      throw error
+    }
+  }
+
+  /**
+   * Resend sign-up verification code
+   */
+  async resendSignUpCode(email: string): Promise<void> {
+    try {
+      if (!resendSignUpCodeFn) {
+        throw new Error('Amplify auth not available')
+      }
+
+      await resendSignUpCodeFn({
+        username: email,
+      })
+    } catch (error) {
+      console.error('Resend sign up code error:', error)
+      throw error
+    }
+  }
+
+  /**
+   * Request password reset code via Cognito email
+   */
+  async requestPasswordReset(email: string): Promise<{ nextStep?: any }> {
+    try {
+      if (!resetPasswordFn) {
+        throw new Error('Amplify auth not available')
+      }
+
+      const result = await resetPasswordFn({
+        username: email,
+      })
+
+      return {
+        nextStep: result.nextStep,
+      }
+    } catch (error) {
+      console.error('Request password reset error:', error)
       throw error
     }
   }

@@ -371,12 +371,78 @@
      {
       "attributeName": "id",
       "attributeType": "S"
+     },
+     {
+      "attributeName": "departmentId",
+      "attributeType": "S"
+     },
+     {
+      "attributeName": "roleId",
+      "attributeType": "S"
      }
     ],
     "keySchema": [
      {
       "attributeName": "id",
       "keyType": "HASH"
+     }
+    ],
+    "globalSecondaryIndexes": [
+     {
+      "indexName": "gsi-Department.users",
+      "keySchema": [
+       {
+        "attributeName": "departmentId",
+        "keyType": "HASH"
+       }
+      ],
+      "projection": {
+       "projectionType": "ALL"
+      },
+      "provisionedThroughput": {
+       "Fn::If": [
+        "ShouldUsePayPerRequestBilling",
+        {
+         "Ref": "AWS::NoValue"
+        },
+        {
+         "ReadCapacityUnits": {
+          "Ref": "DynamoDBModelTableReadIOPS"
+         },
+         "WriteCapacityUnits": {
+          "Ref": "DynamoDBModelTableWriteIOPS"
+         }
+        }
+       ]
+      }
+     },
+     {
+      "indexName": "gsi-Role.users",
+      "keySchema": [
+       {
+        "attributeName": "roleId",
+        "keyType": "HASH"
+       }
+      ],
+      "projection": {
+       "projectionType": "ALL"
+      },
+      "provisionedThroughput": {
+       "Fn::If": [
+        "ShouldUsePayPerRequestBilling",
+        {
+         "Ref": "AWS::NoValue"
+        },
+        {
+         "ReadCapacityUnits": {
+          "Ref": "DynamoDBModelTableReadIOPS"
+         },
+         "WriteCapacityUnits": {
+          "Ref": "DynamoDBModelTableWriteIOPS"
+         }
+        }
+       ]
+      }
      }
     ],
     "provisionedThroughput": {
@@ -601,6 +667,28 @@
     "aws:cdk:path": "amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/User/UserDataSource/Resource"
    }
   },
+  "QuerygetUserpreAuth0FunctionQuerygetUserpreAuth0FunctionAppSyncFunction20420340": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280ddataamplifyDataGraphQLAPI6DE5F511ApiId"
+    },
+    "DataSourceName": {
+     "Ref": "referencetoamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280ddataamplifyDataGraphQLAPINONEDSCE5F7ADEName"
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "QuerygetUserpreAuth0Function",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/ffc597e18023b530e6afcbe02cee647d49550fa9e77bd06f1dee09d8b1be8de3.vtl"
+    },
+    "ResponseMappingTemplate": "$util.toJson({})"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/User/QuerygetUserpreAuth0Function/QuerygetUserpreAuth0Function.AppSyncFunction"
+   }
+  },
   "QuerygetUserauth0FunctionQuerygetUserauth0FunctionAppSyncFunction9E6250B0": {
    "Type": "AWS::AppSync::FunctionConfiguration",
    "Properties": {
@@ -613,7 +701,7 @@
     "FunctionVersion": "2018-05-29",
     "Name": "QuerygetUserauth0Function",
     "RequestMappingTemplateS3Location": {
-     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/88d5b7081b0dc9c39fd0bffedf56f011b2a7cf1ce5cc227f47a1e94efee8067c.vtl"
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/6677b1986afebbf1f4026c57099890e32ab4e450e422c5e3c930b085a73b6b60.vtl"
     },
     "ResponseMappingTemplate": "$util.toJson({})"
    },
@@ -685,6 +773,12 @@
     "Kind": "PIPELINE",
     "PipelineConfig": {
      "Functions": [
+      {
+       "Fn::GetAtt": [
+        "QuerygetUserpreAuth0FunctionQuerygetUserpreAuth0FunctionAppSyncFunction20420340",
+        "FunctionId"
+       ]
+      },
       {
        "Fn::GetAtt": [
         "QuerygetUserauth0FunctionQuerygetUserauth0FunctionAppSyncFunction9E6250B0",
@@ -781,6 +875,28 @@
     "aws:cdk:path": "amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/User/queryGetUserResolver"
    }
   },
+  "QuerylistUserspreAuth0FunctionQuerylistUserspreAuth0FunctionAppSyncFunctionAB63F07E": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280ddataamplifyDataGraphQLAPI6DE5F511ApiId"
+    },
+    "DataSourceName": {
+     "Ref": "referencetoamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280ddataamplifyDataGraphQLAPINONEDSCE5F7ADEName"
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "QuerylistUserspreAuth0Function",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/3e81312d4c75951808eda9fcd5f854c1925c0b819de0939f09c4fe2eebb190b8.vtl"
+    },
+    "ResponseMappingTemplate": "$util.toJson({})"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/User/QuerylistUserspreAuth0Function/QuerylistUserspreAuth0Function.AppSyncFunction"
+   }
+  },
   "QuerylistUsersauth0FunctionQuerylistUsersauth0FunctionAppSyncFunctionA1FF61AB": {
    "Type": "AWS::AppSync::FunctionConfiguration",
    "Properties": {
@@ -793,7 +909,7 @@
     "FunctionVersion": "2018-05-29",
     "Name": "QuerylistUsersauth0Function",
     "RequestMappingTemplateS3Location": {
-     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/88d5b7081b0dc9c39fd0bffedf56f011b2a7cf1ce5cc227f47a1e94efee8067c.vtl"
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/6677b1986afebbf1f4026c57099890e32ab4e450e422c5e3c930b085a73b6b60.vtl"
     },
     "ResponseMappingTemplate": "$util.toJson({})"
    },
@@ -865,6 +981,12 @@
     "Kind": "PIPELINE",
     "PipelineConfig": {
      "Functions": [
+      {
+       "Fn::GetAtt": [
+        "QuerylistUserspreAuth0FunctionQuerylistUserspreAuth0FunctionAppSyncFunctionAB63F07E",
+        "FunctionId"
+       ]
+      },
       {
        "Fn::GetAtt": [
         "QuerylistUsersauth0FunctionQuerylistUsersauth0FunctionAppSyncFunctionA1FF61AB",
@@ -983,6 +1105,28 @@
     "aws:cdk:path": "amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/User/MutationcreateUserinit0Function/MutationcreateUserinit0Function.AppSyncFunction"
    }
   },
+  "MutationcreateUserpreAuth0FunctionMutationcreateUserpreAuth0FunctionAppSyncFunction7F885F8E": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280ddataamplifyDataGraphQLAPI6DE5F511ApiId"
+    },
+    "DataSourceName": {
+     "Ref": "referencetoamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280ddataamplifyDataGraphQLAPINONEDSCE5F7ADEName"
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "MutationcreateUserpreAuth0Function",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/39fb35c6f8e8573ffe3a63ba867cf543b05af129a104b387a44f03c3d85da0c3.vtl"
+    },
+    "ResponseMappingTemplate": "$util.toJson({})"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/User/MutationcreateUserpreAuth0Function/MutationcreateUserpreAuth0Function.AppSyncFunction"
+   }
+  },
   "MutationcreateUserauth0FunctionMutationcreateUserauth0FunctionAppSyncFunction30556A6C": {
    "Type": "AWS::AppSync::FunctionConfiguration",
    "Properties": {
@@ -995,7 +1139,7 @@
     "FunctionVersion": "2018-05-29",
     "Name": "MutationcreateUserauth0Function",
     "RequestMappingTemplateS3Location": {
-     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/b371d68ddfbdd11b176756ce33b2c4e79d26fcc2fd4b7c0c9e75d06efacee90e.vtl"
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/163f1e92c10dcaf85e4690f19146fc5a18d1291ad6a6ad84db40c0c36d101fe9.vtl"
     },
     "ResponseMappingTemplate": "$util.toJson({})"
    },
@@ -1070,6 +1214,12 @@
       {
        "Fn::GetAtt": [
         "MutationcreateUserinit0FunctionMutationcreateUserinit0FunctionAppSyncFunctionEDF87EC6",
+        "FunctionId"
+       ]
+      },
+      {
+       "Fn::GetAtt": [
+        "MutationcreateUserpreAuth0FunctionMutationcreateUserpreAuth0FunctionAppSyncFunction7F885F8E",
         "FunctionId"
        ]
       },
@@ -1191,6 +1341,28 @@
     "aws:cdk:path": "amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/User/MutationupdateUserinit0Function/MutationupdateUserinit0Function.AppSyncFunction"
    }
   },
+  "MutationupdateUserpreAuth0FunctionMutationupdateUserpreAuth0FunctionAppSyncFunction8073FE5C": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280ddataamplifyDataGraphQLAPI6DE5F511ApiId"
+    },
+    "DataSourceName": {
+     "Ref": "referencetoamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280ddataamplifyDataGraphQLAPINONEDSCE5F7ADEName"
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "MutationupdateUserpreAuth0Function",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/39fb35c6f8e8573ffe3a63ba867cf543b05af129a104b387a44f03c3d85da0c3.vtl"
+    },
+    "ResponseMappingTemplate": "$util.toJson({})"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/User/MutationupdateUserpreAuth0Function/MutationupdateUserpreAuth0Function.AppSyncFunction"
+   }
+  },
   "MutationupdateUserauth0FunctionMutationupdateUserauth0FunctionAppSyncFunctionDF95DA65": {
    "Type": "AWS::AppSync::FunctionConfiguration",
    "Properties": {
@@ -1209,7 +1381,7 @@
      "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/1f5fed297da9c32ae3af922bf3a38ccf23b956078887d16891ec06c20c64722c.vtl"
     },
     "ResponseMappingTemplateS3Location": {
-     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/245ed8ac5185462a6923b7e45a318fec4c9ba0c45d1d720abd5b20317aa3dc6a.vtl"
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/58a246af4be16a1ddccdbae460faba9ba768ae2655833a75797307311c63ad0f.vtl"
     }
    },
    "DependsOn": [
@@ -1286,6 +1458,12 @@
       {
        "Fn::GetAtt": [
         "MutationupdateUserinit0FunctionMutationupdateUserinit0FunctionAppSyncFunctionC2E8A924",
+        "FunctionId"
+       ]
+      },
+      {
+       "Fn::GetAtt": [
+        "MutationupdateUserpreAuth0FunctionMutationupdateUserpreAuth0FunctionAppSyncFunction8073FE5C",
         "FunctionId"
        ]
       },
@@ -1385,6 +1563,28 @@
     "aws:cdk:path": "amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/User/mutationUpdateUserResolver"
    }
   },
+  "MutationdeleteUserpreAuth0FunctionMutationdeleteUserpreAuth0FunctionAppSyncFunction0A75CEC7": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280ddataamplifyDataGraphQLAPI6DE5F511ApiId"
+    },
+    "DataSourceName": {
+     "Ref": "referencetoamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280ddataamplifyDataGraphQLAPINONEDSCE5F7ADEName"
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "MutationdeleteUserpreAuth0Function",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/a2c0f8a4d76f659d130c8a445801845ae9d33e5cc2c5ecd610edc272d4bd46e3.vtl"
+    },
+    "ResponseMappingTemplate": "$util.toJson({})"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/User/MutationdeleteUserpreAuth0Function/MutationdeleteUserpreAuth0Function.AppSyncFunction"
+   }
+  },
   "MutationdeleteUserauth0FunctionMutationdeleteUserauth0FunctionAppSyncFunction9B900ACD": {
    "Type": "AWS::AppSync::FunctionConfiguration",
    "Properties": {
@@ -1403,7 +1603,7 @@
      "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/1f5fed297da9c32ae3af922bf3a38ccf23b956078887d16891ec06c20c64722c.vtl"
     },
     "ResponseMappingTemplateS3Location": {
-     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/29e4bdb03133f87f2b1acb547959ffd4cfd22804026994c5b61db33084127353.vtl"
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/d9026b39b763f6e1ba5a06488ea2fbfe6eb653fb4c7ebeb3d0aafabe2928d34b.vtl"
     }
    },
    "DependsOn": [
@@ -1477,6 +1677,12 @@
     "Kind": "PIPELINE",
     "PipelineConfig": {
      "Functions": [
+      {
+       "Fn::GetAtt": [
+        "MutationdeleteUserpreAuth0FunctionMutationdeleteUserpreAuth0FunctionAppSyncFunction0A75CEC7",
+        "FunctionId"
+       ]
+      },
       {
        "Fn::GetAtt": [
         "MutationdeleteUserauth0FunctionMutationdeleteUserauth0FunctionAppSyncFunction9B900ACD",
@@ -1585,7 +1791,7 @@
     "FunctionVersion": "2018-05-29",
     "Name": "SubscriptiononCreateUserauth0Function",
     "RequestMappingTemplateS3Location": {
-     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/6f3a2a9d562ae3058cc1aed6741edbf5edcaef7b3df7b03f52478816a1c95ffb.vtl"
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/4843bc77043eb1b2460e9b1e3df9218ebee2b5c86adc9e9f789a60b4f3a02049.vtl"
     },
     "ResponseMappingTemplate": "$util.toJson({})"
    },
@@ -1732,7 +1938,7 @@
     "FunctionVersion": "2018-05-29",
     "Name": "SubscriptiononUpdateUserauth0Function",
     "RequestMappingTemplateS3Location": {
-     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/6f3a2a9d562ae3058cc1aed6741edbf5edcaef7b3df7b03f52478816a1c95ffb.vtl"
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/4843bc77043eb1b2460e9b1e3df9218ebee2b5c86adc9e9f789a60b4f3a02049.vtl"
     },
     "ResponseMappingTemplate": "$util.toJson({})"
    },
@@ -1879,7 +2085,7 @@
     "FunctionVersion": "2018-05-29",
     "Name": "SubscriptiononDeleteUserauth0Function",
     "RequestMappingTemplateS3Location": {
-     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/6f3a2a9d562ae3058cc1aed6741edbf5edcaef7b3df7b03f52478816a1c95ffb.vtl"
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/4843bc77043eb1b2460e9b1e3df9218ebee2b5c86adc9e9f789a60b4f3a02049.vtl"
     },
     "ResponseMappingTemplate": "$util.toJson({})"
    },
@@ -2074,6 +2280,22 @@
       ]
      ]
     }
+   }
+  },
+  "amplifyrodeodrivecrmbackendMHaggosandboxbe3aab280ddataamplifyDataUserUserDataSource0629E3D2Name": {
+   "Value": {
+    "Fn::GetAtt": [
+     "UserDataSource",
+     "Name"
+    ]
+   }
+  },
+  "amplifyrodeodrivecrmbackendMHaggosandboxbe3aab280ddataamplifyDataUserUserTable9A2A098CTableArn": {
+   "Value": {
+    "Fn::GetAtt": [
+     "UserTable",
+     "TableArn"
+    ]
    }
   }
  }

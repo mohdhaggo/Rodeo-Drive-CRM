@@ -1,0 +1,530 @@
+{
+ "Description": "An auto-generated nested stack for the @function directive.",
+ "AWSTemplateFormatVersion": "2010-09-09",
+ "Conditions": {
+  "HasEnvironmentParameter": {
+   "Fn::Not": [
+    {
+     "Fn::Equals": [
+      "NONE",
+      "NONE"
+     ]
+    }
+   ]
+  },
+  "CDKMetadataAvailable": {
+   "Fn::Or": [
+    {
+     "Fn::Or": [
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "af-south-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ap-east-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ap-northeast-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ap-northeast-2"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ap-northeast-3"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ap-south-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ap-south-2"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ap-southeast-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ap-southeast-2"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ap-southeast-3"
+       ]
+      }
+     ]
+    },
+    {
+     "Fn::Or": [
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ap-southeast-4"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ca-central-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ca-west-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "cn-north-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "cn-northwest-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "eu-central-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "eu-central-2"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "eu-north-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "eu-south-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "eu-south-2"
+       ]
+      }
+     ]
+    },
+    {
+     "Fn::Or": [
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "eu-west-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "eu-west-2"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "eu-west-3"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "il-central-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "me-central-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "me-south-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "sa-east-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "us-east-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "us-east-2"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "us-west-1"
+       ]
+      }
+     ]
+    },
+    {
+     "Fn::Equals": [
+      {
+       "Ref": "AWS::Region"
+      },
+      "us-west-2"
+     ]
+    }
+   ]
+  }
+ },
+ "Resources": {
+  "FnInviteUserToCognitoLambdaDataSourceServiceRole36722101": {
+   "Type": "AWS::IAM::Role",
+   "Properties": {
+    "AssumeRolePolicyDocument": {
+     "Statement": [
+      {
+       "Action": "sts:AssumeRole",
+       "Effect": "Allow",
+       "Principal": {
+        "Service": "appsync.amazonaws.com"
+       }
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "Tags": [
+     {
+      "Key": "amplify:deployment-type",
+      "Value": "sandbox"
+     },
+     {
+      "Key": "amplify:friendly-name",
+      "Value": "amplifyData"
+     },
+     {
+      "Key": "created-by",
+      "Value": "amplify"
+     }
+    ]
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/FunctionDirectiveStack/FnInviteUserToCognitoLambdaDataSource/ServiceRole/Resource"
+   }
+  },
+  "FnInviteUserToCognitoLambdaDataSourceServiceRoleDefaultPolicyCBA1EDF0": {
+   "Type": "AWS::IAM::Policy",
+   "Properties": {
+    "PolicyDocument": {
+     "Statement": [
+      {
+       "Action": "lambda:InvokeFunction",
+       "Effect": "Allow",
+       "Resource": [
+        {
+         "Ref": "referencetoamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280dfunctionNestedStackfunctionNestedStackResource06D3AFF0OutputsamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280dfunctioninviteusertocognitolambdaC8DFE746Arn"
+        },
+        {
+         "Fn::Join": [
+          "",
+          [
+           {
+            "Ref": "referencetoamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280dfunctionNestedStackfunctionNestedStackResource06D3AFF0OutputsamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280dfunctioninviteusertocognitolambdaC8DFE746Arn"
+           },
+           ":*"
+          ]
+         ]
+        }
+       ]
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "PolicyName": "FnInviteUserToCognitoLambdaDataSourceServiceRoleDefaultPolicyCBA1EDF0",
+    "Roles": [
+     {
+      "Ref": "FnInviteUserToCognitoLambdaDataSourceServiceRole36722101"
+     }
+    ]
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/FunctionDirectiveStack/FnInviteUserToCognitoLambdaDataSource/ServiceRole/DefaultPolicy/Resource"
+   }
+  },
+  "FnInviteUserToCognitoLambdaDataSource": {
+   "Type": "AWS::AppSync::DataSource",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280ddataamplifyDataGraphQLAPI6DE5F511ApiId"
+    },
+    "LambdaConfig": {
+     "LambdaFunctionArn": {
+      "Ref": "referencetoamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280dfunctionNestedStackfunctionNestedStackResource06D3AFF0OutputsamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280dfunctioninviteusertocognitolambdaC8DFE746Arn"
+     }
+    },
+    "Name": "FnInviteUserToCognitoLambdaDataSource",
+    "ServiceRoleArn": {
+     "Fn::GetAtt": [
+      "FnInviteUserToCognitoLambdaDataSourceServiceRole36722101",
+      "Arn"
+     ]
+    },
+    "Type": "AWS_LAMBDA"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/FunctionDirectiveStack/FnInviteUserToCognitoLambdaDataSource/Resource"
+   }
+  },
+  "InvokeFnInviteUserToCognitoLambdaDataSourceInvokeFnInviteUserToCognitoLambdaDataSourceAppSyncFunction75A19502": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280ddataamplifyDataGraphQLAPI6DE5F511ApiId"
+    },
+    "DataSourceName": {
+     "Fn::GetAtt": [
+      "FnInviteUserToCognitoLambdaDataSource",
+      "Name"
+     ]
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "InvokeFnInviteUserToCognitoLambdaDataSource",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/2d35571c1fe3c549f5cdaa0aa03f6f4b1ee3273cd260d3f1ca31a0bafa87bd42.vtl"
+    },
+    "ResponseMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/a20e304512b1fde77dc16ed9d5e0ed03817afcab629ce87ef11c99877b7b1e30.vtl"
+    }
+   },
+   "DependsOn": [
+    "FnInviteUserToCognitoLambdaDataSource"
+   ],
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/FunctionDirectiveStack/InvokeFnInviteUserToCognitoLambdaDataSource/InvokeFnInviteUserToCognitoLambdaDataSource.AppSyncFunction"
+   }
+  },
+  "MutationinviteUserToCognitoResolver": {
+   "Type": "AWS::AppSync::Resolver",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280ddataamplifyDataGraphQLAPI6DE5F511ApiId"
+    },
+    "FieldName": "inviteUserToCognito",
+    "Kind": "PIPELINE",
+    "PipelineConfig": {
+     "Functions": [
+      {
+       "Fn::GetAtt": [
+        "MutationInviteUserToCognitoAuthFNMutationInviteUserToCognitoAuthFNAppSyncFunction181FB3CE",
+        "FunctionId"
+       ]
+      },
+      {
+       "Fn::GetAtt": [
+        "InvokeFnInviteUserToCognitoLambdaDataSourceInvokeFnInviteUserToCognitoLambdaDataSourceAppSyncFunction75A19502",
+        "FunctionId"
+       ]
+      }
+     ]
+    },
+    "RequestMappingTemplate": {
+     "Fn::Join": [
+      "",
+      [
+       "## [Start] Stash resolver specific context.. **\n$util.qr($ctx.stash.put(\"typeName\", \"Mutation\"))\n$util.qr($ctx.stash.put(\"fieldName\", \"inviteUserToCognito\"))\n$util.qr($ctx.stash.put(\"authRole\", \"arn:aws:sts::",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":assumed-role/",
+       {
+        "Ref": "referencetoamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280dauthNestedStackauthNestedStackResourceFFA1AE91OutputsamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280dauthamplifyAuthauthenticatedUserRole815DEA42Ref"
+       },
+       "/CognitoIdentityCredentials\"))\n$util.qr($ctx.stash.put(\"unauthRole\", \"arn:aws:sts::",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":assumed-role/",
+       {
+        "Ref": "referencetoamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280dauthNestedStackauthNestedStackResourceFFA1AE91OutputsamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280dauthamplifyAuthunauthenticatedUserRole472A33C2Ref"
+       },
+       "/CognitoIdentityCredentials\"))\n$util.qr($ctx.stash.put(\"identityPoolId\", \"",
+       {
+        "Ref": "referencetoamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280dauthNestedStackauthNestedStackResourceFFA1AE91OutputsamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280dauthamplifyAuthIdentityPool4CA00EA7Ref"
+       },
+       "\"))\n$util.qr($ctx.stash.put(\"adminRoles\", []))\n{}\n## [End] Stash resolver specific context.. **"
+      ]
+     ]
+    },
+    "ResponseMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/387d5992f5fc03d05de27289457dcc374a84c42a889acb504aff1031047dde00.vtl"
+    },
+    "TypeName": "Mutation"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/FunctionDirectiveStack/mutationInviteUserToCognitoResolver"
+   }
+  },
+  "MutationInviteUserToCognitoAuthFNMutationInviteUserToCognitoAuthFNAppSyncFunction181FB3CE": {
+   "Type": "AWS::AppSync::FunctionConfiguration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "referencetoamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280ddataamplifyDataGraphQLAPI6DE5F511ApiId"
+    },
+    "DataSourceName": {
+     "Ref": "referencetoamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280ddataamplifyDataGraphQLAPINONEDSCE5F7ADEName"
+    },
+    "FunctionVersion": "2018-05-29",
+    "Name": "MutationInviteUserToCognitoAuthFN",
+    "RequestMappingTemplateS3Location": {
+     "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/744679bf92807267964c2c7c1a95aeb115fd16426f65e3b93d586f16c265b890.vtl"
+    },
+    "ResponseMappingTemplate": "$util.toJson({})"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/FunctionDirectiveStack/MutationInviteUserToCognitoAuthFN/MutationInviteUserToCognitoAuthFN.AppSyncFunction"
+   }
+  },
+  "CDKMetadata": {
+   "Type": "AWS::CDK::Metadata",
+   "Properties": {
+    "Analytics": "v2:deflate64:H4sIAAAAAAAA/1WMwQ6CQAxEv8X7UgOYeFaMJ2MMfICpu4VUoEvorsYQ/t2AJ09vZjIzGWT5HtINvjWxrk06fsB0JQ3kqoC2NUUthRfHgb0YfOt9wmHQj1iYLtg/HJ4wYOXjaGnp/rtzFLsMCy81N3HE9aWopST13YvG2TD2MJW+W/srb75j+1nsT81G8zuqUlA4LDCawzHalsIRlWazhlXAhqWZjXhH8NTtK9tBmkK6eSpzMkYJ3BOUP34BU58tefcAAAA="
+   },
+   "Metadata": {
+    "aws:cdk:path": "amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/FunctionDirectiveStack/CDKMetadata/Default"
+   },
+   "Condition": "CDKMetadataAvailable"
+  }
+ },
+ "Parameters": {
+  "referencetoamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280dfunctionNestedStackfunctionNestedStackResource06D3AFF0OutputsamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280dfunctioninviteusertocognitolambdaC8DFE746Arn": {
+   "Type": "String"
+  },
+  "referencetoamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280ddataamplifyDataGraphQLAPI6DE5F511ApiId": {
+   "Type": "String"
+  },
+  "referencetoamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280dauthNestedStackauthNestedStackResourceFFA1AE91OutputsamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280dauthamplifyAuthauthenticatedUserRole815DEA42Ref": {
+   "Type": "String"
+  },
+  "referencetoamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280dauthNestedStackauthNestedStackResourceFFA1AE91OutputsamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280dauthamplifyAuthunauthenticatedUserRole472A33C2Ref": {
+   "Type": "String"
+  },
+  "referencetoamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280dauthNestedStackauthNestedStackResourceFFA1AE91OutputsamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280dauthamplifyAuthIdentityPool4CA00EA7Ref": {
+   "Type": "String"
+  },
+  "referencetoamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280ddataamplifyDataGraphQLAPINONEDSCE5F7ADEName": {
+   "Type": "String"
+  }
+ }
+}

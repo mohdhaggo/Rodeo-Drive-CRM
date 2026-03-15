@@ -3,13 +3,13 @@ import type { ChangeEvent, Dispatch, SetStateAction } from 'react'
 import { createPortal } from 'react-dom'
 import './SystemUserManagement.css'
 import PermissionGate from './PermissionGate'
+import { authService } from './authService'
 import { 
   getAllUsersIncludingInactive, 
   addUser as addUserToService,
   updateUser as updateUserInService,
   deleteUser as deleteUserFromService,
-  initializeUsers,
-  generatePasswordResetToken
+  initializeUsers
 } from './userService.ts'
 
 type UserStatus = 'active' | 'inactive'
@@ -83,6 +83,116 @@ const emptyForm: UserFormState = {
   department: '',
   role: '',
   lineManager: '',
+}
+
+const parseName = (fullName: string) => {
+  const parts = fullName.trim().split(/\s+/).filter(Boolean)
+  return {
+    firstName: parts[0] || 'User',
+    lastName: parts.slice(1).join(' ') || 'User',
+  }
+}
+
+const normalizePhoneForCognito = (value: string) => {
+  const trimmed = String(value || '').trim()
+  if (!trimmed) return null
+
+  if (trimmed.startsWith('+')) {
+    const digits = trimmed.slice(1).replace(/\D/g, '')
+    if (digits.length < 8 || digits.length > 15) return null
+    return `+${digits}`
+  }
+
+  const digitsOnly = trimmed.replace(/\D/g, '')
+  if (digitsOnly.startsWith('00') && digitsOnly.length > 2) {
+    const international = digitsOnly.slice(2)
+    if (international.length < 8 || international.length > 15) return null
+    return `+${international}`
+  }
+
+  if (digitsOnly.length < 8 || digitsOnly.length > 15) return null
+  return `+${digitsOnly}`
+}
+
+const generateTemporaryPassword = () => {
+  const upper = 'ABCDEFGHJKLMNPQRSTUVWXYZ'
+  const lower = 'abcdefghijkmnopqrstuvwxyz'
+  const numbers = '23456789'
+  const symbols = '!@#$%&*?'
+  const all = `${upper}${lower}${numbers}${symbols}`
+
+  const pick = (chars: string) => chars[Math.floor(Math.random() * chars.length)]
+
+  const chars = [pick(upper), pick(lower), pick(numbers), pick(symbols)]
+  while (chars.length < 12) {
+    chars.push(pick(all))
+  }
+
+  for (let i = chars.length - 1; i > 0; i -= 1) {
+    const j = Math.floor(Math.random() * (i + 1))
+    const temp = chars[i]
+    chars[i] = chars[j]
+    chars[j] = temp
+  }
+
+  return chars.join('')
+}
+
+const hasName = (error: unknown): error is { name: string } => {
+  return typeof error === 'object' && error !== null && 'name' in error && typeof (error as { name: unknown }).name === 'string'
+}
+
+const hasMessage = (error: unknown): error is { message: string } => {
+  return typeof error === 'object' && error !== null && 'message' in error && typeof (error as { message: unknown }).message === 'string'
+}
+
+const getErrorMessage = (error: unknown) => {
+  if (typeof error === 'string') return error
+  if (hasMessage(error)) return error.message
+
+  if (typeof error === 'object' && error !== null && 'errors' in error) {
+    const maybeErrors = (error as { errors?: unknown }).errors
+    if (Array.isArray(maybeErrors)) {
+      const firstMessage = maybeErrors
+        .map((entry) => {
+          if (typeof entry !== 'object' || entry === null || !('message' in entry)) return null
+          const message = (entry as { message?: unknown }).message
+          return typeof message === 'string' ? message : null
+        })
+        .find((message): message is string => Boolean(message))
+
+      if (firstMessage) {
+        return firstMessage
+      }
+    }
+  }
+
+  return 'Unknown error'
+}
+
+const getErrorName = (error: unknown) => {
+  if (hasName(error)) return error.name
+  return ''
+}
+
+const isUsernameExistsError = (error: unknown) => {
+  return getErrorName(error) === 'UsernameExistsException'
+}
+
+const isUserNotFoundError = (error: unknown) => {
+  return getErrorName(error) === 'UserNotFoundException'
+}
+
+const isUserNotConfirmedError = (error: unknown) => {
+  return getErrorName(error) === 'UserNotConfirmedException'
+}
+
+const isNoVerifiedContactError = (error: unknown) => {
+  const message = getErrorMessage(error).toLowerCase()
+  return (
+    message.includes('no registered/verified email or phone_number') ||
+    message.includes('no registered/verified email or phone number')
+  )
 }
 
 interface AlertOptions {
@@ -302,7 +412,7 @@ export default function SystemUserManagement() {
     openModal(setShowEditUserModal)
   }
 
-  const saveUser = () => {
+  const saveUser = async () => {
     const { employeeId, name, email, mobile, department, role } = formState
     if (!employeeId || !name || !email || !mobile || !department || !role) {
       showAlertMessage({
@@ -324,21 +434,35 @@ export default function SystemUserManagement() {
       return
     }
 
+    const normalizedEmail = email.trim().toLowerCase()
+    const normalizedMobile = normalizePhoneForCognito(mobile)
+    if (!normalizedMobile) {
+      showAlertMessage({
+        title: 'Error',
+        message: 'Mobile must be in international format, e.g. +971501234567.',
+        type: 'error',
+      })
+      return
+    }
+
+    const temporaryPassword = generateTemporaryPassword()
+    const fullName = name.trim()
+
     const newUser = {
       id: String(users.length + 1),
       employeeId: employeeId.trim(),
       name,
-      email,
-      mobile,
+      email: normalizedEmail,
+      mobile: normalizedMobile,
       department,
       role,
       lineManager: formState.lineManager || 'not available',
       status: 'active',
       dashboardAccess: 'allowed',
       createdDate: new Date().toISOString().slice(0, 10),
-      tempPassword: null,
+      tempPassword: temporaryPassword,
       mustChangePassword: true,
-      password: '',
+      password: temporaryPassword,
       description: '',
     }
 
@@ -347,21 +471,47 @@ export default function SystemUserManagement() {
     if (result.success) {
       loadUsers()
       closeAllModals()
-      
-      // Send password reset link to new user
-      const resetResult = generatePasswordResetToken(email)
-      if (resetResult.success) {
+
+      try {
+        const inviteResult = await authService.sendUserInvitation({
+          email: normalizedEmail,
+          fullName,
+          phoneNumber: normalizedMobile,
+          temporaryPassword,
+        })
+
+        if (!inviteResult.success) {
+          if (inviteResult.userAlreadyExists) {
+            showAlertMessage({
+              title: 'Warning',
+              message: `User created successfully, but Cognito already has an account for ${normalizedEmail}. ${inviteResult.message}`,
+              type: 'warning',
+            })
+            return
+          }
+
+          showAlertMessage({
+            title: 'Error',
+            message: `User was created, but Cognito invitation failed: ${inviteResult.message}`,
+            type: 'error',
+          })
+          return
+        }
+
+        const invitationMessage = inviteResult.invitationResent
+          ? `User created successfully. Existing Cognito invitation was resent to ${normalizedEmail}. Share this temporary password securely: ${temporaryPassword}`
+          : `User created successfully. Cognito sent an invitation email to ${normalizedEmail}. Share this temporary password securely: ${temporaryPassword}`
+
         showAlertMessage({
           title: 'Success',
-          message: 'User created successfully! Password setup link has been sent to their email.',
+          message: invitationMessage,
           type: 'success',
         })
-        console.log('Password setup link:', resetResult.resetLink)
-      } else {
+      } catch (cognitoError) {
         showAlertMessage({
-          title: 'Success',
-          message: 'User created but failed to send password setup link',
-          type: 'warning',
+          title: 'Error',
+          message: `User was created, but Cognito invitation request failed: ${getErrorMessage(cognitoError)}`,
+          type: 'error',
         })
       }
     } else {
@@ -473,7 +623,7 @@ export default function SystemUserManagement() {
     setDetailsUserId(null)
   }
 
-  const resetPassword = (userId: string) => {
+  const resetPassword = async (userId: string) => {
     const user = users.find((u: SystemUser) => u.id === userId)
     if (!user) {
       showAlertMessage({
@@ -484,18 +634,117 @@ export default function SystemUserManagement() {
       return
     }
 
-    const result = generatePasswordResetToken(user.email)
-    if (result.success) {
+    const normalizedEmail = user.email.trim().toLowerCase()
+
+    try {
+      await authService.requestPasswordReset(normalizedEmail)
       showAlertMessage({
         title: 'Success',
-        message: `Password reset link has been sent to ${user.email}`,
+        message: `Cognito password reset code has been sent to ${normalizedEmail}`,
         type: 'success',
       })
-      console.log('Reset Link:', result.resetLink)
-    } else {
+      return
+    } catch (cognitoError) {
+      if (isUserNotConfirmedError(cognitoError)) {
+        try {
+          await authService.resendSignUpCode(normalizedEmail)
+          showAlertMessage({
+            title: 'Info',
+            message: `User exists in Cognito but is not confirmed. A verification email was resent to ${normalizedEmail}. Confirm the account first, then retry Reset Password.`,
+            type: 'info',
+          })
+          return
+        } catch (resendError) {
+          showAlertMessage({
+            title: 'Error',
+            message: `Cognito verification resend failed: ${getErrorMessage(resendError)}`,
+            type: 'error',
+          })
+          return
+        }
+      }
+
+      if (isNoVerifiedContactError(cognitoError)) {
+        try {
+          await authService.resendSignUpCode(normalizedEmail)
+          showAlertMessage({
+            title: 'Info',
+            message: `Password reset requires a verified contact. A verification email was resent to ${normalizedEmail}. Complete verification first, then retry Reset Password.`,
+            type: 'info',
+          })
+          return
+        } catch (resendError) {
+          showAlertMessage({
+            title: 'Error',
+            message: `Password reset requires a verified email or phone number for ${normalizedEmail}. Verify the user contact in Cognito, then retry. (${getErrorMessage(resendError)})`,
+            type: 'error',
+          })
+          return
+        }
+      }
+
+      if (isUserNotFoundError(cognitoError)) {
+        const temporaryPassword = generateTemporaryPassword()
+        const { firstName, lastName } = parseName(user.name)
+        const fullName = user.name.trim()
+        const normalizedMobile = normalizePhoneForCognito(user.mobile)
+        if (!normalizedMobile) {
+          showAlertMessage({
+            title: 'Error',
+            message: `Cannot create Cognito account for ${normalizedEmail}. Update the mobile number to international format (e.g. +971501234567) and retry.`,
+            type: 'error',
+          })
+          return
+        }
+
+        try {
+          await authService.signUp({
+            email: normalizedEmail,
+            password: temporaryPassword,
+            firstName,
+            lastName,
+            fullName,
+            phoneNumber: normalizedMobile,
+          })
+
+          showAlertMessage({
+            title: 'Info',
+            message: `No Cognito account existed for ${normalizedEmail}. A Cognito verification email has now been sent. Confirm the account, then click Reset Password again.`,
+            type: 'info',
+          })
+          return
+        } catch (signUpError) {
+          if (isUsernameExistsError(signUpError)) {
+            try {
+              await authService.resendSignUpCode(normalizedEmail)
+              showAlertMessage({
+                title: 'Info',
+                message: `A Cognito account exists for ${normalizedEmail}. Verification email was resent. Confirm the account, then retry Reset Password.`,
+                type: 'info',
+              })
+              return
+            } catch (resendError) {
+              showAlertMessage({
+                title: 'Error',
+                message: `Cognito verification resend failed: ${getErrorMessage(resendError)}`,
+                type: 'error',
+              })
+              return
+            }
+          }
+
+          showAlertMessage({
+            title: 'Error',
+            message: `Failed to create Cognito account for reset flow: ${getErrorMessage(signUpError)}`,
+            type: 'error',
+          })
+          return
+        }
+      }
+
       showAlertMessage({
         title: 'Error',
-        message: result.message || 'Failed to send reset link',
+        message: `Cognito reset email failed: ${getErrorMessage(cognitoError)}`,
         type: 'error',
       })
     }
@@ -1011,7 +1260,7 @@ export default function SystemUserManagement() {
                   id="mobile"
                   value={formState.mobile}
                   onChange={(e) => setFormState(prev => ({ ...prev, mobile: e.target.value }))}
-                  placeholder="Enter mobile number"
+                  placeholder="e.g., +971501234567"
                   required
                 />
               </div>

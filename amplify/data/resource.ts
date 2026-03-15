@@ -1,4 +1,5 @@
 import { a, defineData, type ClientSchema } from '@aws-amplify/backend';
+import { inviteUserToCognitoFunction } from '../functions/invite-user-to-cognito/resource';
 
 const schema = a.schema({
   // ==================== User Management ====================
@@ -459,6 +460,26 @@ const schema = a.schema({
     createdAt: a.datetime(),
     updatedAt: a.datetime(),
   }).authorization((allow) => [allow.authenticated()]),
+
+  InviteUserResponse: a.customType({
+    success: a.boolean().required(),
+    message: a.string().required(),
+    invitationSent: a.boolean(),
+    invitationResent: a.boolean(),
+    userAlreadyExists: a.boolean(),
+  }),
+
+  inviteUserToCognito: a
+    .mutation()
+    .arguments({
+      email: a.email().required(),
+      fullName: a.string().required(),
+      phoneNumber: a.string().required(),
+      temporaryPassword: a.string().required(),
+    })
+    .returns(a.ref('InviteUserResponse'))
+    .authorization((allow) => [allow.publicApiKey(), allow.authenticated()])
+    .handler(a.handler.function(inviteUserToCognitoFunction)),
 });
 
 export type Schema = ClientSchema<typeof schema>;
@@ -467,5 +488,8 @@ export const data = defineData({
   schema,
   authorizationModes: {
     defaultAuthorizationMode: 'userPool',
+    apiKeyAuthorizationMode: {
+      expiresInDays: 30,
+    },
   },
 });

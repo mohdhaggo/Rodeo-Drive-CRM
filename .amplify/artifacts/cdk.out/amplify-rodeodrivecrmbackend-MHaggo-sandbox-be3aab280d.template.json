@@ -34,6 +34,12 @@
     "groups"
    ]
   },
+  "AWS::Amplify::Function": {
+   "version": "1",
+   "stackOutputs": [
+    "definedFunctions"
+   ]
+  },
   "AWS::Amplify::GraphQL": {
    "version": "1",
    "stackOutputs": [
@@ -42,6 +48,7 @@
     "awsAppsyncAuthenticationType",
     "awsAppsyncRegion",
     "amplifyApiModelSchemaS3Uri",
+    "awsAppsyncApiKey",
     "awsAppsyncAdditionalAuthenticationTypes"
    ]
   }
@@ -140,6 +147,23 @@
   "groups": {
    "Value": "[]"
   },
+  "definedFunctions": {
+   "Value": {
+    "Fn::Join": [
+     "",
+     [
+      "[\"",
+      {
+       "Fn::GetAtt": [
+        "function1351588B",
+        "Outputs.amplifyrodeodrivecrmbackendMHaggosandboxbe3aab280dfunctioninviteusertocognitolambdaC8DFE746Ref"
+       ]
+      },
+      "\"]"
+     ]
+    ]
+   }
+  },
   "awsAppsyncApiId": {
    "Value": {
     "Fn::GetAtt": [
@@ -201,8 +225,16 @@
     ]
    }
   },
+  "awsAppsyncApiKey": {
+   "Value": {
+    "Fn::GetAtt": [
+     "data7552DF31",
+     "Outputs.amplifyrodeodrivecrmbackendMHaggosandboxbe3aab280ddataamplifyDataGraphQLAPIDefaultApiKeyFB34B6D4ApiKey"
+    ]
+   }
+  },
   "awsAppsyncAdditionalAuthenticationTypes": {
-   "Value": "AWS_IAM"
+   "Value": "API_KEY,AWS_IAM"
   }
  },
  "Resources": {
@@ -235,7 +267,7 @@
        {
         "Fn::Sub": "cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}"
        },
-       "/4d80fda2b1582fb0ccbfcc596880bfd445f3bb4c678ad4ae3fd5642b671fad0b.json"
+       "/1d02012d0311fee92ea16407404cf8ae4dd8823b9806a51b28215353afb78ea4.json"
       ]
      ]
     }
@@ -275,6 +307,12 @@
        "auth179371D7",
        "Outputs.amplifyrodeodrivecrmbackendMHaggosandboxbe3aab280dauthamplifyAuthIdentityPool4CA00EA7Ref"
       ]
+     },
+     "referencetoamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280dfunctionNestedStackfunctionNestedStackResource06D3AFF0OutputsamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280dfunctioninviteusertocognitolambdaC8DFE746Arn": {
+      "Fn::GetAtt": [
+       "function1351588B",
+       "Outputs.amplifyrodeodrivecrmbackendMHaggosandboxbe3aab280dfunctioninviteusertocognitolambdaC8DFE746Arn"
+      ]
      }
     },
     "Tags": [
@@ -303,7 +341,7 @@
        {
         "Fn::Sub": "cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}"
        },
-       "/449d5366d23afbb618a1ba666d7a2ca891640cf0bf4a45cc60aef694a3671d22.json"
+       "/420304e9514726a968762822abce226e71531aaf3186b62adbff826b6bec679d.json"
       ]
      ]
     }
@@ -313,6 +351,62 @@
    "Metadata": {
     "aws:cdk:path": "amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data.NestedStack/data.NestedStackResource",
     "aws:asset:path": "amplifyrodeodrivecrmbackendMHaggosandboxbe3aab280ddata59897F67.nested.template.json",
+    "aws:asset:property": "TemplateURL"
+   }
+  },
+  "function1351588B": {
+   "Type": "AWS::CloudFormation::Stack",
+   "Properties": {
+    "Parameters": {
+     "referencetoamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280dauthNestedStackauthNestedStackResourceFFA1AE91OutputsamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280dauthamplifyAuthUserPool924F6EA5Arn": {
+      "Fn::GetAtt": [
+       "auth179371D7",
+       "Outputs.amplifyrodeodrivecrmbackendMHaggosandboxbe3aab280dauthamplifyAuthUserPool924F6EA5Arn"
+      ]
+     },
+     "referencetoamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280dauthNestedStackauthNestedStackResourceFFA1AE91OutputsamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280dauthamplifyAuthUserPool924F6EA5Ref": {
+      "Fn::GetAtt": [
+       "auth179371D7",
+       "Outputs.amplifyrodeodrivecrmbackendMHaggosandboxbe3aab280dauthamplifyAuthUserPool924F6EA5Ref"
+      ]
+     }
+    },
+    "Tags": [
+     {
+      "Key": "amplify:deployment-type",
+      "Value": "sandbox"
+     },
+     {
+      "Key": "created-by",
+      "Value": "amplify"
+     }
+    ],
+    "TemplateURL": {
+     "Fn::Join": [
+      "",
+      [
+       "https://s3.",
+       {
+        "Ref": "AWS::Region"
+       },
+       ".",
+       {
+        "Ref": "AWS::URLSuffix"
+       },
+       "/",
+       {
+        "Fn::Sub": "cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}"
+       },
+       "/cb5724c3dc46d593fd3b22e665afaab528f33defc67db1a14021ea9b8f216a6c.json"
+      ]
+     ]
+    }
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/function.NestedStack/function.NestedStackResource",
+    "aws:asset:path": "amplifyrodeodrivecrmbackendMHaggosandboxbe3aab280dfunction5CAD5589.nested.template.json",
     "aws:asset:property": "TemplateURL"
    }
   },

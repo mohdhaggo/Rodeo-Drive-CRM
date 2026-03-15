@@ -757,9 +757,24 @@ export const addUser = (newUser: Partial<User>) => {
   return { success: true, user };
 };
 
-// Delete user (soft delete - set status to inactive)
+// Delete user permanently from storage
 export const deleteUser = (userId: string) => {
-  return updateUser(userId, { status: 'inactive' });
+  const users = getAllUsersIncludingInactive();
+  const userToDelete = users.find((u) => u.id === userId);
+
+  if (!userToDelete) {
+    return { success: false, error: 'User not found' };
+  }
+
+  const remainingUsers = users.filter((u) => u.id !== userId);
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(remainingUsers));
+
+  const currentUser = getCurrentUser();
+  if (currentUser && currentUser.id === userId) {
+    clearCurrentUser();
+  }
+
+  return { success: true, user: userToDelete };
 };
 
 // Get users formatted for dropdown (name and role)

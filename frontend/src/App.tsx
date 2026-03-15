@@ -240,6 +240,15 @@ function App() {
     )
 
     if (!visibleDashboardItems.some((item) => item.label === activeSection)) {
+      // Permissions not loaded yet — don't block with "Access Restricted" during loading
+      if (!rolePermissions) {
+        return <div className="loading">Loading...</div>
+      }
+      // Permissions loaded and the user has at least one accessible section —
+      // the useEffect will redirect activeSection; show loading briefly instead of blocking
+      if (visibleDashboardItems.length > 0) {
+        return <div className="loading">Loading...</div>
+      }
       return renderDenied()
     }
 

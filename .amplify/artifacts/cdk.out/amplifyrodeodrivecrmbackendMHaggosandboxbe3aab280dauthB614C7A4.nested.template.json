@@ -600,6 +600,14 @@
    "Value": {
     "Ref": "amplifyAuthunauthenticatedUserRole2B524D9E"
    }
+  },
+  "amplifyrodeodrivecrmbackendMHaggosandboxbe3aab280dauthamplifyAuthUserPool924F6EA5Arn": {
+   "Value": {
+    "Fn::GetAtt": [
+     "amplifyAuthUserPool4BA7F805",
+     "Arn"
+    ]
+   }
   }
  }
 }
