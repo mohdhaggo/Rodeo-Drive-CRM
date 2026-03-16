@@ -1,6 +1,145 @@
 {
  "Description": "{\"createdOn\":\"Windows\",\"createdBy\":\"AmplifySandbox\",\"createdWith\":\"1.16.0\",\"stackType\":\"function-Lambda\",\"metadata\":{}}",
  "Resources": {
+  "listcognitouserslambdaServiceRoleE607569F": {
+   "Type": "AWS::IAM::Role",
+   "Properties": {
+    "AssumeRolePolicyDocument": {
+     "Statement": [
+      {
+       "Action": "sts:AssumeRole",
+       "Effect": "Allow",
+       "Principal": {
+        "Service": "lambda.amazonaws.com"
+       }
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "ManagedPolicyArns": [
+     {
+      "Fn::Join": [
+       "",
+       [
+        "arn:",
+        {
+         "Ref": "AWS::Partition"
+        },
+        ":iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+       ]
+      ]
+     }
+    ],
+    "Tags": [
+     {
+      "Key": "amplify:deployment-type",
+      "Value": "sandbox"
+     },
+     {
+      "Key": "amplify:friendly-name",
+      "Value": "list-cognito-users"
+     },
+     {
+      "Key": "created-by",
+      "Value": "amplify"
+     }
+    ]
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/function/list-cognito-users-lambda/ServiceRole/Resource"
+   }
+  },
+  "listcognitouserslambdaServiceRoleDefaultPolicy4BBCEAD0": {
+   "Type": "AWS::IAM::Policy",
+   "Properties": {
+    "PolicyDocument": {
+     "Statement": [
+      {
+       "Action": "cognito-idp:ListUsers",
+       "Effect": "Allow",
+       "Resource": {
+        "Ref": "referencetoamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280dauthNestedStackauthNestedStackResourceFFA1AE91OutputsamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280dauthamplifyAuthUserPool924F6EA5Arn"
+       }
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "PolicyName": "listcognitouserslambdaServiceRoleDefaultPolicy4BBCEAD0",
+    "Roles": [
+     {
+      "Ref": "listcognitouserslambdaServiceRoleE607569F"
+     }
+    ]
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/function/list-cognito-users-lambda/ServiceRole/DefaultPolicy/Resource"
+   }
+  },
+  "listcognitouserslambdaE56B2480": {
+   "Type": "AWS::Lambda::Function",
+   "Properties": {
+    "Architectures": [
+     "x86_64"
+    ],
+    "Code": {
+     "S3Bucket": {
+      "Fn::Sub": "cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}"
+     },
+     "S3Key": "7408a75d57ce3b7d389d631d986b6e57199ccef550bb442ad6c868a522a3f332.zip"
+    },
+    "Environment": {
+     "Variables": {
+      "AMPLIFY_SSM_ENV_CONFIG": "{}",
+      "COGNITO_USER_POOL_ID": {
+       "Ref": "referencetoamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280dauthNestedStackauthNestedStackResourceFFA1AE91OutputsamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280dauthamplifyAuthUserPool924F6EA5Ref"
+      }
+     }
+    },
+    "EphemeralStorage": {
+     "Size": 512
+    },
+    "Handler": "index.handler",
+    "MemorySize": 512,
+    "Role": {
+     "Fn::GetAtt": [
+      "listcognitouserslambdaServiceRoleE607569F",
+      "Arn"
+     ]
+    },
+    "Runtime": "nodejs20.x",
+    "Tags": [
+     {
+      "Key": "amplify:deployment-type",
+      "Value": "sandbox"
+     },
+     {
+      "Key": "amplify:friendly-name",
+      "Value": "list-cognito-users"
+     },
+     {
+      "Key": "created-by",
+      "Value": "amplify"
+     }
+    ],
+    "Timeout": 3
+   },
+   "DependsOn": [
+    "listcognitouserslambdaServiceRoleDefaultPolicy4BBCEAD0",
+    "listcognitouserslambdaServiceRoleE607569F"
+   ],
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/function/list-cognito-users-lambda/Resource",
+    "aws:asset:path": "asset.7408a75d57ce3b7d389d631d986b6e57199ccef550bb442ad6c868a522a3f332",
+    "aws:asset:is-bundled": true,
+    "aws:asset:property": "Code"
+   }
+  },
   "inviteusertocognitolambdaServiceRoleEBDA6727": {
    "Type": "AWS::IAM::Role",
    "Properties": {
@@ -139,6 +278,148 @@
    "Metadata": {
     "aws:cdk:path": "amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/function/invite-user-to-cognito-lambda/Resource",
     "aws:asset:path": "asset.d998feb33b7a066e5c834df06fcb2a90a622213f3274d2d3a469a31a53ad0e12",
+    "aws:asset:is-bundled": true,
+    "aws:asset:property": "Code"
+   }
+  },
+  "updatecognitouserlambdaServiceRole0CE63C8A": {
+   "Type": "AWS::IAM::Role",
+   "Properties": {
+    "AssumeRolePolicyDocument": {
+     "Statement": [
+      {
+       "Action": "sts:AssumeRole",
+       "Effect": "Allow",
+       "Principal": {
+        "Service": "lambda.amazonaws.com"
+       }
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "ManagedPolicyArns": [
+     {
+      "Fn::Join": [
+       "",
+       [
+        "arn:",
+        {
+         "Ref": "AWS::Partition"
+        },
+        ":iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+       ]
+      ]
+     }
+    ],
+    "Tags": [
+     {
+      "Key": "amplify:deployment-type",
+      "Value": "sandbox"
+     },
+     {
+      "Key": "amplify:friendly-name",
+      "Value": "update-cognito-user"
+     },
+     {
+      "Key": "created-by",
+      "Value": "amplify"
+     }
+    ]
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/function/update-cognito-user-lambda/ServiceRole/Resource"
+   }
+  },
+  "updatecognitouserlambdaServiceRoleDefaultPolicyC1878F8C": {
+   "Type": "AWS::IAM::Policy",
+   "Properties": {
+    "PolicyDocument": {
+     "Statement": [
+      {
+       "Action": [
+        "cognito-idp:AdminDeleteUserAttributes",
+        "cognito-idp:AdminUpdateUserAttributes"
+       ],
+       "Effect": "Allow",
+       "Resource": {
+        "Ref": "referencetoamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280dauthNestedStackauthNestedStackResourceFFA1AE91OutputsamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280dauthamplifyAuthUserPool924F6EA5Arn"
+       }
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "PolicyName": "updatecognitouserlambdaServiceRoleDefaultPolicyC1878F8C",
+    "Roles": [
+     {
+      "Ref": "updatecognitouserlambdaServiceRole0CE63C8A"
+     }
+    ]
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/function/update-cognito-user-lambda/ServiceRole/DefaultPolicy/Resource"
+   }
+  },
+  "updatecognitouserlambda3ADD5DCB": {
+   "Type": "AWS::Lambda::Function",
+   "Properties": {
+    "Architectures": [
+     "x86_64"
+    ],
+    "Code": {
+     "S3Bucket": {
+      "Fn::Sub": "cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}"
+     },
+     "S3Key": "79badc51479c6530ae9e8a4b49fa9bdd7e6db05674064959d3f20cdb50f7418c.zip"
+    },
+    "Environment": {
+     "Variables": {
+      "AMPLIFY_SSM_ENV_CONFIG": "{}",
+      "COGNITO_USER_POOL_ID": {
+       "Ref": "referencetoamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280dauthNestedStackauthNestedStackResourceFFA1AE91OutputsamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280dauthamplifyAuthUserPool924F6EA5Ref"
+      }
+     }
+    },
+    "EphemeralStorage": {
+     "Size": 512
+    },
+    "Handler": "index.handler",
+    "MemorySize": 512,
+    "Role": {
+     "Fn::GetAtt": [
+      "updatecognitouserlambdaServiceRole0CE63C8A",
+      "Arn"
+     ]
+    },
+    "Runtime": "nodejs20.x",
+    "Tags": [
+     {
+      "Key": "amplify:deployment-type",
+      "Value": "sandbox"
+     },
+     {
+      "Key": "amplify:friendly-name",
+      "Value": "update-cognito-user"
+     },
+     {
+      "Key": "created-by",
+      "Value": "amplify"
+     }
+    ],
+    "Timeout": 3
+   },
+   "DependsOn": [
+    "updatecognitouserlambdaServiceRoleDefaultPolicyC1878F8C",
+    "updatecognitouserlambdaServiceRole0CE63C8A"
+   ],
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/function/update-cognito-user-lambda/Resource",
+    "aws:asset:path": "asset.79badc51479c6530ae9e8a4b49fa9bdd7e6db05674064959d3f20cdb50f7418c",
     "aws:asset:is-bundled": true,
     "aws:asset:property": "Code"
    }
@@ -429,9 +710,35 @@
     ]
    }
   },
+  "amplifyrodeodrivecrmbackendMHaggosandboxbe3aab280dfunctionupdatecognitouserlambdaCB8FCCF6Arn": {
+   "Value": {
+    "Fn::GetAtt": [
+     "updatecognitouserlambda3ADD5DCB",
+     "Arn"
+    ]
+   }
+  },
+  "amplifyrodeodrivecrmbackendMHaggosandboxbe3aab280dfunctionlistcognitouserslambda85E4DDD8Arn": {
+   "Value": {
+    "Fn::GetAtt": [
+     "listcognitouserslambdaE56B2480",
+     "Arn"
+    ]
+   }
+  },
+  "amplifyrodeodrivecrmbackendMHaggosandboxbe3aab280dfunctionlistcognitouserslambda85E4DDD8Ref": {
+   "Value": {
+    "Ref": "listcognitouserslambdaE56B2480"
+   }
+  },
   "amplifyrodeodrivecrmbackendMHaggosandboxbe3aab280dfunctioninviteusertocognitolambdaC8DFE746Ref": {
    "Value": {
     "Ref": "inviteusertocognitolambda4EFD09F1"
+   }
+  },
+  "amplifyrodeodrivecrmbackendMHaggosandboxbe3aab280dfunctionupdatecognitouserlambdaCB8FCCF6Ref": {
+   "Value": {
+    "Ref": "updatecognitouserlambda3ADD5DCB"
    }
   }
  },

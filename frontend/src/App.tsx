@@ -53,7 +53,9 @@ function App() {
       return
     }
 
-    setRolePermissions(getRolePermissionsForUser(user))
+    // `null` from role resolver means "no permissions configured".
+    // Store an empty object so the UI can render Access Restricted instead of loading forever.
+    setRolePermissions(getRolePermissionsForUser(user) || {})
   }, [user, activeSection])
 
   const checkUser = async () => {
@@ -241,7 +243,7 @@ function App() {
 
     if (!visibleDashboardItems.some((item) => item.label === activeSection)) {
       // Permissions not loaded yet — don't block with "Access Restricted" during loading
-      if (!rolePermissions) {
+      if (rolePermissions === null) {
         return <div className="loading">Loading...</div>
       }
       // Permissions loaded and the user has at least one accessible section —

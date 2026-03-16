@@ -156,7 +156,21 @@
       {
        "Fn::GetAtt": [
         "function1351588B",
+        "Outputs.amplifyrodeodrivecrmbackendMHaggosandboxbe3aab280dfunctionlistcognitouserslambda85E4DDD8Ref"
+       ]
+      },
+      "\",\"",
+      {
+       "Fn::GetAtt": [
+        "function1351588B",
         "Outputs.amplifyrodeodrivecrmbackendMHaggosandboxbe3aab280dfunctioninviteusertocognitolambdaC8DFE746Ref"
+       ]
+      },
+      "\",\"",
+      {
+       "Fn::GetAtt": [
+        "function1351588B",
+        "Outputs.amplifyrodeodrivecrmbackendMHaggosandboxbe3aab280dfunctionupdatecognitouserlambdaCB8FCCF6Ref"
        ]
       },
       "\"]"
@@ -313,6 +327,18 @@
        "function1351588B",
        "Outputs.amplifyrodeodrivecrmbackendMHaggosandboxbe3aab280dfunctioninviteusertocognitolambdaC8DFE746Arn"
       ]
+     },
+     "referencetoamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280dfunctionNestedStackfunctionNestedStackResource06D3AFF0OutputsamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280dfunctionupdatecognitouserlambdaCB8FCCF6Arn": {
+      "Fn::GetAtt": [
+       "function1351588B",
+       "Outputs.amplifyrodeodrivecrmbackendMHaggosandboxbe3aab280dfunctionupdatecognitouserlambdaCB8FCCF6Arn"
+      ]
+     },
+     "referencetoamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280dfunctionNestedStackfunctionNestedStackResource06D3AFF0OutputsamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280dfunctionlistcognitouserslambda85E4DDD8Arn": {
+      "Fn::GetAtt": [
+       "function1351588B",
+       "Outputs.amplifyrodeodrivecrmbackendMHaggosandboxbe3aab280dfunctionlistcognitouserslambda85E4DDD8Arn"
+      ]
      }
     },
     "Tags": [
@@ -341,7 +367,7 @@
        {
         "Fn::Sub": "cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}"
        },
-       "/420304e9514726a968762822abce226e71531aaf3186b62adbff826b6bec679d.json"
+       "/ad32786a1944a10e04a5ef503f7b47e45d7b7322705c516ee56df04f3a8f2702.json"
       ]
      ]
     }
@@ -397,7 +423,7 @@
        {
         "Fn::Sub": "cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}"
        },
-       "/cb5724c3dc46d593fd3b22e665afaab528f33defc67db1a14021ea9b8f216a6c.json"
+       "/fa53c402289232ba4251fdff1d7ed71e791e3d80216434af2bdfed9a59a95246.json"
       ]
      ]
     }

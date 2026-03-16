@@ -25,8 +25,21 @@ const DEFAULT_ROLE_MAP = {
 }
 
 const TEST99_EMAILS = new Set(['test99@rodeodrive.com', 'test99@redoedrive.com'])
+const FULL_ACCESS_USER_IDENTIFIERS = new Set([
+  'mohd.haggo',
+  'mohd.haggo@rodeodrive.com',
+])
+const FULL_ACCESS_IDENTITIES = new Set([
+  'mohd.haggo',
+  'mohd.haggo@rodeodrive.com',
+])
 
 const normalize = (value: string | undefined | null): string => (value || '').trim().toLowerCase()
+
+const getLocalPart = (email: string): string => {
+  const atIndex = email.indexOf('@')
+  return atIndex === -1 ? email : email.slice(0, atIndex)
+}
 
 const isTest99User = (user: any): boolean => {
   if (!user) {
@@ -34,13 +47,40 @@ const isTest99User = (user: any): boolean => {
   }
 
   const normalizedEmail = normalize(user.email)
+  const normalizedUsername = normalize(user.username)
   const normalizedEmployeeId = normalize(user.employeeId)
   const normalizedName = normalize(user.name)
+  const emailLocalPart = getLocalPart(normalizedEmail)
+  const usernameLocalPart = getLocalPart(normalizedUsername)
 
   return (
     TEST99_EMAILS.has(normalizedEmail) ||
+    FULL_ACCESS_IDENTITIES.has(normalizedEmail) ||
+    FULL_ACCESS_IDENTITIES.has(normalizedUsername) ||
+    FULL_ACCESS_IDENTITIES.has(emailLocalPart) ||
+    FULL_ACCESS_IDENTITIES.has(usernameLocalPart) ||
     normalizedEmployeeId === 'ep0001' ||
     normalizedName === 'test number 99'
+  )
+}
+
+const isFullAccessOverrideUser = (user: any): boolean => {
+  if (!user) {
+    return false
+  }
+
+  const normalizedEmail = normalize(user.email)
+  const normalizedUsername = normalize(user.username)
+  const normalizedName = normalize(user.name)
+  const emailLocalPart = normalizedEmail.includes('@')
+    ? normalizedEmail.split('@')[0]
+    : normalizedEmail
+
+  return (
+    FULL_ACCESS_USER_IDENTIFIERS.has(normalizedEmail) ||
+    FULL_ACCESS_USER_IDENTIFIERS.has(emailLocalPart) ||
+    FULL_ACCESS_USER_IDENTIFIERS.has(normalizedUsername) ||
+    normalizedName === 'mohd haggo'
   )
 }
 
@@ -135,20 +175,17 @@ const loadPermissions = (roleValue: string | null) => {
 }
 
 export const getRolePermissionsForUser = (user: any) => {
-  if (!user?.role && !isTest99User(user)) {
+  if (!user) {
     return null
   }
 
-  if (isTest99User(user)) {
-    const roleValue = findRoleValue(user.role || 'Administrator')
-    const storedPermissions = loadPermissions(roleValue)
+  if (isTest99User(user) || isFullAccessOverrideUser(user)) {
     return {
-      ...(storedPermissions || {}),
       __fullAccess: true,
     }
   }
 
-  const roleValue = findRoleValue(user.role)
+  const roleValue = getRoleValueForUser(user)
   return loadPermissions(roleValue)
 }
 
@@ -222,7 +259,7 @@ export const notifyPermissionsUpdated = () => {
 }
 
 export const useRolePermissions = () => {
-  const [permissions, setPermissions] = useState(null)
+  const [permissions, setPermissions] = useState<Record<string, any> | null>(null)
 
   useEffect(() => {
     const user = getSystemUser()

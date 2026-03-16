@@ -22,7 +22,7 @@
         "validateOnSynth": false,
         "assumeRoleArn": "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/cdk-hnb659fds-deploy-role-${AWS::AccountId}-${AWS::Region}",
         "cloudFormationExecutionRoleArn": "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/cdk-hnb659fds-cfn-exec-role-${AWS::AccountId}-${AWS::Region}",
-        "stackTemplateAssetObjectUrl": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/7ce4f64b7c34f60fd26a7a0ece6d586a86a23b0dcdc050cf799ed7312cbf7f04.json",
+        "stackTemplateAssetObjectUrl": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/818782b6245e6ca90f5b90854dd9ed00c152fc0eec5ddb621fc92b2e3696c052.json",
         "requiresBootstrapStackVersion": 6,
         "bootstrapStackVersionSsmParameter": "/cdk-bootstrap/hnb659fds/version",
         "additionalDependencies": [
@@ -16359,6 +16359,102 @@
             "data": "Mutation.inviteUserToCognito"
           }
         ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/FunctionDirectiveStack/FnUpdateCognitoUserLambdaDataSource": [
+          {
+            "type": "graphqltransformer:resourceName",
+            "data": "FnUpdateCognitoUserLambdaDataSource"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/FunctionDirectiveStack/FnUpdateCognitoUserLambdaDataSource/ServiceRole/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "FnUpdateCognitoUserLambdaDataSourceServiceRole5C6389F3"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/FunctionDirectiveStack/FnUpdateCognitoUserLambdaDataSource/ServiceRole/DefaultPolicy/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "FnUpdateCognitoUserLambdaDataSourceServiceRoleDefaultPolicyC2BEA570"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/FunctionDirectiveStack/FnUpdateCognitoUserLambdaDataSource/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "FnUpdateCognitoUserLambdaDataSource"
+          },
+          {
+            "type": "graphqltransformer:resourceName",
+            "data": "FnUpdateCognitoUserLambdaDataSource"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/FunctionDirectiveStack/InvokeFnUpdateCognitoUserLambdaDataSource/InvokeFnUpdateCognitoUserLambdaDataSource.AppSyncFunction": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "InvokeFnUpdateCognitoUserLambdaDataSourceInvokeFnUpdateCognitoUserLambdaDataSourceAppSyncFunctionEFC57472"
+          },
+          {
+            "type": "graphqltransformer:resourceName",
+            "data": "InvokeFnUpdateCognitoUserLambdaDataSource"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/FunctionDirectiveStack/mutationUpdateCognitoUserResolver": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "MutationupdateCognitoUserResolver"
+          },
+          {
+            "type": "graphqltransformer:resourceName",
+            "data": "Mutation.updateCognitoUser"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/FunctionDirectiveStack/FnListCognitoUsersLambdaDataSource": [
+          {
+            "type": "graphqltransformer:resourceName",
+            "data": "FnListCognitoUsersLambdaDataSource"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/FunctionDirectiveStack/FnListCognitoUsersLambdaDataSource/ServiceRole/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "FnListCognitoUsersLambdaDataSourceServiceRole46C50BEF"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/FunctionDirectiveStack/FnListCognitoUsersLambdaDataSource/ServiceRole/DefaultPolicy/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "FnListCognitoUsersLambdaDataSourceServiceRoleDefaultPolicy701AAB5E"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/FunctionDirectiveStack/FnListCognitoUsersLambdaDataSource/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "FnListCognitoUsersLambdaDataSource"
+          },
+          {
+            "type": "graphqltransformer:resourceName",
+            "data": "FnListCognitoUsersLambdaDataSource"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/FunctionDirectiveStack/InvokeFnListCognitoUsersLambdaDataSource/InvokeFnListCognitoUsersLambdaDataSource.AppSyncFunction": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "InvokeFnListCognitoUsersLambdaDataSourceInvokeFnListCognitoUsersLambdaDataSourceAppSyncFunctionD8E6AB9F"
+          },
+          {
+            "type": "graphqltransformer:resourceName",
+            "data": "InvokeFnListCognitoUsersLambdaDataSource"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/FunctionDirectiveStack/queryListCognitoUsersResolver": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "QuerylistCognitoUsersResolver"
+          },
+          {
+            "type": "graphqltransformer:resourceName",
+            "data": "Query.listCognitoUsers"
+          }
+        ],
         "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/FunctionDirectiveStack/MutationInviteUserToCognitoAuthFN/MutationInviteUserToCognitoAuthFN.AppSyncFunction": [
           {
             "type": "aws:cdk:logicalId",
@@ -16367,6 +16463,26 @@
           {
             "type": "graphqltransformer:resourceName",
             "data": "MutationInviteUserToCognitoAuthFN"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/FunctionDirectiveStack/MutationUpdateCognitoUserAuthFN/MutationUpdateCognitoUserAuthFN.AppSyncFunction": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "MutationUpdateCognitoUserAuthFNMutationUpdateCognitoUserAuthFNAppSyncFunction60C7F7F4"
+          },
+          {
+            "type": "graphqltransformer:resourceName",
+            "data": "MutationUpdateCognitoUserAuthFN"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/FunctionDirectiveStack/QueryListCognitoUsersAuthFN/QueryListCognitoUsersAuthFN.AppSyncFunction": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "QueryListCognitoUsersAuthFNQueryListCognitoUsersAuthFNAppSyncFunction1F89594B"
+          },
+          {
+            "type": "graphqltransformer:resourceName",
+            "data": "QueryListCognitoUsersAuthFN"
           }
         ],
         "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/FunctionDirectiveStack/CDKMetadata/Default": [
@@ -16409,6 +16525,18 @@
           {
             "type": "aws:cdk:logicalId",
             "data": "referencetoamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280dauthNestedStackauthNestedStackResourceFFA1AE91OutputsamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280dauthamplifyAuthIdentityPool4CA00EA7Ref"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/FunctionDirectiveStack/reference-to-amplifyrodeodrivecrmbackendMHaggosandboxbe3aab280dfunctionNestedStackfunctionNestedStackResource06D3AFF0Outputs.amplifyrodeodrivecrmbackendMHaggosandboxbe3aab280dfunctionupdatecognitouserlambdaCB8FCCF6Arn": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "referencetoamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280dfunctionNestedStackfunctionNestedStackResource06D3AFF0OutputsamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280dfunctionupdatecognitouserlambdaCB8FCCF6Arn"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/FunctionDirectiveStack/reference-to-amplifyrodeodrivecrmbackendMHaggosandboxbe3aab280dfunctionNestedStackfunctionNestedStackResource06D3AFF0Outputs.amplifyrodeodrivecrmbackendMHaggosandboxbe3aab280dfunctionlistcognitouserslambda85E4DDD8Arn": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "referencetoamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280dfunctionNestedStackfunctionNestedStackResource06D3AFF0OutputsamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280dfunctionlistcognitouserslambda85E4DDD8Arn"
           }
         ],
         "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyData/FunctionDirectiveStack/reference-to-amplifyrodeodrivecrmbackendMHaggosandboxbe3aab280ddataamplifyDataGraphQLAPINONEDSCE5F7ADEName": [
@@ -18469,6 +18597,18 @@
             "data": "referencetoamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280dfunctionNestedStackfunctionNestedStackResource06D3AFF0OutputsamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280dfunctioninviteusertocognitolambdaC8DFE746Arn"
           }
         ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/reference-to-amplifyrodeodrivecrmbackendMHaggosandboxbe3aab280dfunctionNestedStackfunctionNestedStackResource06D3AFF0Outputs.amplifyrodeodrivecrmbackendMHaggosandboxbe3aab280dfunctionupdatecognitouserlambdaCB8FCCF6Arn": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "referencetoamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280dfunctionNestedStackfunctionNestedStackResource06D3AFF0OutputsamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280dfunctionupdatecognitouserlambdaCB8FCCF6Arn"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/reference-to-amplifyrodeodrivecrmbackendMHaggosandboxbe3aab280dfunctionNestedStackfunctionNestedStackResource06D3AFF0Outputs.amplifyrodeodrivecrmbackendMHaggosandboxbe3aab280dfunctionlistcognitouserslambda85E4DDD8Arn": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "referencetoamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280dfunctionNestedStackfunctionNestedStackResource06D3AFF0OutputsamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280dfunctionlistcognitouserslambda85E4DDD8Arn"
+          }
+        ],
         "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/data/amplifyrodeodrivecrmbackendMHaggosandboxbe3aab280ddataamplifyDataGraphQLAPI6DE5F511ApiId": [
           {
             "type": "aws:cdk:logicalId",
@@ -18499,6 +18639,24 @@
             "data": "data7552DF31"
           }
         ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/function/list-cognito-users-lambda/ServiceRole/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "listcognitouserslambdaServiceRoleE607569F"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/function/list-cognito-users-lambda/ServiceRole/DefaultPolicy/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "listcognitouserslambdaServiceRoleDefaultPolicy4BBCEAD0"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/function/list-cognito-users-lambda/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "listcognitouserslambdaE56B2480"
+          }
+        ],
         "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/function/invite-user-to-cognito-lambda/ServiceRole/Resource": [
           {
             "type": "aws:cdk:logicalId",
@@ -18515,6 +18673,24 @@
           {
             "type": "aws:cdk:logicalId",
             "data": "inviteusertocognitolambda4EFD09F1"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/function/update-cognito-user-lambda/ServiceRole/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "updatecognitouserlambdaServiceRole0CE63C8A"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/function/update-cognito-user-lambda/ServiceRole/DefaultPolicy/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "updatecognitouserlambdaServiceRoleDefaultPolicyC1878F8C"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/function/update-cognito-user-lambda/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "updatecognitouserlambda3ADD5DCB"
           }
         ],
         "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/function/CDKMetadata/Default": [
@@ -18535,6 +18711,18 @@
             "data": "amplifyrodeodrivecrmbackendMHaggosandboxbe3aab280dfunctioninviteusertocognitolambdaC8DFE746Arn"
           }
         ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/function/amplifyrodeodrivecrmbackendMHaggosandboxbe3aab280dfunctionupdatecognitouserlambdaCB8FCCF6Arn": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "amplifyrodeodrivecrmbackendMHaggosandboxbe3aab280dfunctionupdatecognitouserlambdaCB8FCCF6Arn"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/function/amplifyrodeodrivecrmbackendMHaggosandboxbe3aab280dfunctionlistcognitouserslambda85E4DDD8Arn": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "amplifyrodeodrivecrmbackendMHaggosandboxbe3aab280dfunctionlistcognitouserslambda85E4DDD8Arn"
+          }
+        ],
         "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/function/reference-to-amplifyrodeodrivecrmbackendMHaggosandboxbe3aab280dauthNestedStackauthNestedStackResourceFFA1AE91Outputs.amplifyrodeodrivecrmbackendMHaggosandboxbe3aab280dauthamplifyAuthUserPool924F6EA5Arn": [
           {
             "type": "aws:cdk:logicalId",
@@ -18547,10 +18735,22 @@
             "data": "referencetoamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280dauthNestedStackauthNestedStackResourceFFA1AE91OutputsamplifyrodeodrivecrmbackendMHaggosandboxbe3aab280dauthamplifyAuthUserPool924F6EA5Ref"
           }
         ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/function/amplifyrodeodrivecrmbackendMHaggosandboxbe3aab280dfunctionlistcognitouserslambda85E4DDD8Ref": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "amplifyrodeodrivecrmbackendMHaggosandboxbe3aab280dfunctionlistcognitouserslambda85E4DDD8Ref"
+          }
+        ],
         "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/function/amplifyrodeodrivecrmbackendMHaggosandboxbe3aab280dfunctioninviteusertocognitolambdaC8DFE746Ref": [
           {
             "type": "aws:cdk:logicalId",
             "data": "amplifyrodeodrivecrmbackendMHaggosandboxbe3aab280dfunctioninviteusertocognitolambdaC8DFE746Ref"
+          }
+        ],
+        "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/function/amplifyrodeodrivecrmbackendMHaggosandboxbe3aab280dfunctionupdatecognitouserlambdaCB8FCCF6Ref": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "amplifyrodeodrivecrmbackendMHaggosandboxbe3aab280dfunctionupdatecognitouserlambdaCB8FCCF6Ref"
           }
         ],
         "/amplify-rodeodrivecrmbackend-MHaggo-sandbox-be3aab280d/function.NestedStack/function.NestedStackResource": [

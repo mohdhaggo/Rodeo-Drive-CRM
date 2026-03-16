@@ -1,0 +1,661 @@
+type Department @model @auth(rules: [{allow: private}])
+{
+  id: ID! @primaryKey
+  name: String!
+  description: String
+  status: DepartmentStatus
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
+  roles: [Role] @hasMany(references: ["departmentId"])
+  users: [User] @hasMany(references: ["departmentId"])
+}
+
+type Role @model @auth(rules: [{allow: private}])
+{
+  id: ID! @primaryKey
+  name: String!
+  description: String
+  departmentId: ID
+  department: Department @belongsTo(references: ["departmentId"])
+  status: RoleStatus
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
+  users: [User] @hasMany(references: ["roleId"])
+  permissions: [Permission] @hasMany(references: ["roleId"])
+}
+
+type User @model @auth(rules: [{allow: private}])
+{
+  id: ID! @primaryKey
+  firstName: String!
+  lastName: String!
+  email: AWSEmail!
+  employeeId: String
+  departmentId: ID
+  roleId: ID
+  department: Department @belongsTo(references: ["departmentId"])
+  role: Role @belongsTo(references: ["roleId"])
+  lineManager: String
+  phone: String
+  status: UserStatus
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
+  activityLogs: [ActivityLog] @hasMany(references: ["userId"])
+  notifications: [Notification] @hasMany(references: ["userId"])
+}
+
+type Permission @model @auth(rules: [{allow: private}])
+{
+  id: ID! @primaryKey
+  roleId: ID!
+  role: Role @belongsTo(references: ["roleId"])
+  moduleName: String!
+  canRead: Boolean!
+  canCreate: Boolean!
+  canUpdate: Boolean!
+  canDelete: Boolean!
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
+}
+
+type Customer @model @auth(rules: [{allow: private}])
+{
+  id: ID! @primaryKey
+  name: String!
+  email: AWSEmail
+  mobile: String
+  address: String
+  status: CustomerStatus
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
+  vehicles: [Vehicle] @hasMany(references: ["customerId"])
+  jobOrders: [JobOrder] @hasMany(references: ["customerId"])
+  contacts: [Contact] @hasMany(references: ["customerId"])
+  salesLeads: [SalesLead] @hasMany(references: ["customerId"])
+  invoices: [Invoice] @hasMany(references: ["customerId"])
+  quotations: [Quotation] @hasMany(references: ["customerId"])
+}
+
+type Contact @model @auth(rules: [{allow: private}])
+{
+  id: ID! @primaryKey
+  firstName: String!
+  lastName: String!
+  email: AWSEmail!
+  phone: String
+  customerId: ID!
+  customer: Customer @belongsTo(references: ["customerId"])
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
+}
+
+type Vehicle @model @auth(rules: [{allow: private}])
+{
+  id: ID! @primaryKey
+  make: String!
+  model: String!
+  year: String!
+  color: String
+  plateNumber: String
+  vin: String
+  vehicleType: String
+  customerId: ID!
+  customer: Customer @belongsTo(references: ["customerId"])
+  status: VehicleStatus
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
+  jobOrders: [JobOrder] @hasMany(references: ["vehicleId"])
+  inspections: [Inspection] @hasMany(references: ["vehicleId"])
+}
+
+type JobOrder @model @auth(rules: [{allow: private}])
+{
+  id: ID! @primaryKey
+  orderNumber: String!
+  customerId: ID!
+  vehicleId: ID!
+  customer: Customer @belongsTo(references: ["customerId"])
+  vehicle: Vehicle @belongsTo(references: ["vehicleId"])
+  workStatus: String
+  paymentStatus: String
+  totalAmount: Float
+  paidAmount: Float
+  createdDate: AWSDateTime
+  completionDate: AWSDateTime
+  createdByUserId: ID
+  assignedToUserId: ID
+  serviceRequests: [ServiceRequest] @hasMany(references: ["jobOrderId"])
+  payments: [Payment] @hasMany(references: ["jobOrderId"])
+  exitPermit: ExitPermit @hasOne(references: ["jobOrderId"])
+  qualityChecks: [QualityCheck] @hasMany(references: ["jobOrderId"])
+  inspections: [Inspection] @hasMany(references: ["jobOrderId"])
+  additionalServiceRequests: [AdditionalServiceRequest] @hasMany(references: ["jobOrderId"])
+  invoices: [Invoice] @hasMany(references: ["jobOrderId"])
+  serviceApprovalRequests: [ServiceApprovalRequest] @hasMany(references: ["jobOrderId"])
+  workLogs: [WorkLog] @hasMany(references: ["jobOrderId"])
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
+}
+
+type ServiceRequest @model @auth(rules: [{allow: private}])
+{
+  id: ID! @primaryKey
+  jobOrderId: ID!
+  jobOrder: JobOrder @belongsTo(references: ["jobOrderId"])
+  serviceName: String!
+  status: ServiceRequestStatus
+  startTime: AWSDateTime
+  endTime: AWSDateTime
+  duration: String
+  assignedTechnician: String
+  notes: String
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
+}
+
+type AdditionalServiceRequest @model @auth(rules: [{allow: private}])
+{
+  id: ID! @primaryKey
+  jobOrderId: ID!
+  jobOrder: JobOrder @belongsTo(references: ["jobOrderId"])
+  serviceName: String!
+  description: String
+  estimatedCost: Float
+  status: AdditionalServiceRequestStatus
+  requestedBy: String
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
+}
+
+type Payment @model @auth(rules: [{allow: private}])
+{
+  id: ID! @primaryKey
+  jobOrderId: ID!
+  jobOrder: JobOrder @belongsTo(references: ["jobOrderId"])
+  amount: Float!
+  paymentMethod: String
+  paymentStatus: PaymentPaymentStatus
+  paymentDate: AWSDateTime
+  referenceNumber: String
+  notes: String
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
+}
+
+type ExitPermit @model @auth(rules: [{allow: private}])
+{
+  id: ID! @primaryKey
+  jobOrderId: ID!
+  jobOrder: JobOrder @belongsTo(references: ["jobOrderId"])
+  permitNumber: String
+  status: String
+  createdDate: AWSDateTime
+  collectedDate: AWSDateTime
+  nextServiceDate: AWSDateTime
+  createdByUserId: ID
+  collectedByUserId: ID
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
+}
+
+type Inspection @model @auth(rules: [{allow: private}])
+{
+  id: ID! @primaryKey
+  jobOrderId: ID
+  vehicleId: ID
+  jobOrder: JobOrder @belongsTo(references: ["jobOrderId"])
+  vehicle: Vehicle @belongsTo(references: ["vehicleId"])
+  inspectionType: String!
+  status: String
+  inspectorId: ID
+  findings: String
+  checklist: AWSJSON
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
+}
+
+type QualityCheck @model @auth(rules: [{allow: private}])
+{
+  id: ID! @primaryKey
+  jobOrderId: ID!
+  jobOrder: JobOrder @belongsTo(references: ["jobOrderId"])
+  status: String
+  inspectorId: ID
+  checklist: AWSJSON
+  issues: String
+  approvalStatus: String
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
+}
+
+type SalesLead @model @auth(rules: [{allow: private}])
+{
+  id: ID! @primaryKey
+  dealName: String!
+  amount: Float
+  stage: SalesLeadStage
+  customerId: ID
+  customer: Customer @belongsTo(references: ["customerId"])
+  ownerId: ID
+  probability: Float
+  expectedCloseDate: AWSDateTime
+  notes: String
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
+  approvals: [SalesApproval] @hasMany(references: ["leadId"])
+}
+
+type SalesApproval @model @auth(rules: [{allow: private}])
+{
+  id: ID! @primaryKey
+  leadId: ID!
+  lead: SalesLead @belongsTo(references: ["leadId"])
+  approverUserId: ID!
+  status: SalesApprovalStatus
+  comments: String
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
+}
+
+type Product @model @auth(rules: [{allow: private}])
+{
+  id: ID! @primaryKey
+  name: String!
+  description: String
+  suvPrice: Float
+  sedanPrice: Float
+  otherPrice: Float
+  category: String
+  status: ProductStatus
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
+}
+
+type PurchaseOrder @model @auth(rules: [{allow: private}])
+{
+  id: ID! @primaryKey
+  orderNumber: String!
+  supplierId: ID
+  supplier: Supplier @belongsTo(references: ["supplierId"])
+  supplierName: String!
+  status: PurchaseOrderStatus
+  totalAmount: Float
+  createdDate: AWSDateTime
+  deliveryDate: AWSDateTime
+  items: AWSJSON
+  notes: String
+  createdByUserId: ID
+  approverUserId: ID
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
+}
+
+type ServiceExecution @model @auth(rules: [{allow: private}])
+{
+  id: ID! @primaryKey
+  jobOrderId: ID
+  serviceType: String!
+  status: String
+  executorId: ID
+  startTime: AWSDateTime
+  endTime: AWSDateTime
+  notes: String
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
+}
+
+type Company @model @auth(rules: [{allow: private}])
+{
+  id: ID! @primaryKey
+  name: String!
+  industry: String
+  email: AWSEmail
+  phone: String
+  address: String
+  status: CompanyStatus
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
+}
+
+type Invoice @model @auth(rules: [{allow: private}])
+{
+  id: ID! @primaryKey
+  invoiceNumber: String!
+  jobOrderId: ID!
+  jobOrder: JobOrder @belongsTo(references: ["jobOrderId"])
+  customerId: ID!
+  customer: Customer @belongsTo(references: ["customerId"])
+  invoiceDate: AWSDateTime!
+  dueDate: AWSDateTime
+  subtotal: Float!
+  taxAmount: Float
+  totalAmount: Float!
+  paidAmount: Float
+  status: InvoiceStatus
+  notes: String
+  createdByUserId: ID
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
+}
+
+type Supplier @model @auth(rules: [{allow: private}])
+{
+  id: ID! @primaryKey
+  name: String!
+  email: AWSEmail
+  phone: String
+  address: String
+  city: String
+  country: String
+  zipCode: String
+  contactPersonName: String
+  paymentTerms: String
+  taxId: String
+  status: SupplierStatus
+  rating: Float
+  notes: String
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
+  purchaseOrders: [PurchaseOrder] @hasMany(references: ["supplierId"])
+}
+
+type ApprovalRequest @model @auth(rules: [{allow: private}])
+{
+  id: ID! @primaryKey
+  title: String!
+  type: ApprovalRequestType
+  entityId: ID!
+  entityType: String!
+  requestedByUserId: ID!
+  approverUserId: ID!
+  status: ApprovalRequestStatus
+  priority: ApprovalRequestPriority
+  description: String
+  approvalNotes: String
+  requestDate: AWSDateTime!
+  responseDate: AWSDateTime
+  dueDate: AWSDateTime
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
+}
+
+type ServiceApprovalRequest @model @auth(rules: [{allow: private}])
+{
+  id: ID! @primaryKey
+  jobOrderId: ID!
+  jobOrder: JobOrder @belongsTo(references: ["jobOrderId"])
+  serviceRequestId: ID
+  description: String!
+  estimatedCost: Float
+  status: String
+  requestedByUserId: ID!
+  approverUserId: ID!
+  rejectionReason: String
+  requestDate: AWSDateTime!
+  approvalDate: AWSDateTime
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
+}
+
+type Quotation @model @auth(rules: [{allow: private}])
+{
+  id: ID! @primaryKey
+  quotationNumber: String!
+  jobOrderId: ID
+  customerId: ID!
+  customer: Customer @belongsTo(references: ["customerId"])
+  description: String
+  items: AWSJSON
+  subtotal: Float!
+  taxAmount: Float
+  totalAmount: Float!
+  validUntil: AWSDateTime
+  status: QuotationStatus
+  createdByUserId: ID
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
+}
+
+type ActivityLog @model @auth(rules: [{allow: private}])
+{
+  id: ID! @primaryKey
+  userId: ID!
+  user: User @belongsTo(references: ["userId"])
+  action: String!
+  entityType: String!
+  entityId: ID!
+  changes: AWSJSON
+  ipAddress: String
+  userAgent: String
+  status: ActivityLogStatus
+  notes: String
+  createdAt: AWSDateTime
+}
+
+type WorkLog @model @auth(rules: [{allow: private}])
+{
+  id: ID! @primaryKey
+  jobOrderId: ID!
+  jobOrder: JobOrder @belongsTo(references: ["jobOrderId"])
+  technicianId: ID!
+  serviceType: String!
+  startTime: AWSDateTime!
+  endTime: AWSDateTime
+  duration: Float
+  description: String
+  status: String
+  notes: String
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
+}
+
+type Notification @model @auth(rules: [{allow: private}])
+{
+  id: ID! @primaryKey
+  userId: ID!
+  user: User @belongsTo(references: ["userId"])
+  type: NotificationType
+  title: String!
+  message: String!
+  entityType: String
+  entityId: ID
+  isRead: Boolean
+  readAt: AWSDateTime
+  actionUrl: String
+  priority: NotificationPriority
+  expiresAt: AWSDateTime
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
+}
+
+type InviteUserResponse @aws_api_key @aws_cognito_user_pools
+{
+  success: Boolean!
+  message: String!
+  invitationSent: Boolean
+  invitationResent: Boolean
+  userAlreadyExists: Boolean
+}
+
+type CognitoUserProfile @aws_cognito_user_pools
+{
+  id: String!
+  username: String!
+  employeeId: String
+  name: String!
+  email: AWSEmail!
+  mobile: String
+  department: String
+  role: String
+  lineManager: String
+  status: String!
+  dashboardAccess: String!
+  createdDate: String
+  cognitoStatus: String
+  mustChangePassword: Boolean
+}
+
+type ListCognitoUsersResponse @aws_cognito_user_pools
+{
+  success: Boolean!
+  message: String!
+  users: [CognitoUserProfile]!
+}
+
+enum DepartmentStatus {
+  active
+  inactive
+}
+
+enum RoleStatus {
+  active
+  inactive
+}
+
+enum UserStatus {
+  active
+  inactive
+  on_leave
+}
+
+enum CustomerStatus {
+  active
+  inactive
+  suspended
+}
+
+enum VehicleStatus {
+  active
+  inactive
+  retired
+}
+
+enum ServiceRequestStatus {
+  Pending
+  Inprogress
+  Completed
+  Cancelled
+}
+
+enum AdditionalServiceRequestStatus {
+  Requested
+  Approved
+  Rejected
+  Completed
+}
+
+enum PaymentPaymentStatus {
+  Pending
+  Completed
+  Failed
+  Refunded
+}
+
+enum SalesLeadStage {
+  Lead
+  Prospect
+  Proposal
+  Negotiation
+  Won
+  Lost
+}
+
+enum SalesApprovalStatus {
+  Pending
+  Approved
+  Rejected
+}
+
+enum ProductStatus {
+  active
+  inactive
+}
+
+enum PurchaseOrderStatus {
+  Draft
+  Submitted
+  Approved
+  Received
+  Cancelled
+}
+
+enum CompanyStatus {
+  active
+  inactive
+}
+
+enum InvoiceStatus {
+  Draft
+  Sent
+  Viewed
+  Partial
+  Paid
+  Overdue
+  Cancelled
+}
+
+enum SupplierStatus {
+  active
+  inactive
+  suspended
+}
+
+enum ApprovalRequestType {
+  ServiceApproval
+  PurchaseApproval
+  PaymentApproval
+  QualityApproval
+  Other
+}
+
+enum ApprovalRequestStatus {
+  Pending
+  Approved
+  Rejected
+  Escalated
+}
+
+enum ApprovalRequestPriority {
+  Low
+  Medium
+  High
+  Critical
+}
+
+enum QuotationStatus {
+  Draft
+  Sent
+  Accepted
+  Rejected
+  Expired
+}
+
+enum ActivityLogStatus {
+  Success
+  Failed
+  Pending
+}
+
+enum NotificationType {
+  Info
+  Warning
+  Error
+  Success
+  Approval
+  Task
+}
+
+enum NotificationPriority {
+  Low
+  Medium
+  High
+}
+
+type Mutation {
+  inviteUserToCognito(email: AWSEmail!, fullName: String!, phoneNumber: String!, temporaryPassword: String!): InviteUserResponse @function(name: "FnInviteUserToCognito") @auth(rules: [{allow: public, provider: apiKey},
+  {allow: private}])
+}
+
+type Query {
+  listCognitoUsers: ListCognitoUsersResponse @function(name: "FnListCognitoUsers") @auth(rules: [{allow: private}])
+}

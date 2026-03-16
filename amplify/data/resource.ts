@@ -1,5 +1,7 @@
 import { a, defineData, type ClientSchema } from '@aws-amplify/backend';
 import { inviteUserToCognitoFunction } from '../functions/invite-user-to-cognito/resource';
+import { listCognitoUsersFunction } from '../functions/list-cognito-users/resource';
+import { updateCognitoUserFunction } from '../functions/update-cognito-user/resource';
 
 const schema = a.schema({
   // ==================== User Management ====================
@@ -469,6 +471,40 @@ const schema = a.schema({
     userAlreadyExists: a.boolean(),
   }),
 
+  CognitoUserProfile: a.customType({
+    id: a.string().required(),
+    username: a.string().required(),
+    employeeId: a.string(),
+    name: a.string().required(),
+    email: a.email().required(),
+    mobile: a.string(),
+    department: a.string(),
+    role: a.string(),
+    lineManager: a.string(),
+    status: a.string().required(),
+    dashboardAccess: a.string().required(),
+    createdDate: a.string(),
+    cognitoStatus: a.string(),
+    mustChangePassword: a.boolean(),
+  }),
+
+  ListCognitoUsersResponse: a.customType({
+    success: a.boolean().required(),
+    message: a.string().required(),
+    users: a.ref('CognitoUserProfile').array().required(),
+  }),
+
+  UpdateCognitoUserResponse: a.customType({
+    success: a.boolean().required(),
+    message: a.string().required(),
+  }),
+
+  listCognitoUsers: a
+    .query()
+    .returns(a.ref('ListCognitoUsersResponse'))
+    .authorization((allow) => [allow.authenticated()])
+    .handler(a.handler.function(listCognitoUsersFunction)),
+
   inviteUserToCognito: a
     .mutation()
     .arguments({
@@ -480,6 +516,21 @@ const schema = a.schema({
     .returns(a.ref('InviteUserResponse'))
     .authorization((allow) => [allow.publicApiKey(), allow.authenticated()])
     .handler(a.handler.function(inviteUserToCognitoFunction)),
+
+  updateCognitoUser: a
+    .mutation()
+    .arguments({
+      username: a.string().required(),
+      fullName: a.string().required(),
+      email: a.email().required(),
+      phoneNumber: a.string().required(),
+      department: a.string().required(),
+      role: a.string().required(),
+      lineManager: a.string(),
+    })
+    .returns(a.ref('UpdateCognitoUserResponse'))
+    .authorization((allow) => [allow.authenticated()])
+    .handler(a.handler.function(updateCognitoUserFunction)),
 });
 
 export type Schema = ClientSchema<typeof schema>;

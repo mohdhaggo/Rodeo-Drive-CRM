@@ -89,6 +89,56 @@ const inviteUserMutation = /* GraphQL */ `
   }
 `
 
+const listCognitoUsersQuery = /* GraphQL */ `
+  query ListCognitoUsers {
+    listCognitoUsers {
+      success
+      message
+      users {
+        id
+        username
+        employeeId
+        name
+        email
+        mobile
+        department
+        role
+        lineManager
+        status
+        dashboardAccess
+        createdDate
+        cognitoStatus
+        mustChangePassword
+      }
+    }
+  }
+`
+
+const updateCognitoUserMutation = /* GraphQL */ `
+  mutation UpdateCognitoUser(
+    $username: String!
+    $fullName: String!
+    $email: AWSEmail!
+    $phoneNumber: String!
+    $department: String!
+    $role: String!
+    $lineManager: String
+  ) {
+    updateCognitoUser(
+      username: $username
+      fullName: $fullName
+      email: $email
+      phoneNumber: $phoneNumber
+      department: $department
+      role: $role
+      lineManager: $lineManager
+    ) {
+      success
+      message
+    }
+  }
+`
+
 // Lazy load Amplify auth to avoid import errors
 let signUp: any = null
 let signIn: any = null
@@ -97,6 +147,7 @@ let getCurrentUser: any = null
 let confirmSignUp: any = null
 let resendSignUpCodeFn: any = null
 let resetPasswordFn: any = null
+let confirmSignInFn: any = null
 let fetchUserAttributes: any = null
 let userService: any = null
 
@@ -111,6 +162,7 @@ const loadAuthModules = async () => {
     confirmSignUp = authModule.confirmSignUp
     resendSignUpCodeFn = authModule.resendSignUpCode
     resetPasswordFn = authModule.resetPassword
+    confirmSignInFn = authModule.confirmSignIn
     fetchUserAttributes = authModule.fetchUserAttributes
   } catch (err) {
     console.warn('⚠️ Amplify auth not available:', err)
@@ -154,6 +206,12 @@ export interface SignInInput {
   password: string;
 }
 
+export interface SignInResult {
+  isSignedIn: boolean;
+  user?: AuthUser;
+  nextStep?: any;
+}
+
 export interface InviteUserInput {
   email: string;
   fullName: string;
@@ -169,8 +227,60 @@ export interface InviteUserResult {
   userAlreadyExists?: boolean;
 }
 
+export interface UpdateCognitoUserInput {
+  username: string;
+  fullName: string;
+  email: string;
+  phoneNumber: string;
+  department: string;
+  role: string;
+  lineManager?: string;
+}
+
+export interface UpdateCognitoUserResult {
+  success: boolean;
+  message: string;
+}
+
+export interface CognitoDirectoryUser {
+  id: string;
+  username: string;
+  employeeId?: string;
+  name: string;
+  email: string;
+  mobile?: string;
+  department?: string;
+  role?: string;
+  lineManager?: string;
+  status: string;
+  dashboardAccess: string;
+  createdDate?: string;
+  cognitoStatus?: string;
+  mustChangePassword?: boolean;
+}
+
 class AuthenticationService {
   private currentUser: AuthUser | null = null;
+
+  private async buildCurrentUserFromAuth(): Promise<AuthUser> {
+    if (!getCurrentUser || !fetchUserAttributes) {
+      throw new Error('Amplify auth not available')
+    }
+
+    const attributes = await fetchUserAttributes()
+    const user = await getCurrentUser()
+
+    this.currentUser = {
+      userId: user.userId,
+      username: user.username,
+      email: attributes.email || user.username,
+      firstName: attributes.given_name,
+      lastName: attributes.family_name,
+      attributes,
+    }
+
+    return this.currentUser
+  }
 
   /**
    * Initialize auth by checking if user is currently logged in
@@ -331,6 +441,127 @@ class AuthenticationService {
   }
 
   /**
+   * List users directly from Cognito through backend function.
+   */
+  async listCognitoUsers(): Promise<CognitoDirectoryUser[]> {
+    try {
+      const result = await apiClient.graphql({
+        query: listCognitoUsersQuery,
+        authMode: 'userPool',
+      }) as {
+        data?: {
+          listCognitoUsers?: {
+            success: boolean
+            message: string
+            users?: CognitoDirectoryUser[]
+          }
+        }
+        errors?: Array<{ message?: string }>
+      }
+
+      if (result.errors?.length) {
+        const message =
+          result.errors
+            .map((entry) => entry.message)
+            .filter((entry): entry is string => Boolean(entry && entry.trim()))
+            .join(' | ') || 'Unknown GraphQL error'
+        throw new Error(message)
+      }
+
+      const response = result.data?.listCognitoUsers
+      if (!response) {
+        throw new Error('No response returned from listCognitoUsers query')
+      }
+
+      if (!response.success) {
+        throw new Error(response.message || 'Failed to list Cognito users')
+      }
+
+      return Array.isArray(response.users) ? response.users : []
+    } catch (error) {
+      const message = extractErrorMessage(error)
+      console.error('List Cognito users error:', error)
+
+      if (message.includes("Field 'listCognitoUsers' in type 'Query' is undefined")) {
+        throw new Error('Backend schema is not updated for listCognitoUsers. Deploy the latest Amplify backend and refresh amplify_outputs.json.')
+      }
+
+      if (
+        message.toLowerCase().includes('not authorized') ||
+        message.toLowerCase().includes('no current user') ||
+        message.toLowerCase().includes('userunauthexception')
+      ) {
+        throw new Error('You must be signed in with Cognito to load Cognito users.')
+      }
+
+      throw new Error(message)
+    }
+  }
+
+  /**
+   * Update a Cognito-backed user profile through backend admin APIs.
+   */
+  async updateCognitoUser(input: UpdateCognitoUserInput): Promise<UpdateCognitoUserResult> {
+    try {
+      const result = await apiClient.graphql({
+        query: updateCognitoUserMutation,
+        variables: {
+          username: input.username.trim(),
+          fullName: input.fullName.trim(),
+          email: input.email.trim().toLowerCase(),
+          phoneNumber: input.phoneNumber.trim(),
+          department: input.department.trim(),
+          role: input.role.trim(),
+          lineManager: input.lineManager?.trim() || undefined,
+        },
+        authMode: 'userPool',
+      }) as {
+        data?: {
+          updateCognitoUser?: UpdateCognitoUserResult
+        }
+        errors?: Array<{ message?: string }>
+      }
+
+      if (result.errors?.length) {
+        const message =
+          result.errors
+            .map((entry) => entry.message)
+            .filter((entry): entry is string => Boolean(entry && entry.trim()))
+            .join(' | ') || 'Unknown GraphQL error'
+        throw new Error(message)
+      }
+
+      const response = result.data?.updateCognitoUser
+      if (!response) {
+        throw new Error('No response returned from updateCognitoUser mutation')
+      }
+
+      if (!response.success) {
+        throw new Error(response.message || 'Failed to update Cognito user')
+      }
+
+      return response
+    } catch (error) {
+      const message = extractErrorMessage(error)
+      console.error('Update Cognito user error:', error)
+
+      if (message.includes("Field 'updateCognitoUser' in type 'Mutation' is undefined")) {
+        throw new Error('Backend schema is not updated for updateCognitoUser. Deploy the latest Amplify backend and refresh amplify_outputs.json.')
+      }
+
+      if (
+        message.toLowerCase().includes('not authorized') ||
+        message.toLowerCase().includes('no current user') ||
+        message.toLowerCase().includes('userunauthexception')
+      ) {
+        throw new Error('You must be signed in with Cognito to update Cognito users.')
+      }
+
+      throw new Error(message)
+    }
+  }
+
+  /**
    * Confirm sign up with confirmation code
    */
   async confirmSignUp(email: string, confirmationCode: string): Promise<void> {
@@ -392,7 +623,7 @@ class AuthenticationService {
   /**
    * Sign in user
    */
-  async signIn(input: SignInInput): Promise<AuthUser> {
+  async signIn(input: SignInInput): Promise<SignInResult> {
     try {
       if (!signIn || !getCurrentUser || !fetchUserAttributes) {
         throw new Error('Amplify auth not available')
@@ -403,26 +634,53 @@ class AuthenticationService {
         password: input.password,
       })
 
-      if (result.nextStep?.signInStep === 'MFA') {
-        throw new Error('MFA is required')
+      if (!result.isSignedIn) {
+        return {
+          isSignedIn: false,
+          nextStep: result.nextStep,
+        }
       }
 
-      // After successful sign in, get user attributes
-      const attributes = await fetchUserAttributes()
-      const user = await getCurrentUser()
+      const user = await this.buildCurrentUserFromAuth()
 
-      this.currentUser = {
-        userId: user.userId,
-        username: user.username,
-        email: attributes.email || user.username,
-        firstName: attributes.given_name,
-        lastName: attributes.family_name,
-        attributes,
+      return {
+        isSignedIn: true,
+        user,
       }
-
-      return this.currentUser
     } catch (error) {
       console.error('Sign in error:', error)
+      throw error
+    }
+  }
+
+  /**
+   * Complete an in-progress sign-in challenge, such as NEW_PASSWORD_REQUIRED.
+   */
+  async completeSignInChallenge(challengeResponse: string): Promise<SignInResult> {
+    try {
+      if (!confirmSignInFn || !getCurrentUser || !fetchUserAttributes) {
+        throw new Error('Amplify auth not available')
+      }
+
+      const result = await confirmSignInFn({
+        challengeResponse,
+      })
+
+      if (!result.isSignedIn) {
+        return {
+          isSignedIn: false,
+          nextStep: result.nextStep,
+        }
+      }
+
+      const user = await this.buildCurrentUserFromAuth()
+
+      return {
+        isSignedIn: true,
+        user,
+      }
+    } catch (error) {
+      console.error('Complete sign-in challenge error:', error)
       throw error
     }
   }

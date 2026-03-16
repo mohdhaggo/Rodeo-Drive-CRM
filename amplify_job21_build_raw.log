@@ -1,0 +1,150 @@
+2026-03-15T18:58:27.896Z [INFO]: # Build environment configured with Standard build compute type: 8GiB Memory, 4vCPUs, 128GB Disk Space
+2026-03-15T18:58:28.803Z [INFO]: # Cloning repository: git@github.com:mohdhaggo/Rodeo-Drive-CRM.git
+2026-03-15T18:58:31.794Z [INFO]: 
+2026-03-15T18:58:31.886Z [INFO]: Cloning into 'Rodeo-Drive-CRM'...
+2026-03-15T18:58:31.886Z [INFO]: # Switching to commit: ce7f341685be2ba0744bd2e1882a949d5e76fa07
+2026-03-15T18:58:32.037Z [INFO]: Note: switching to 'ce7f341685be2ba0744bd2e1882a949d5e76fa07'.
+                                 You are in 'detached HEAD' state. You can look around, make experimental
+                                 changes and commit them, and you can discard any commits you make in this
+                                 state without impacting any branches by switching back to a branch.
+                                 If you want to create a new branch to retain commits you create, you may
+                                 do so (now or later) by using -c with the switch command. Example:
+                                 git switch -c <new-branch-name>
+                                 Or undo this operation with:
+                                 git switch -
+                                 Turn off this advice by setting config variable advice.detachedHead to false
+                                 HEAD is now at ce7f341 Fix dashboard access restricted on role login; remove default section guard
+2026-03-15T18:58:32.086Z [INFO]: Successfully cleaned up Git credentials
+2026-03-15T18:58:32.087Z [INFO]: # Checking for Git submodules at: /codebuild/output/src3025479073/src/Rodeo-Drive-CRM/.gitmodules
+2026-03-15T18:58:32.095Z [INFO]: # Retrieving environment cache...
+2026-03-15T18:58:32.177Z [INFO]: # Retrieved environment cache
+2026-03-15T18:58:32.177Z [INFO]: ---- Setting Up SSM Secrets ----
+2026-03-15T18:58:32.177Z [INFO]: SSM params {"Path":"/amplify/d3sn68lwnngpdm/main/","WithDecryption":true}
+2026-03-15T18:58:33.057Z [INFO]: # No package override configuration found.
+2026-03-15T18:58:33.061Z [INFO]: # Retrieving cache...
+2026-03-15T18:58:40.050Z [INFO]: # Extracting cache...
+2026-03-15T18:58:51.914Z [INFO]: # Extraction completed
+2026-03-15T18:58:52.060Z [INFO]: # Retrieved cache
+2026-03-15T18:58:56.137Z [INFO]: ## Starting Backend Build
+                                 # Starting phase: build
+                                 # Executing command: npm ci --cache .npm --prefer-offline
+2026-03-15T18:59:12.326Z [WARNING]: npm warn ERESOLVE overriding peer dependency
+2026-03-15T18:59:12.331Z [WARNING]: npm warn While resolving: @aws-amplify/plugin-types@1.10.1
+                                    npm warn Found: @aws-sdk/types@3.821.0
+                                    npm warn node_modules/@aws-amplify/data-construct/node_modules/@aws-amplify/ai-constructs/node_modules/@aws-amplify/plugin-types/node_modules/@aws-sdk/types
+                                    npm warn
+                                    npm warn Could not resolve dependency:
+                                    npm warn peer @aws-sdk/types@"^3.734.0" from @aws-amplify/plugin-types@1.10.1
+                                    npm warn node_modules/@aws-amplify/data-construct/node_modules/@aws-amplify/ai-constructs/node_modules/@aws-amplify/plugin-types
+                                    npm warn   @aws-amplify/plugin-types@"^1.10.1" from @aws-amplify/ai-constructs@1.5.3
+                                    npm warn   node_modules/@aws-amplify/data-construct/node_modules/@aws-amplify/ai-constructs
+2026-03-15T18:59:12.389Z [WARNING]: npm warn ERESOLVE overriding peer dependency
+2026-03-15T18:59:12.389Z [WARNING]: npm warn While resolving: @aws-amplify/plugin-types@1.10.1
+                                    npm warn Found: @aws-sdk/types@3.821.0
+                                    npm warn node_modules/@aws-amplify/graphql-api-construct/node_modules/@aws-amplify/ai-constructs/node_modules/@aws-amplify/plugin-types/node_modules/@aws-sdk/types
+                                    npm warn
+                                    npm warn Could not resolve dependency:
+                                    npm warn peer @aws-sdk/types@"^3.734.0" from @aws-amplify/plugin-types@1.10.1
+                                    npm warn node_modules/@aws-amplify/graphql-api-construct/node_modules/@aws-amplify/ai-constructs/node_modules/@aws-amplify/plugin-types
+                                    npm warn   @aws-amplify/plugin-types@"^1.10.1" from @aws-amplify/ai-constructs@1.5.3
+                                    npm warn   node_modules/@aws-amplify/graphql-api-construct/node_modules/@aws-amplify/ai-constructs
+2026-03-15T19:00:22.375Z [WARNING]: npm warn deprecated inflight@1.0.6: This module is not supported, and leaks memory. Do not use it. Check out lru-cache if you want a good and tested way to coalesce async requests by a key value, which is much more comprehensive and powerful.
+2026-03-15T19:00:22.442Z [WARNING]: npm warn deprecated @babel/plugin-proposal-class-properties@7.18.6: This proposal has been merged to the ECMAScript standard and thus this plugin is no longer maintained. Please use @babel/plugin-transform-class-properties instead.
+2026-03-15T19:00:22.622Z [WARNING]: npm warn deprecated rimraf@3.0.2: Rimraf versions prior to v4 are no longer supported
+2026-03-15T19:00:22.841Z [WARNING]: npm warn deprecated glob@7.2.3: Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
+2026-03-15T19:00:22.859Z [WARNING]: npm warn deprecated glob@7.2.3: Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
+2026-03-15T19:00:22.874Z [WARNING]: npm warn deprecated @babel/plugin-proposal-object-rest-spread@7.20.7: This proposal has been merged to the ECMAScript standard and thus this plugin is no longer maintained. Please use @babel/plugin-transform-object-rest-spread instead.
+2026-03-15T19:00:23.878Z [WARNING]: npm warn deprecated node-domexception@1.0.0: Use your platform's native DOMException instead
+2026-03-15T19:00:24.983Z [WARNING]: npm warn deprecated glob@11.1.0: Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
+2026-03-15T19:00:25.021Z [WARNING]: npm warn deprecated glob@10.5.0: Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
+2026-03-15T19:00:29.897Z [WARNING]: npm warn deprecated core-js@2.6.12: core-js@<3.23.3 is no longer maintained and not recommended for usage due to the number of issues. Because of the V8 engine whims, feature detection in old core-js versions could cause a slowdown up to 100x even if nothing is polyfilled. Some versions have web compatibility issues. Please, upgrade your dependencies to the actual version of core-js.
+2026-03-15T19:00:31.376Z [INFO]: added 1241 packages, and audited 2073 packages in 2m
+2026-03-15T19:00:31.377Z [INFO]: 192 packages are looking for funding
+                                 run `npm fund` for details
+2026-03-15T19:00:31.762Z [INFO]: 76 vulnerabilities (2 low, 2 moderate, 48 high, 24 critical)
+                                 To address issues that do not require attention, run:
+                                 npm audit fix
+                                 To address all issues possible (including breaking changes), run:
+                                 npm audit fix --force
+                                 Some issues need review, and may require choosing
+                                 a different dependency.
+                                 Run `npm audit` for details.
+2026-03-15T19:00:31.809Z [INFO]: # Executing command: npx ampx pipeline-deploy --branch $AWS_BRANCH --app-id $AWS_APP_ID
+2026-03-15T19:00:35.641Z [INFO]: 7:00:35 PM Synthesizing backend...
+2026-03-15T19:00:35.645Z [INFO]: 
+2026-03-15T19:00:36.892Z [WARNING]: Bundling asset amplify-d3sn68lwnngpdm-main-branch-5db8f13c0a/AmplifyBranchLinker/CustomResourceLambda/Code/Stage...
+2026-03-15T19:00:37.231Z [WARNING]: ...ab5abf3a8d8f1f932431ff03c4bb700901f60505fea635-building/index.js  1.1mb ⚠️
+                                    ⚡ Done in 80ms
+2026-03-15T19:00:37.380Z [WARNING]: Bundling asset amplify-d3sn68lwnngpdm-main-branch-5db8f13c0a/function/invite-user-to-cognito-lambda/Code/Stage...
+2026-03-15T19:00:37.936Z [WARNING]: Be careful when using @auth directives on a field in a root type. @auth directives on field definitions use the source object to perform authorization logic and the source will be an empty object for fields on root types. Static group authorization should perform as expected.
+2026-03-15T19:00:41.803Z [INFO]: 7:00:41 PM ✔ Backend synthesized in 6.37 seconds
+2026-03-15T19:00:41.809Z [INFO]: 7:00:41 PM Running type checks...
+2026-03-15T19:00:42.446Z [INFO]: 7:00:42 PM ✔ Type checks completed in 0.64 seconds
+2026-03-15T19:00:42.466Z [INFO]: 7:00:42 PM Building and publishing assets...
+2026-03-15T19:00:44.917Z [INFO]: 7:00:44 PM ✔ Built and published assets
+2026-03-15T19:00:47.663Z [INFO]: amplify-d3sn68lwnngpdm-main-branch-5db8f13c0a |   0 | 7:00:45 PM | UPDATE_IN_PROGRESS | AWS::CloudFormation::Stack | amplify-d3sn68lwnngpdm-main-branch-5db8f13c0a User Initiated
+2026-03-15T19:00:49.762Z [INFO]: amplify-d3sn68lwnngpdm-main-branch-5db8f13c0a |   0 | 7:00:48 PM | UPDATE_IN_PROGRESS | AWS::CloudFormation::Stack | auth.NestedStack/auth.NestedStackResource (auth179371D7)
+2026-03-15T19:00:49.767Z [INFO]: amplify-d3sn68lwnngpdm-main-branch-5db8f13c0a-auth179371D7-1UQZPIH3RXTZ0 |   0 | 7:00:49 PM | UPDATE_IN_PROGRESS | AWS::CloudFormation::Stack | amplify-d3sn68lwnngpdm-main-branch-5db8f13c0a-auth179371D7-1UQZPIH3RXTZ0 User Initiated
+2026-03-15T19:00:51.862Z [INFO]: amplify-d3sn68lwnngpdm-main-branch-5db8f13c0a |   0 | 7:00:50 PM | UPDATE_IN_PROGRESS | AWS::Lambda::Function | AmplifyBranchLinker/CustomResourceLambda (AmplifyBranchLinkerCustomResourceLambda582AC093)
+2026-03-15T19:00:53.964Z [INFO]: amplify-d3sn68lwnngpdm-main-branch-5db8f13c0a-auth179371D7-1UQZPIH3RXTZ0 |   0 | 7:00:52 PM | UPDATE_ROLLBACK_IN_PROGRESS | AWS::CloudFormation::Stack | amplify-d3sn68lwnngpdm-main-branch-5db8f13c0a-auth179371D7-1UQZPIH3RXTZ0 Unable to retrieve Arn attribute for AWS::Cognito::UserPool, with error message User pool ap-southeast-1_duOx0jMwM does not exist. (Service: CognitoIdentityProvider, Status Code: 400, Request ID: 121384aa-363a-4b1d-b1d2-ba608a1ec421) (SDK Attempt Count: 1)
+2026-03-15T19:01:00.263Z [INFO]: amplify-d3sn68lwnngpdm-main-branch-5db8f13c0a |   1 | 7:00:58 PM | UPDATE_COMPLETE | AWS::Lambda::Function | AmplifyBranchLinker/CustomResourceLambda (AmplifyBranchLinkerCustomResourceLambda582AC093)
+2026-03-15T19:01:00.270Z [INFO]: amplify-d3sn68lwnngpdm-main-branch-5db8f13c0a |   1 | 7:00:59 PM | UPDATE_FAILED | AWS::CloudFormation::Stack | auth.NestedStack/auth.NestedStackResource (auth179371D7) Embedded stack arn:aws:cloudformation:ap-southeast-1:836595559002:stack/amplify-d3sn68lwnngpdm-main-branch-5db8f13c0a-auth179371D7-1UQZPIH3RXTZ0/144ee960-01aa-11f1-8412-0293eb200de7 was not successfully updated. Currently in UPDATE_ROLLBACK_IN_PROGRESS with reason: Unable to retrieve Arn attribute for AWS::Cognito::UserPool, with error message User pool ap-southeast-1_duOx0jMwM does not exist. (Service: CognitoIdentityProvider, Status Code: 400, Request ID: 121384aa-363a-4b1d-b1d2-ba608a1ec421) (SDK Attempt Count: 1)
+2026-03-15T19:01:02.436Z [INFO]: amplify-d3sn68lwnngpdm-main-branch-5db8f13c0a |   1 | 7:01:00 PM | UPDATE_ROLLBACK_IN_PROGRESS | AWS::CloudFormation::Stack | amplify-d3sn68lwnngpdm-main-branch-5db8f13c0a The following resource(s) failed to update: [auth179371D7].
+2026-03-15T19:01:04.534Z [INFO]: amplify-d3sn68lwnngpdm-main-branch-5db8f13c0a |   1 | 7:01:03 PM | UPDATE_IN_PROGRESS | AWS::CloudFormation::Stack | auth.NestedStack/auth.NestedStackResource (auth179371D7)
+2026-03-15T19:01:04.539Z [INFO]: amplify-d3sn68lwnngpdm-main-branch-5db8f13c0a |   1 | 7:01:03 PM | UPDATE_IN_PROGRESS | AWS::Lambda::Function | AmplifyBranchLinker/CustomResourceLambda (AmplifyBranchLinkerCustomResourceLambda582AC093)
+2026-03-15T19:01:12.918Z [INFO]: amplify-d3sn68lwnngpdm-main-branch-5db8f13c0a |   0 | 7:01:10 PM | UPDATE_COMPLETE | AWS::Lambda::Function | AmplifyBranchLinker/CustomResourceLambda (AmplifyBranchLinkerCustomResourceLambda582AC093)
+2026-03-15T19:01:31.767Z [INFO]: amplify-d3sn68lwnngpdm-main-branch-5db8f13c0a-auth179371D7-1UQZPIH3RXTZ0 |   1 | 7:01:30 PM | UPDATE_ROLLBACK_COMPLETE_CLEANUP_IN_PROGRESS | AWS::CloudFormation::Stack | amplify-d3sn68lwnngpdm-main-branch-5db8f13c0a-auth179371D7-1UQZPIH3RXTZ0
+2026-03-15T19:01:38.081Z [INFO]: amplify-d3sn68lwnngpdm-main-branch-5db8f13c0a |   2 | 7:01:36 PM | UPDATE_COMPLETE | AWS::CloudFormation::Stack | auth.NestedStack/auth.NestedStackResource (auth179371D7)
+2026-03-15T19:01:38.087Z [INFO]: amplify-d3sn68lwnngpdm-main-branch-5db8f13c0a |   3 | 7:01:37 PM | UPDATE_ROLLBACK_COMPLETE_CLEANUP_IN_PROGRESS | AWS::CloudFormation::Stack | amplify-d3sn68lwnngpdm-main-branch-5db8f13c0a
+2026-03-15T19:01:40.185Z [INFO]: amplify-d3sn68lwnngpdm-main-branch-5db8f13c0a-auth179371D7-1UQZPIH3RXTZ0 |   4 | 7:01:39 PM | UPDATE_ROLLBACK_COMPLETE | AWS::CloudFormation::Stack | amplify-d3sn68lwnngpdm-main-branch-5db8f13c0a-auth179371D7-1UQZPIH3RXTZ0
+2026-03-15T19:01:50.527Z [INFO]: amplify-d3sn68lwnngpdm-main-branch-5db8f13c0a |   3 | 7:01:48 PM | UPDATE_COMPLETE | AWS::CloudFormation::Stack | auth.NestedStack/auth.NestedStackResource (auth179371D7)
+2026-03-15T19:01:50.532Z [INFO]: amplify-d3sn68lwnngpdm-main-branch-5db8f13c0a |   4 | 7:01:49 PM | UPDATE_ROLLBACK_COMPLETE | AWS::CloudFormation::Stack | amplify-d3sn68lwnngpdm-main-branch-5db8f13c0a
+2026-03-15T19:01:51.223Z [INFO]: 
+2026-03-15T19:01:51.224Z [INFO]: Notices:
+2026-03-15T19:01:51.224Z [INFO]: 
+2026-03-15T19:01:51.224Z [INFO]: 
+2026-03-15T19:01:51.225Z [INFO]: 3127	Amplify Function is dropping support of Node 16 Lambda Functions
+2026-03-15T19:01:51.225Z [INFO]: 
+2026-03-15T19:01:51.225Z [INFO]: 
+2026-03-15T19:01:51.225Z [INFO]: If you have Node 16 Lambda functions defined with Amplify Function, we highly
+2026-03-15T19:01:51.226Z [INFO]: 
+2026-03-15T19:01:51.226Z [INFO]: recommend updating your function's runtime to newer Node LTS versions (Node 20+).
+2026-03-15T19:01:51.226Z [INFO]: 
+2026-03-15T19:01:51.226Z [INFO]: 
+2026-03-15T19:01:51.227Z [INFO]: More information at: https://github.com/aws-amplify/amplify-backend/issues/3127
+2026-03-15T19:01:51.227Z [INFO]: 
+2026-03-15T19:01:51.227Z [INFO]: 
+2026-03-15T19:01:51.227Z [INFO]: 
+2026-03-15T19:01:51.228Z [INFO]: If you don't want to see a notice anymore, use npx ampx notices acknowledge <notice-id>
+2026-03-15T19:01:51.228Z [INFO]: 
+2026-03-15T19:01:51.348Z [INFO]: 
+2026-03-15T19:01:51.349Z [INFO]: [CloudFormationDeploymentError] The CloudFormation deployment has failed.
+                                 ∟ Caused by: [ToolkitError] The stack named amplify-d3sn68lwnngpdm-main-branch-5db8f13c0a failed to deploy: UPDATE_ROLLBACK_COMPLETE: Embedded stack arn:aws:cloudformation:ap-southeast-1:836595559002:stack/amplify-d3sn68lwnngpdm-main-branch-5db8f13c0a-auth179371D7-1UQZPIH3RXTZ0/144ee960-01aa-11f1-8412-0293eb200de7 was not successfully updated. Currently in UPDATE_ROLLBACK_IN_PROGRESS with reason: Unable to retrieve Arn attribute for AWS::Cognito::UserPool, with error message User pool ap-southeast-1_duOx0jMwM does not exist. (Service: CognitoIdentityProvider, Status Code: 400, Request ID: 121384aa-363a-4b1d-b1d2-ba608a1ec421) (SDK Attempt Count: 1)
+                                 Resolution: Find more information in the CloudFormation AWS Console for this stack.
+2026-03-15T19:01:51.349Z [WARNING]: ampx pipeline-deploy
+                                    Command to deploy backends in a custom CI/CD pipeline. This command is not inten
+                                    ded to be used locally.
+                                    Options:
+                                    --debug            Print debug logs to the console
+                                    [boolean] [default: false]
+                                    --branch           Name of the git branch being deployed
+                                    [string] [required]
+                                    --app-id           The app id of the target Amplify app[string] [required]
+                                    --outputs-out-dir  A path to directory where amplify_outputs is written. I
+                                    f not provided defaults to current process working dire
+                                    ctory.                                         [string]
+                                    --outputs-version  Version of the configuration. Version 0 represents clas
+                                    sic amplify-cli config file amplify-configuration and 1
+                                    represents newer config file amplify_outputs
+                                    [string] [choices: "0", "1", "1.1", "1.2", "1.3", "1.4"] [default: "1.4"]
+                                    --outputs-format   amplify_outputs file format
+                                    [string] [choices: "mjs", "json", "json-mobile", "ts", "dart"]
+                                    -h, --help             Show help                                     [boolean]
+2026-03-15T19:01:51.349Z [INFO]: 
+2026-03-15T19:01:51.428Z [ERROR]: !!! Build failed
+2026-03-15T19:01:51.428Z [ERROR]: !!! Error: Command failed with exit code 1
+2026-03-15T19:01:51.428Z [INFO]: # Starting environment caching...
+2026-03-15T19:01:51.428Z [INFO]: # Uploading environment cache artifact...
+2026-03-15T19:01:51.505Z [INFO]: # Uploaded environment cache artifact
+2026-03-15T19:01:51.505Z [INFO]: # Environment caching completed
+

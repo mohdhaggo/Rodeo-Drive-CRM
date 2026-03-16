@@ -1,0 +1,3539 @@
+type Department @aws_iam @aws_cognito_user_pools {
+  id: ID!
+  name: String!
+  description: String
+  status: DepartmentStatus
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
+  roles(filter: ModelRoleFilterInput, sortDirection: ModelSortDirection, limit: Int, nextToken: String): ModelRoleConnection
+  users(filter: ModelUserFilterInput, sortDirection: ModelSortDirection, limit: Int, nextToken: String): ModelUserConnection
+}
+
+type Role @aws_iam @aws_cognito_user_pools {
+  id: ID!
+  name: String!
+  description: String
+  departmentId: ID
+  department: Department
+  status: RoleStatus
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
+  users(filter: ModelUserFilterInput, sortDirection: ModelSortDirection, limit: Int, nextToken: String): ModelUserConnection
+  permissions(filter: ModelPermissionFilterInput, sortDirection: ModelSortDirection, limit: Int, nextToken: String): ModelPermissionConnection
+}
+
+type User @aws_iam @aws_cognito_user_pools {
+  id: ID!
+  firstName: String!
+  lastName: String!
+  email: AWSEmail!
+  employeeId: String
+  departmentId: ID
+  roleId: ID
+  department: Department
+  role: Role
+  lineManager: String
+  phone: String
+  status: UserStatus
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
+  activityLogs(filter: ModelActivityLogFilterInput, sortDirection: ModelSortDirection, limit: Int, nextToken: String): ModelActivityLogConnection
+  notifications(filter: ModelNotificationFilterInput, sortDirection: ModelSortDirection, limit: Int, nextToken: String): ModelNotificationConnection
+}
+
+type Permission @aws_iam @aws_cognito_user_pools {
+  id: ID!
+  roleId: ID!
+  role: Role
+  moduleName: String!
+  canRead: Boolean!
+  canCreate: Boolean!
+  canUpdate: Boolean!
+  canDelete: Boolean!
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
+}
+
+type Customer @aws_iam @aws_cognito_user_pools {
+  id: ID!
+  name: String!
+  email: AWSEmail
+  mobile: String
+  address: String
+  status: CustomerStatus
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
+  vehicles(filter: ModelVehicleFilterInput, sortDirection: ModelSortDirection, limit: Int, nextToken: String): ModelVehicleConnection
+  jobOrders(filter: ModelJobOrderFilterInput, sortDirection: ModelSortDirection, limit: Int, nextToken: String): ModelJobOrderConnection
+  contacts(filter: ModelContactFilterInput, sortDirection: ModelSortDirection, limit: Int, nextToken: String): ModelContactConnection
+  salesLeads(filter: ModelSalesLeadFilterInput, sortDirection: ModelSortDirection, limit: Int, nextToken: String): ModelSalesLeadConnection
+  invoices(filter: ModelInvoiceFilterInput, sortDirection: ModelSortDirection, limit: Int, nextToken: String): ModelInvoiceConnection
+  quotations(filter: ModelQuotationFilterInput, sortDirection: ModelSortDirection, limit: Int, nextToken: String): ModelQuotationConnection
+}
+
+type Contact @aws_iam @aws_cognito_user_pools {
+  id: ID!
+  firstName: String!
+  lastName: String!
+  email: AWSEmail!
+  phone: String
+  customerId: ID!
+  customer: Customer
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
+}
+
+type Vehicle @aws_iam @aws_cognito_user_pools {
+  id: ID!
+  make: String!
+  model: String!
+  year: String!
+  color: String
+  plateNumber: String
+  vin: String
+  vehicleType: String
+  customerId: ID!
+  customer: Customer
+  status: VehicleStatus
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
+  jobOrders(filter: ModelJobOrderFilterInput, sortDirection: ModelSortDirection, limit: Int, nextToken: String): ModelJobOrderConnection
+  inspections(filter: ModelInspectionFilterInput, sortDirection: ModelSortDirection, limit: Int, nextToken: String): ModelInspectionConnection
+}
+
+type JobOrder @aws_iam @aws_cognito_user_pools {
+  id: ID!
+  orderNumber: String!
+  customerId: ID!
+  vehicleId: ID!
+  customer: Customer
+  vehicle: Vehicle
+  workStatus: String
+  paymentStatus: String
+  totalAmount: Float
+  paidAmount: Float
+  createdDate: AWSDateTime
+  completionDate: AWSDateTime
+  createdByUserId: ID
+  assignedToUserId: ID
+  serviceRequests(filter: ModelServiceRequestFilterInput, sortDirection: ModelSortDirection, limit: Int, nextToken: String): ModelServiceRequestConnection
+  payments(filter: ModelPaymentFilterInput, sortDirection: ModelSortDirection, limit: Int, nextToken: String): ModelPaymentConnection
+  exitPermit: ExitPermit
+  qualityChecks(filter: ModelQualityCheckFilterInput, sortDirection: ModelSortDirection, limit: Int, nextToken: String): ModelQualityCheckConnection
+  inspections(filter: ModelInspectionFilterInput, sortDirection: ModelSortDirection, limit: Int, nextToken: String): ModelInspectionConnection
+  additionalServiceRequests(filter: ModelAdditionalServiceRequestFilterInput, sortDirection: ModelSortDirection, limit: Int, nextToken: String): ModelAdditionalServiceRequestConnection
+  invoices(filter: ModelInvoiceFilterInput, sortDirection: ModelSortDirection, limit: Int, nextToken: String): ModelInvoiceConnection
+  serviceApprovalRequests(filter: ModelServiceApprovalRequestFilterInput, sortDirection: ModelSortDirection, limit: Int, nextToken: String): ModelServiceApprovalRequestConnection
+  workLogs(filter: ModelWorkLogFilterInput, sortDirection: ModelSortDirection, limit: Int, nextToken: String): ModelWorkLogConnection
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
+}
+
+type ServiceRequest @aws_iam @aws_cognito_user_pools {
+  id: ID!
+  jobOrderId: ID!
+  jobOrder: JobOrder
+  serviceName: String!
+  status: ServiceRequestStatus
+  startTime: AWSDateTime
+  endTime: AWSDateTime
+  duration: String
+  assignedTechnician: String
+  notes: String
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
+}
+
+type AdditionalServiceRequest @aws_iam @aws_cognito_user_pools {
+  id: ID!
+  jobOrderId: ID!
+  jobOrder: JobOrder
+  serviceName: String!
+  description: String
+  estimatedCost: Float
+  status: AdditionalServiceRequestStatus
+  requestedBy: String
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
+}
+
+type Payment @aws_iam @aws_cognito_user_pools {
+  id: ID!
+  jobOrderId: ID!
+  jobOrder: JobOrder
+  amount: Float!
+  paymentMethod: String
+  paymentStatus: PaymentPaymentStatus
+  paymentDate: AWSDateTime
+  referenceNumber: String
+  notes: String
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
+}
+
+type ExitPermit @aws_iam @aws_cognito_user_pools {
+  id: ID!
+  jobOrderId: ID!
+  jobOrder: JobOrder
+  permitNumber: String
+  status: String
+  createdDate: AWSDateTime
+  collectedDate: AWSDateTime
+  nextServiceDate: AWSDateTime
+  createdByUserId: ID
+  collectedByUserId: ID
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
+}
+
+type Inspection @aws_iam @aws_cognito_user_pools {
+  id: ID!
+  jobOrderId: ID
+  vehicleId: ID
+  jobOrder: JobOrder
+  vehicle: Vehicle
+  inspectionType: String!
+  status: String
+  inspectorId: ID
+  findings: String
+  checklist: AWSJSON
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
+}
+
+type QualityCheck @aws_iam @aws_cognito_user_pools {
+  id: ID!
+  jobOrderId: ID!
+  jobOrder: JobOrder
+  status: String
+  inspectorId: ID
+  checklist: AWSJSON
+  issues: String
+  approvalStatus: String
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
+}
+
+type SalesLead @aws_iam @aws_cognito_user_pools {
+  id: ID!
+  dealName: String!
+  amount: Float
+  stage: SalesLeadStage
+  customerId: ID
+  customer: Customer
+  ownerId: ID
+  probability: Float
+  expectedCloseDate: AWSDateTime
+  notes: String
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
+  approvals(filter: ModelSalesApprovalFilterInput, sortDirection: ModelSortDirection, limit: Int, nextToken: String): ModelSalesApprovalConnection
+}
+
+type SalesApproval @aws_iam @aws_cognito_user_pools {
+  id: ID!
+  leadId: ID!
+  lead: SalesLead
+  approverUserId: ID!
+  status: SalesApprovalStatus
+  comments: String
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
+}
+
+type Product @aws_iam @aws_cognito_user_pools {
+  id: ID!
+  name: String!
+  description: String
+  suvPrice: Float
+  sedanPrice: Float
+  otherPrice: Float
+  category: String
+  status: ProductStatus
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
+}
+
+type PurchaseOrder @aws_iam @aws_cognito_user_pools {
+  id: ID!
+  orderNumber: String!
+  supplierId: ID
+  supplier: Supplier
+  supplierName: String!
+  status: PurchaseOrderStatus
+  totalAmount: Float
+  createdDate: AWSDateTime
+  deliveryDate: AWSDateTime
+  items: AWSJSON
+  notes: String
+  createdByUserId: ID
+  approverUserId: ID
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
+}
+
+type ServiceExecution @aws_iam @aws_cognito_user_pools {
+  id: ID!
+  jobOrderId: ID
+  serviceType: String!
+  status: String
+  executorId: ID
+  startTime: AWSDateTime
+  endTime: AWSDateTime
+  notes: String
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
+}
+
+type Company @aws_iam @aws_cognito_user_pools {
+  id: ID!
+  name: String!
+  industry: String
+  email: AWSEmail
+  phone: String
+  address: String
+  status: CompanyStatus
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
+}
+
+type Invoice @aws_iam @aws_cognito_user_pools {
+  id: ID!
+  invoiceNumber: String!
+  jobOrderId: ID!
+  jobOrder: JobOrder
+  customerId: ID!
+  customer: Customer
+  invoiceDate: AWSDateTime!
+  dueDate: AWSDateTime
+  subtotal: Float!
+  taxAmount: Float
+  totalAmount: Float!
+  paidAmount: Float
+  status: InvoiceStatus
+  notes: String
+  createdByUserId: ID
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
+}
+
+type Supplier @aws_iam @aws_cognito_user_pools {
+  id: ID!
+  name: String!
+  email: AWSEmail
+  phone: String
+  address: String
+  city: String
+  country: String
+  zipCode: String
+  contactPersonName: String
+  paymentTerms: String
+  taxId: String
+  status: SupplierStatus
+  rating: Float
+  notes: String
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
+  purchaseOrders(filter: ModelPurchaseOrderFilterInput, sortDirection: ModelSortDirection, limit: Int, nextToken: String): ModelPurchaseOrderConnection
+}
+
+type ApprovalRequest @aws_iam @aws_cognito_user_pools {
+  id: ID!
+  title: String!
+  type: ApprovalRequestType
+  entityId: ID!
+  entityType: String!
+  requestedByUserId: ID!
+  approverUserId: ID!
+  status: ApprovalRequestStatus
+  priority: ApprovalRequestPriority
+  description: String
+  approvalNotes: String
+  requestDate: AWSDateTime!
+  responseDate: AWSDateTime
+  dueDate: AWSDateTime
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
+}
+
+type ServiceApprovalRequest @aws_iam @aws_cognito_user_pools {
+  id: ID!
+  jobOrderId: ID!
+  jobOrder: JobOrder
+  serviceRequestId: ID
+  description: String!
+  estimatedCost: Float
+  status: String
+  requestedByUserId: ID!
+  approverUserId: ID!
+  rejectionReason: String
+  requestDate: AWSDateTime!
+  approvalDate: AWSDateTime
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
+}
+
+type Quotation @aws_iam @aws_cognito_user_pools {
+  id: ID!
+  quotationNumber: String!
+  jobOrderId: ID
+  customerId: ID!
+  customer: Customer
+  description: String
+  items: AWSJSON
+  subtotal: Float!
+  taxAmount: Float
+  totalAmount: Float!
+  validUntil: AWSDateTime
+  status: QuotationStatus
+  createdByUserId: ID
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
+}
+
+type ActivityLog @aws_iam @aws_cognito_user_pools {
+  id: ID!
+  userId: ID!
+  user: User
+  action: String!
+  entityType: String!
+  entityId: ID!
+  changes: AWSJSON
+  ipAddress: String
+  userAgent: String
+  status: ActivityLogStatus
+  notes: String
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime!
+}
+
+type WorkLog @aws_iam @aws_cognito_user_pools {
+  id: ID!
+  jobOrderId: ID!
+  jobOrder: JobOrder
+  technicianId: ID!
+  serviceType: String!
+  startTime: AWSDateTime!
+  endTime: AWSDateTime
+  duration: Float
+  description: String
+  status: String
+  notes: String
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
+}
+
+type Notification @aws_iam @aws_cognito_user_pools {
+  id: ID!
+  userId: ID!
+  user: User
+  type: NotificationType
+  title: String!
+  message: String!
+  entityType: String
+  entityId: ID
+  isRead: Boolean
+  readAt: AWSDateTime
+  actionUrl: String
+  priority: NotificationPriority
+  expiresAt: AWSDateTime
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
+}
+
+type InviteUserResponse @aws_api_key @aws_cognito_user_pools @aws_iam {
+  success: Boolean!
+  message: String!
+  invitationSent: Boolean
+  invitationResent: Boolean
+  userAlreadyExists: Boolean
+}
+
+type CognitoUserProfile @aws_cognito_user_pools @aws_iam {
+  id: String!
+  username: String!
+  employeeId: String
+  name: String!
+  email: AWSEmail!
+  mobile: String
+  department: String
+  role: String
+  lineManager: String
+  status: String!
+  dashboardAccess: String!
+  createdDate: String
+  cognitoStatus: String
+  mustChangePassword: Boolean
+}
+
+type ListCognitoUsersResponse @aws_cognito_user_pools @aws_iam {
+  success: Boolean!
+  message: String!
+  users: [CognitoUserProfile]!
+}
+
+type UpdateCognitoUserResponse @aws_cognito_user_pools @aws_iam {
+  success: Boolean!
+  message: String!
+}
+
+enum DepartmentStatus {
+  active
+  inactive
+}
+
+enum RoleStatus {
+  active
+  inactive
+}
+
+enum UserStatus {
+  active
+  inactive
+  on_leave
+}
+
+enum CustomerStatus {
+  active
+  inactive
+  suspended
+}
+
+enum VehicleStatus {
+  active
+  inactive
+  retired
+}
+
+enum ServiceRequestStatus {
+  Pending
+  Inprogress
+  Completed
+  Cancelled
+}
+
+enum AdditionalServiceRequestStatus {
+  Requested
+  Approved
+  Rejected
+  Completed
+}
+
+enum PaymentPaymentStatus {
+  Pending
+  Completed
+  Failed
+  Refunded
+}
+
+enum SalesLeadStage {
+  Lead
+  Prospect
+  Proposal
+  Negotiation
+  Won
+  Lost
+}
+
+enum SalesApprovalStatus {
+  Pending
+  Approved
+  Rejected
+}
+
+enum ProductStatus {
+  active
+  inactive
+}
+
+enum PurchaseOrderStatus {
+  Draft
+  Submitted
+  Approved
+  Received
+  Cancelled
+}
+
+enum CompanyStatus {
+  active
+  inactive
+}
+
+enum InvoiceStatus {
+  Draft
+  Sent
+  Viewed
+  Partial
+  Paid
+  Overdue
+  Cancelled
+}
+
+enum SupplierStatus {
+  active
+  inactive
+  suspended
+}
+
+enum ApprovalRequestType {
+  ServiceApproval
+  PurchaseApproval
+  PaymentApproval
+  QualityApproval
+  Other
+}
+
+enum ApprovalRequestStatus {
+  Pending
+  Approved
+  Rejected
+  Escalated
+}
+
+enum ApprovalRequestPriority {
+  Low
+  Medium
+  High
+  Critical
+}
+
+enum QuotationStatus {
+  Draft
+  Sent
+  Accepted
+  Rejected
+  Expired
+}
+
+enum ActivityLogStatus {
+  Success
+  Failed
+  Pending
+}
+
+enum NotificationType {
+  Info
+  Warning
+  Error
+  Success
+  Approval
+  Task
+}
+
+enum NotificationPriority {
+  Low
+  Medium
+  High
+}
+
+type Mutation @aws_iam {
+  createDepartment(input: CreateDepartmentInput!, condition: ModelDepartmentConditionInput): Department @aws_iam @aws_cognito_user_pools
+  updateDepartment(input: UpdateDepartmentInput!, condition: ModelDepartmentConditionInput): Department @aws_iam @aws_cognito_user_pools
+  deleteDepartment(input: DeleteDepartmentInput!, condition: ModelDepartmentConditionInput): Department @aws_iam @aws_cognito_user_pools
+  createRole(input: CreateRoleInput!, condition: ModelRoleConditionInput): Role @aws_iam @aws_cognito_user_pools
+  updateRole(input: UpdateRoleInput!, condition: ModelRoleConditionInput): Role @aws_iam @aws_cognito_user_pools
+  deleteRole(input: DeleteRoleInput!, condition: ModelRoleConditionInput): Role @aws_iam @aws_cognito_user_pools
+  createUser(input: CreateUserInput!, condition: ModelUserConditionInput): User @aws_iam @aws_cognito_user_pools
+  updateUser(input: UpdateUserInput!, condition: ModelUserConditionInput): User @aws_iam @aws_cognito_user_pools
+  deleteUser(input: DeleteUserInput!, condition: ModelUserConditionInput): User @aws_iam @aws_cognito_user_pools
+  createPermission(input: CreatePermissionInput!, condition: ModelPermissionConditionInput): Permission @aws_iam @aws_cognito_user_pools
+  updatePermission(input: UpdatePermissionInput!, condition: ModelPermissionConditionInput): Permission @aws_iam @aws_cognito_user_pools
+  deletePermission(input: DeletePermissionInput!, condition: ModelPermissionConditionInput): Permission @aws_iam @aws_cognito_user_pools
+  createCustomer(input: CreateCustomerInput!, condition: ModelCustomerConditionInput): Customer @aws_iam @aws_cognito_user_pools
+  updateCustomer(input: UpdateCustomerInput!, condition: ModelCustomerConditionInput): Customer @aws_iam @aws_cognito_user_pools
+  deleteCustomer(input: DeleteCustomerInput!, condition: ModelCustomerConditionInput): Customer @aws_iam @aws_cognito_user_pools
+  createContact(input: CreateContactInput!, condition: ModelContactConditionInput): Contact @aws_iam @aws_cognito_user_pools
+  updateContact(input: UpdateContactInput!, condition: ModelContactConditionInput): Contact @aws_iam @aws_cognito_user_pools
+  deleteContact(input: DeleteContactInput!, condition: ModelContactConditionInput): Contact @aws_iam @aws_cognito_user_pools
+  createVehicle(input: CreateVehicleInput!, condition: ModelVehicleConditionInput): Vehicle @aws_iam @aws_cognito_user_pools
+  updateVehicle(input: UpdateVehicleInput!, condition: ModelVehicleConditionInput): Vehicle @aws_iam @aws_cognito_user_pools
+  deleteVehicle(input: DeleteVehicleInput!, condition: ModelVehicleConditionInput): Vehicle @aws_iam @aws_cognito_user_pools
+  createJobOrder(input: CreateJobOrderInput!, condition: ModelJobOrderConditionInput): JobOrder @aws_iam @aws_cognito_user_pools
+  updateJobOrder(input: UpdateJobOrderInput!, condition: ModelJobOrderConditionInput): JobOrder @aws_iam @aws_cognito_user_pools
+  deleteJobOrder(input: DeleteJobOrderInput!, condition: ModelJobOrderConditionInput): JobOrder @aws_iam @aws_cognito_user_pools
+  createServiceRequest(input: CreateServiceRequestInput!, condition: ModelServiceRequestConditionInput): ServiceRequest @aws_iam @aws_cognito_user_pools
+  updateServiceRequest(input: UpdateServiceRequestInput!, condition: ModelServiceRequestConditionInput): ServiceRequest @aws_iam @aws_cognito_user_pools
+  deleteServiceRequest(input: DeleteServiceRequestInput!, condition: ModelServiceRequestConditionInput): ServiceRequest @aws_iam @aws_cognito_user_pools
+  createAdditionalServiceRequest(input: CreateAdditionalServiceRequestInput!, condition: ModelAdditionalServiceRequestConditionInput): AdditionalServiceRequest @aws_iam @aws_cognito_user_pools
+  updateAdditionalServiceRequest(input: UpdateAdditionalServiceRequestInput!, condition: ModelAdditionalServiceRequestConditionInput): AdditionalServiceRequest @aws_iam @aws_cognito_user_pools
+  deleteAdditionalServiceRequest(input: DeleteAdditionalServiceRequestInput!, condition: ModelAdditionalServiceRequestConditionInput): AdditionalServiceRequest @aws_iam @aws_cognito_user_pools
+  createPayment(input: CreatePaymentInput!, condition: ModelPaymentConditionInput): Payment @aws_iam @aws_cognito_user_pools
+  updatePayment(input: UpdatePaymentInput!, condition: ModelPaymentConditionInput): Payment @aws_iam @aws_cognito_user_pools
+  deletePayment(input: DeletePaymentInput!, condition: ModelPaymentConditionInput): Payment @aws_iam @aws_cognito_user_pools
+  createExitPermit(input: CreateExitPermitInput!, condition: ModelExitPermitConditionInput): ExitPermit @aws_iam @aws_cognito_user_pools
+  updateExitPermit(input: UpdateExitPermitInput!, condition: ModelExitPermitConditionInput): ExitPermit @aws_iam @aws_cognito_user_pools
+  deleteExitPermit(input: DeleteExitPermitInput!, condition: ModelExitPermitConditionInput): ExitPermit @aws_iam @aws_cognito_user_pools
+  createInspection(input: CreateInspectionInput!, condition: ModelInspectionConditionInput): Inspection @aws_iam @aws_cognito_user_pools
+  updateInspection(input: UpdateInspectionInput!, condition: ModelInspectionConditionInput): Inspection @aws_iam @aws_cognito_user_pools
+  deleteInspection(input: DeleteInspectionInput!, condition: ModelInspectionConditionInput): Inspection @aws_iam @aws_cognito_user_pools
+  createQualityCheck(input: CreateQualityCheckInput!, condition: ModelQualityCheckConditionInput): QualityCheck @aws_iam @aws_cognito_user_pools
+  updateQualityCheck(input: UpdateQualityCheckInput!, condition: ModelQualityCheckConditionInput): QualityCheck @aws_iam @aws_cognito_user_pools
+  deleteQualityCheck(input: DeleteQualityCheckInput!, condition: ModelQualityCheckConditionInput): QualityCheck @aws_iam @aws_cognito_user_pools
+  createSalesLead(input: CreateSalesLeadInput!, condition: ModelSalesLeadConditionInput): SalesLead @aws_iam @aws_cognito_user_pools
+  updateSalesLead(input: UpdateSalesLeadInput!, condition: ModelSalesLeadConditionInput): SalesLead @aws_iam @aws_cognito_user_pools
+  deleteSalesLead(input: DeleteSalesLeadInput!, condition: ModelSalesLeadConditionInput): SalesLead @aws_iam @aws_cognito_user_pools
+  createSalesApproval(input: CreateSalesApprovalInput!, condition: ModelSalesApprovalConditionInput): SalesApproval @aws_iam @aws_cognito_user_pools
+  updateSalesApproval(input: UpdateSalesApprovalInput!, condition: ModelSalesApprovalConditionInput): SalesApproval @aws_iam @aws_cognito_user_pools
+  deleteSalesApproval(input: DeleteSalesApprovalInput!, condition: ModelSalesApprovalConditionInput): SalesApproval @aws_iam @aws_cognito_user_pools
+  createProduct(input: CreateProductInput!, condition: ModelProductConditionInput): Product @aws_iam @aws_cognito_user_pools
+  updateProduct(input: UpdateProductInput!, condition: ModelProductConditionInput): Product @aws_iam @aws_cognito_user_pools
+  deleteProduct(input: DeleteProductInput!, condition: ModelProductConditionInput): Product @aws_iam @aws_cognito_user_pools
+  createPurchaseOrder(input: CreatePurchaseOrderInput!, condition: ModelPurchaseOrderConditionInput): PurchaseOrder @aws_iam @aws_cognito_user_pools
+  updatePurchaseOrder(input: UpdatePurchaseOrderInput!, condition: ModelPurchaseOrderConditionInput): PurchaseOrder @aws_iam @aws_cognito_user_pools
+  deletePurchaseOrder(input: DeletePurchaseOrderInput!, condition: ModelPurchaseOrderConditionInput): PurchaseOrder @aws_iam @aws_cognito_user_pools
+  createServiceExecution(input: CreateServiceExecutionInput!, condition: ModelServiceExecutionConditionInput): ServiceExecution @aws_iam @aws_cognito_user_pools
+  updateServiceExecution(input: UpdateServiceExecutionInput!, condition: ModelServiceExecutionConditionInput): ServiceExecution @aws_iam @aws_cognito_user_pools
+  deleteServiceExecution(input: DeleteServiceExecutionInput!, condition: ModelServiceExecutionConditionInput): ServiceExecution @aws_iam @aws_cognito_user_pools
+  createCompany(input: CreateCompanyInput!, condition: ModelCompanyConditionInput): Company @aws_iam @aws_cognito_user_pools
+  updateCompany(input: UpdateCompanyInput!, condition: ModelCompanyConditionInput): Company @aws_iam @aws_cognito_user_pools
+  deleteCompany(input: DeleteCompanyInput!, condition: ModelCompanyConditionInput): Company @aws_iam @aws_cognito_user_pools
+  createInvoice(input: CreateInvoiceInput!, condition: ModelInvoiceConditionInput): Invoice @aws_iam @aws_cognito_user_pools
+  updateInvoice(input: UpdateInvoiceInput!, condition: ModelInvoiceConditionInput): Invoice @aws_iam @aws_cognito_user_pools
+  deleteInvoice(input: DeleteInvoiceInput!, condition: ModelInvoiceConditionInput): Invoice @aws_iam @aws_cognito_user_pools
+  createSupplier(input: CreateSupplierInput!, condition: ModelSupplierConditionInput): Supplier @aws_iam @aws_cognito_user_pools
+  updateSupplier(input: UpdateSupplierInput!, condition: ModelSupplierConditionInput): Supplier @aws_iam @aws_cognito_user_pools
+  deleteSupplier(input: DeleteSupplierInput!, condition: ModelSupplierConditionInput): Supplier @aws_iam @aws_cognito_user_pools
+  createApprovalRequest(input: CreateApprovalRequestInput!, condition: ModelApprovalRequestConditionInput): ApprovalRequest @aws_iam @aws_cognito_user_pools
+  updateApprovalRequest(input: UpdateApprovalRequestInput!, condition: ModelApprovalRequestConditionInput): ApprovalRequest @aws_iam @aws_cognito_user_pools
+  deleteApprovalRequest(input: DeleteApprovalRequestInput!, condition: ModelApprovalRequestConditionInput): ApprovalRequest @aws_iam @aws_cognito_user_pools
+  createServiceApprovalRequest(input: CreateServiceApprovalRequestInput!, condition: ModelServiceApprovalRequestConditionInput): ServiceApprovalRequest @aws_iam @aws_cognito_user_pools
+  updateServiceApprovalRequest(input: UpdateServiceApprovalRequestInput!, condition: ModelServiceApprovalRequestConditionInput): ServiceApprovalRequest @aws_iam @aws_cognito_user_pools
+  deleteServiceApprovalRequest(input: DeleteServiceApprovalRequestInput!, condition: ModelServiceApprovalRequestConditionInput): ServiceApprovalRequest @aws_iam @aws_cognito_user_pools
+  createQuotation(input: CreateQuotationInput!, condition: ModelQuotationConditionInput): Quotation @aws_iam @aws_cognito_user_pools
+  updateQuotation(input: UpdateQuotationInput!, condition: ModelQuotationConditionInput): Quotation @aws_iam @aws_cognito_user_pools
+  deleteQuotation(input: DeleteQuotationInput!, condition: ModelQuotationConditionInput): Quotation @aws_iam @aws_cognito_user_pools
+  createActivityLog(input: CreateActivityLogInput!, condition: ModelActivityLogConditionInput): ActivityLog @aws_iam @aws_cognito_user_pools
+  updateActivityLog(input: UpdateActivityLogInput!, condition: ModelActivityLogConditionInput): ActivityLog @aws_iam @aws_cognito_user_pools
+  deleteActivityLog(input: DeleteActivityLogInput!, condition: ModelActivityLogConditionInput): ActivityLog @aws_iam @aws_cognito_user_pools
+  createWorkLog(input: CreateWorkLogInput!, condition: ModelWorkLogConditionInput): WorkLog @aws_iam @aws_cognito_user_pools
+  updateWorkLog(input: UpdateWorkLogInput!, condition: ModelWorkLogConditionInput): WorkLog @aws_iam @aws_cognito_user_pools
+  deleteWorkLog(input: DeleteWorkLogInput!, condition: ModelWorkLogConditionInput): WorkLog @aws_iam @aws_cognito_user_pools
+  createNotification(input: CreateNotificationInput!, condition: ModelNotificationConditionInput): Notification @aws_iam @aws_cognito_user_pools
+  updateNotification(input: UpdateNotificationInput!, condition: ModelNotificationConditionInput): Notification @aws_iam @aws_cognito_user_pools
+  deleteNotification(input: DeleteNotificationInput!, condition: ModelNotificationConditionInput): Notification @aws_iam @aws_cognito_user_pools
+  inviteUserToCognito(email: AWSEmail!, fullName: String!, phoneNumber: String!, temporaryPassword: String!): InviteUserResponse @aws_iam @aws_api_key @aws_cognito_user_pools
+  updateCognitoUser(username: String!, fullName: String!, email: AWSEmail!, phoneNumber: String!, department: String!, role: String!, lineManager: String): UpdateCognitoUserResponse @aws_iam @aws_cognito_user_pools
+}
+
+type Query @aws_iam {
+  getDepartment(id: ID!): Department @aws_iam @aws_cognito_user_pools
+  listDepartments(id: ID, filter: ModelDepartmentFilterInput, limit: Int, nextToken: String, sortDirection: ModelSortDirection): ModelDepartmentConnection @aws_iam @aws_cognito_user_pools
+  getRole(id: ID!): Role @aws_iam @aws_cognito_user_pools
+  listRoles(id: ID, filter: ModelRoleFilterInput, limit: Int, nextToken: String, sortDirection: ModelSortDirection): ModelRoleConnection @aws_iam @aws_cognito_user_pools
+  getUser(id: ID!): User @aws_iam @aws_cognito_user_pools
+  listUsers(id: ID, filter: ModelUserFilterInput, limit: Int, nextToken: String, sortDirection: ModelSortDirection): ModelUserConnection @aws_iam @aws_cognito_user_pools
+  getPermission(id: ID!): Permission @aws_iam @aws_cognito_user_pools
+  listPermissions(id: ID, filter: ModelPermissionFilterInput, limit: Int, nextToken: String, sortDirection: ModelSortDirection): ModelPermissionConnection @aws_iam @aws_cognito_user_pools
+  getCustomer(id: ID!): Customer @aws_iam @aws_cognito_user_pools
+  listCustomers(id: ID, filter: ModelCustomerFilterInput, limit: Int, nextToken: String, sortDirection: ModelSortDirection): ModelCustomerConnection @aws_iam @aws_cognito_user_pools
+  getContact(id: ID!): Contact @aws_iam @aws_cognito_user_pools
+  listContacts(id: ID, filter: ModelContactFilterInput, limit: Int, nextToken: String, sortDirection: ModelSortDirection): ModelContactConnection @aws_iam @aws_cognito_user_pools
+  getVehicle(id: ID!): Vehicle @aws_iam @aws_cognito_user_pools
+  listVehicles(id: ID, filter: ModelVehicleFilterInput, limit: Int, nextToken: String, sortDirection: ModelSortDirection): ModelVehicleConnection @aws_iam @aws_cognito_user_pools
+  getJobOrder(id: ID!): JobOrder @aws_iam @aws_cognito_user_pools
+  listJobOrders(id: ID, filter: ModelJobOrderFilterInput, limit: Int, nextToken: String, sortDirection: ModelSortDirection): ModelJobOrderConnection @aws_iam @aws_cognito_user_pools
+  getServiceRequest(id: ID!): ServiceRequest @aws_iam @aws_cognito_user_pools
+  listServiceRequests(id: ID, filter: ModelServiceRequestFilterInput, limit: Int, nextToken: String, sortDirection: ModelSortDirection): ModelServiceRequestConnection @aws_iam @aws_cognito_user_pools
+  getAdditionalServiceRequest(id: ID!): AdditionalServiceRequest @aws_iam @aws_cognito_user_pools
+  listAdditionalServiceRequests(id: ID, filter: ModelAdditionalServiceRequestFilterInput, limit: Int, nextToken: String, sortDirection: ModelSortDirection): ModelAdditionalServiceRequestConnection @aws_iam @aws_cognito_user_pools
+  getPayment(id: ID!): Payment @aws_iam @aws_cognito_user_pools
+  listPayments(id: ID, filter: ModelPaymentFilterInput, limit: Int, nextToken: String, sortDirection: ModelSortDirection): ModelPaymentConnection @aws_iam @aws_cognito_user_pools
+  getExitPermit(id: ID!): ExitPermit @aws_iam @aws_cognito_user_pools
+  listExitPermits(id: ID, filter: ModelExitPermitFilterInput, limit: Int, nextToken: String, sortDirection: ModelSortDirection): ModelExitPermitConnection @aws_iam @aws_cognito_user_pools
+  getInspection(id: ID!): Inspection @aws_iam @aws_cognito_user_pools
+  listInspections(id: ID, filter: ModelInspectionFilterInput, limit: Int, nextToken: String, sortDirection: ModelSortDirection): ModelInspectionConnection @aws_iam @aws_cognito_user_pools
+  getQualityCheck(id: ID!): QualityCheck @aws_iam @aws_cognito_user_pools
+  listQualityChecks(id: ID, filter: ModelQualityCheckFilterInput, limit: Int, nextToken: String, sortDirection: ModelSortDirection): ModelQualityCheckConnection @aws_iam @aws_cognito_user_pools
+  getSalesLead(id: ID!): SalesLead @aws_iam @aws_cognito_user_pools
+  listSalesLeads(id: ID, filter: ModelSalesLeadFilterInput, limit: Int, nextToken: String, sortDirection: ModelSortDirection): ModelSalesLeadConnection @aws_iam @aws_cognito_user_pools
+  getSalesApproval(id: ID!): SalesApproval @aws_iam @aws_cognito_user_pools
+  listSalesApprovals(id: ID, filter: ModelSalesApprovalFilterInput, limit: Int, nextToken: String, sortDirection: ModelSortDirection): ModelSalesApprovalConnection @aws_iam @aws_cognito_user_pools
+  getProduct(id: ID!): Product @aws_iam @aws_cognito_user_pools
+  listProducts(id: ID, filter: ModelProductFilterInput, limit: Int, nextToken: String, sortDirection: ModelSortDirection): ModelProductConnection @aws_iam @aws_cognito_user_pools
+  getPurchaseOrder(id: ID!): PurchaseOrder @aws_iam @aws_cognito_user_pools
+  listPurchaseOrders(id: ID, filter: ModelPurchaseOrderFilterInput, limit: Int, nextToken: String, sortDirection: ModelSortDirection): ModelPurchaseOrderConnection @aws_iam @aws_cognito_user_pools
+  getServiceExecution(id: ID!): ServiceExecution @aws_iam @aws_cognito_user_pools
+  listServiceExecutions(id: ID, filter: ModelServiceExecutionFilterInput, limit: Int, nextToken: String, sortDirection: ModelSortDirection): ModelServiceExecutionConnection @aws_iam @aws_cognito_user_pools
+  getCompany(id: ID!): Company @aws_iam @aws_cognito_user_pools
+  listCompanies(id: ID, filter: ModelCompanyFilterInput, limit: Int, nextToken: String, sortDirection: ModelSortDirection): ModelCompanyConnection @aws_iam @aws_cognito_user_pools
+  getInvoice(id: ID!): Invoice @aws_iam @aws_cognito_user_pools
+  listInvoices(id: ID, filter: ModelInvoiceFilterInput, limit: Int, nextToken: String, sortDirection: ModelSortDirection): ModelInvoiceConnection @aws_iam @aws_cognito_user_pools
+  getSupplier(id: ID!): Supplier @aws_iam @aws_cognito_user_pools
+  listSuppliers(id: ID, filter: ModelSupplierFilterInput, limit: Int, nextToken: String, sortDirection: ModelSortDirection): ModelSupplierConnection @aws_iam @aws_cognito_user_pools
+  getApprovalRequest(id: ID!): ApprovalRequest @aws_iam @aws_cognito_user_pools
+  listApprovalRequests(id: ID, filter: ModelApprovalRequestFilterInput, limit: Int, nextToken: String, sortDirection: ModelSortDirection): ModelApprovalRequestConnection @aws_iam @aws_cognito_user_pools
+  getServiceApprovalRequest(id: ID!): ServiceApprovalRequest @aws_iam @aws_cognito_user_pools
+  listServiceApprovalRequests(id: ID, filter: ModelServiceApprovalRequestFilterInput, limit: Int, nextToken: String, sortDirection: ModelSortDirection): ModelServiceApprovalRequestConnection @aws_iam @aws_cognito_user_pools
+  getQuotation(id: ID!): Quotation @aws_iam @aws_cognito_user_pools
+  listQuotations(id: ID, filter: ModelQuotationFilterInput, limit: Int, nextToken: String, sortDirection: ModelSortDirection): ModelQuotationConnection @aws_iam @aws_cognito_user_pools
+  getActivityLog(id: ID!): ActivityLog @aws_iam @aws_cognito_user_pools
+  listActivityLogs(id: ID, filter: ModelActivityLogFilterInput, limit: Int, nextToken: String, sortDirection: ModelSortDirection): ModelActivityLogConnection @aws_iam @aws_cognito_user_pools
+  getWorkLog(id: ID!): WorkLog @aws_iam @aws_cognito_user_pools
+  listWorkLogs(id: ID, filter: ModelWorkLogFilterInput, limit: Int, nextToken: String, sortDirection: ModelSortDirection): ModelWorkLogConnection @aws_iam @aws_cognito_user_pools
+  getNotification(id: ID!): Notification @aws_iam @aws_cognito_user_pools
+  listNotifications(id: ID, filter: ModelNotificationFilterInput, limit: Int, nextToken: String, sortDirection: ModelSortDirection): ModelNotificationConnection @aws_iam @aws_cognito_user_pools
+  listCognitoUsers: ListCognitoUsersResponse @aws_iam @aws_cognito_user_pools
+}
+
+input AmplifyAIConversationTurnErrorInput {
+  errorType: String!
+  message: String!
+}
+
+input ModelStringInput {
+  ne: String
+  eq: String
+  le: String
+  lt: String
+  ge: String
+  gt: String
+  contains: String
+  notContains: String
+  between: [String]
+  beginsWith: String
+  attributeExists: Boolean
+  attributeType: ModelAttributeTypes
+  size: ModelSizeInput
+}
+
+input ModelIntInput {
+  ne: Int
+  eq: Int
+  le: Int
+  lt: Int
+  ge: Int
+  gt: Int
+  between: [Int]
+  attributeExists: Boolean
+  attributeType: ModelAttributeTypes
+}
+
+input ModelFloatInput {
+  ne: Float
+  eq: Float
+  le: Float
+  lt: Float
+  ge: Float
+  gt: Float
+  between: [Float]
+  attributeExists: Boolean
+  attributeType: ModelAttributeTypes
+}
+
+input ModelBooleanInput {
+  ne: Boolean
+  eq: Boolean
+  attributeExists: Boolean
+  attributeType: ModelAttributeTypes
+}
+
+input ModelIDInput {
+  ne: ID
+  eq: ID
+  le: ID
+  lt: ID
+  ge: ID
+  gt: ID
+  contains: ID
+  notContains: ID
+  between: [ID]
+  beginsWith: ID
+  attributeExists: Boolean
+  attributeType: ModelAttributeTypes
+  size: ModelSizeInput
+}
+
+input ModelSubscriptionStringInput {
+  ne: String
+  eq: String
+  le: String
+  lt: String
+  ge: String
+  gt: String
+  contains: String
+  notContains: String
+  between: [String]
+  beginsWith: String
+  in: [String]
+  notIn: [String]
+}
+
+input ModelSubscriptionIntInput {
+  ne: Int
+  eq: Int
+  le: Int
+  lt: Int
+  ge: Int
+  gt: Int
+  between: [Int]
+  in: [Int]
+  notIn: [Int]
+}
+
+input ModelSubscriptionFloatInput {
+  ne: Float
+  eq: Float
+  le: Float
+  lt: Float
+  ge: Float
+  gt: Float
+  between: [Float]
+  in: [Float]
+  notIn: [Float]
+}
+
+input ModelSubscriptionBooleanInput {
+  ne: Boolean
+  eq: Boolean
+}
+
+input ModelSubscriptionIDInput {
+  ne: ID
+  eq: ID
+  le: ID
+  lt: ID
+  ge: ID
+  gt: ID
+  contains: ID
+  notContains: ID
+  between: [ID]
+  beginsWith: ID
+  in: [ID]
+  notIn: [ID]
+}
+
+enum ModelAttributeTypes {
+  binary
+  binarySet
+  bool
+  list
+  map
+  number
+  numberSet
+  string
+  stringSet
+  _null
+}
+
+input ModelSizeInput {
+  ne: Int
+  eq: Int
+  le: Int
+  lt: Int
+  ge: Int
+  gt: Int
+  between: [Int]
+}
+
+enum ModelSortDirection {
+  ASC
+  DESC
+}
+
+type ModelDepartmentConnection @aws_iam @aws_cognito_user_pools {
+  items: [Department]!
+  nextToken: String
+}
+
+input ModelDepartmentStatusInput {
+  eq: DepartmentStatus
+  ne: DepartmentStatus
+}
+
+input ModelDepartmentFilterInput {
+  id: ModelIDInput
+  name: ModelStringInput
+  description: ModelStringInput
+  status: ModelDepartmentStatusInput
+  createdAt: ModelStringInput
+  updatedAt: ModelStringInput
+  and: [ModelDepartmentFilterInput]
+  or: [ModelDepartmentFilterInput]
+  not: ModelDepartmentFilterInput
+}
+
+input ModelDepartmentConditionInput {
+  name: ModelStringInput
+  description: ModelStringInput
+  status: ModelDepartmentStatusInput
+  createdAt: ModelStringInput
+  updatedAt: ModelStringInput
+  and: [ModelDepartmentConditionInput]
+  or: [ModelDepartmentConditionInput]
+  not: ModelDepartmentConditionInput
+}
+
+input CreateDepartmentInput {
+  id: ID
+  name: String!
+  description: String
+  status: DepartmentStatus
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
+}
+
+input UpdateDepartmentInput {
+  id: ID!
+  name: String
+  description: String
+  status: DepartmentStatus
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
+}
+
+input DeleteDepartmentInput {
+  id: ID!
+}
+
+input ModelSubscriptionDepartmentFilterInput {
+  id: ModelSubscriptionIDInput
+  name: ModelSubscriptionStringInput
+  description: ModelSubscriptionStringInput
+  status: ModelSubscriptionStringInput
+  createdAt: ModelSubscriptionStringInput
+  updatedAt: ModelSubscriptionStringInput
+  and: [ModelSubscriptionDepartmentFilterInput]
+  or: [ModelSubscriptionDepartmentFilterInput]
+}
+
+type Subscription {
+  onCreateDepartment(filter: ModelSubscriptionDepartmentFilterInput): Department @aws_subscribe(mutations: ["createDepartment"]) @aws_iam @aws_cognito_user_pools
+  onUpdateDepartment(filter: ModelSubscriptionDepartmentFilterInput): Department @aws_subscribe(mutations: ["updateDepartment"]) @aws_iam @aws_cognito_user_pools
+  onDeleteDepartment(filter: ModelSubscriptionDepartmentFilterInput): Department @aws_subscribe(mutations: ["deleteDepartment"]) @aws_iam @aws_cognito_user_pools
+  onCreateRole(filter: ModelSubscriptionRoleFilterInput): Role @aws_subscribe(mutations: ["createRole"]) @aws_iam @aws_cognito_user_pools
+  onUpdateRole(filter: ModelSubscriptionRoleFilterInput): Role @aws_subscribe(mutations: ["updateRole"]) @aws_iam @aws_cognito_user_pools
+  onDeleteRole(filter: ModelSubscriptionRoleFilterInput): Role @aws_subscribe(mutations: ["deleteRole"]) @aws_iam @aws_cognito_user_pools
+  onCreateUser(filter: ModelSubscriptionUserFilterInput): User @aws_subscribe(mutations: ["createUser"]) @aws_iam @aws_cognito_user_pools
+  onUpdateUser(filter: ModelSubscriptionUserFilterInput): User @aws_subscribe(mutations: ["updateUser"]) @aws_iam @aws_cognito_user_pools
+  onDeleteUser(filter: ModelSubscriptionUserFilterInput): User @aws_subscribe(mutations: ["deleteUser"]) @aws_iam @aws_cognito_user_pools
+  onCreatePermission(filter: ModelSubscriptionPermissionFilterInput): Permission @aws_subscribe(mutations: ["createPermission"]) @aws_iam @aws_cognito_user_pools
+  onUpdatePermission(filter: ModelSubscriptionPermissionFilterInput): Permission @aws_subscribe(mutations: ["updatePermission"]) @aws_iam @aws_cognito_user_pools
+  onDeletePermission(filter: ModelSubscriptionPermissionFilterInput): Permission @aws_subscribe(mutations: ["deletePermission"]) @aws_iam @aws_cognito_user_pools
+  onCreateCustomer(filter: ModelSubscriptionCustomerFilterInput): Customer @aws_subscribe(mutations: ["createCustomer"]) @aws_iam @aws_cognito_user_pools
+  onUpdateCustomer(filter: ModelSubscriptionCustomerFilterInput): Customer @aws_subscribe(mutations: ["updateCustomer"]) @aws_iam @aws_cognito_user_pools
+  onDeleteCustomer(filter: ModelSubscriptionCustomerFilterInput): Customer @aws_subscribe(mutations: ["deleteCustomer"]) @aws_iam @aws_cognito_user_pools
+  onCreateContact(filter: ModelSubscriptionContactFilterInput): Contact @aws_subscribe(mutations: ["createContact"]) @aws_iam @aws_cognito_user_pools
+  onUpdateContact(filter: ModelSubscriptionContactFilterInput): Contact @aws_subscribe(mutations: ["updateContact"]) @aws_iam @aws_cognito_user_pools
+  onDeleteContact(filter: ModelSubscriptionContactFilterInput): Contact @aws_subscribe(mutations: ["deleteContact"]) @aws_iam @aws_cognito_user_pools
+  onCreateVehicle(filter: ModelSubscriptionVehicleFilterInput): Vehicle @aws_subscribe(mutations: ["createVehicle"]) @aws_iam @aws_cognito_user_pools
+  onUpdateVehicle(filter: ModelSubscriptionVehicleFilterInput): Vehicle @aws_subscribe(mutations: ["updateVehicle"]) @aws_iam @aws_cognito_user_pools
+  onDeleteVehicle(filter: ModelSubscriptionVehicleFilterInput): Vehicle @aws_subscribe(mutations: ["deleteVehicle"]) @aws_iam @aws_cognito_user_pools
+  onCreateJobOrder(filter: ModelSubscriptionJobOrderFilterInput): JobOrder @aws_subscribe(mutations: ["createJobOrder"]) @aws_iam @aws_cognito_user_pools
+  onUpdateJobOrder(filter: ModelSubscriptionJobOrderFilterInput): JobOrder @aws_subscribe(mutations: ["updateJobOrder"]) @aws_iam @aws_cognito_user_pools
+  onDeleteJobOrder(filter: ModelSubscriptionJobOrderFilterInput): JobOrder @aws_subscribe(mutations: ["deleteJobOrder"]) @aws_iam @aws_cognito_user_pools
+  onCreateServiceRequest(filter: ModelSubscriptionServiceRequestFilterInput): ServiceRequest @aws_subscribe(mutations: ["createServiceRequest"]) @aws_iam @aws_cognito_user_pools
+  onUpdateServiceRequest(filter: ModelSubscriptionServiceRequestFilterInput): ServiceRequest @aws_subscribe(mutations: ["updateServiceRequest"]) @aws_iam @aws_cognito_user_pools
+  onDeleteServiceRequest(filter: ModelSubscriptionServiceRequestFilterInput): ServiceRequest @aws_subscribe(mutations: ["deleteServiceRequest"]) @aws_iam @aws_cognito_user_pools
+  onCreateAdditionalServiceRequest(filter: ModelSubscriptionAdditionalServiceRequestFilterInput): AdditionalServiceRequest @aws_subscribe(mutations: ["createAdditionalServiceRequest"]) @aws_iam @aws_cognito_user_pools
+  onUpdateAdditionalServiceRequest(filter: ModelSubscriptionAdditionalServiceRequestFilterInput): AdditionalServiceRequest @aws_subscribe(mutations: ["updateAdditionalServiceRequest"]) @aws_iam @aws_cognito_user_pools
+  onDeleteAdditionalServiceRequest(filter: ModelSubscriptionAdditionalServiceRequestFilterInput): AdditionalServiceRequest @aws_subscribe(mutations: ["deleteAdditionalServiceRequest"]) @aws_iam @aws_cognito_user_pools
+  onCreatePayment(filter: ModelSubscriptionPaymentFilterInput): Payment @aws_subscribe(mutations: ["createPayment"]) @aws_iam @aws_cognito_user_pools
+  onUpdatePayment(filter: ModelSubscriptionPaymentFilterInput): Payment @aws_subscribe(mutations: ["updatePayment"]) @aws_iam @aws_cognito_user_pools
+  onDeletePayment(filter: ModelSubscriptionPaymentFilterInput): Payment @aws_subscribe(mutations: ["deletePayment"]) @aws_iam @aws_cognito_user_pools
+  onCreateExitPermit(filter: ModelSubscriptionExitPermitFilterInput): ExitPermit @aws_subscribe(mutations: ["createExitPermit"]) @aws_iam @aws_cognito_user_pools
+  onUpdateExitPermit(filter: ModelSubscriptionExitPermitFilterInput): ExitPermit @aws_subscribe(mutations: ["updateExitPermit"]) @aws_iam @aws_cognito_user_pools
+  onDeleteExitPermit(filter: ModelSubscriptionExitPermitFilterInput): ExitPermit @aws_subscribe(mutations: ["deleteExitPermit"]) @aws_iam @aws_cognito_user_pools
+  onCreateInspection(filter: ModelSubscriptionInspectionFilterInput): Inspection @aws_subscribe(mutations: ["createInspection"]) @aws_iam @aws_cognito_user_pools
+  onUpdateInspection(filter: ModelSubscriptionInspectionFilterInput): Inspection @aws_subscribe(mutations: ["updateInspection"]) @aws_iam @aws_cognito_user_pools
+  onDeleteInspection(filter: ModelSubscriptionInspectionFilterInput): Inspection @aws_subscribe(mutations: ["deleteInspection"]) @aws_iam @aws_cognito_user_pools
+  onCreateQualityCheck(filter: ModelSubscriptionQualityCheckFilterInput): QualityCheck @aws_subscribe(mutations: ["createQualityCheck"]) @aws_iam @aws_cognito_user_pools
+  onUpdateQualityCheck(filter: ModelSubscriptionQualityCheckFilterInput): QualityCheck @aws_subscribe(mutations: ["updateQualityCheck"]) @aws_iam @aws_cognito_user_pools
+  onDeleteQualityCheck(filter: ModelSubscriptionQualityCheckFilterInput): QualityCheck @aws_subscribe(mutations: ["deleteQualityCheck"]) @aws_iam @aws_cognito_user_pools
+  onCreateSalesLead(filter: ModelSubscriptionSalesLeadFilterInput): SalesLead @aws_subscribe(mutations: ["createSalesLead"]) @aws_iam @aws_cognito_user_pools
+  onUpdateSalesLead(filter: ModelSubscriptionSalesLeadFilterInput): SalesLead @aws_subscribe(mutations: ["updateSalesLead"]) @aws_iam @aws_cognito_user_pools
+  onDeleteSalesLead(filter: ModelSubscriptionSalesLeadFilterInput): SalesLead @aws_subscribe(mutations: ["deleteSalesLead"]) @aws_iam @aws_cognito_user_pools
+  onCreateSalesApproval(filter: ModelSubscriptionSalesApprovalFilterInput): SalesApproval @aws_subscribe(mutations: ["createSalesApproval"]) @aws_iam @aws_cognito_user_pools
+  onUpdateSalesApproval(filter: ModelSubscriptionSalesApprovalFilterInput): SalesApproval @aws_subscribe(mutations: ["updateSalesApproval"]) @aws_iam @aws_cognito_user_pools
+  onDeleteSalesApproval(filter: ModelSubscriptionSalesApprovalFilterInput): SalesApproval @aws_subscribe(mutations: ["deleteSalesApproval"]) @aws_iam @aws_cognito_user_pools
+  onCreateProduct(filter: ModelSubscriptionProductFilterInput): Product @aws_subscribe(mutations: ["createProduct"]) @aws_iam @aws_cognito_user_pools
+  onUpdateProduct(filter: ModelSubscriptionProductFilterInput): Product @aws_subscribe(mutations: ["updateProduct"]) @aws_iam @aws_cognito_user_pools
+  onDeleteProduct(filter: ModelSubscriptionProductFilterInput): Product @aws_subscribe(mutations: ["deleteProduct"]) @aws_iam @aws_cognito_user_pools
+  onCreatePurchaseOrder(filter: ModelSubscriptionPurchaseOrderFilterInput): PurchaseOrder @aws_subscribe(mutations: ["createPurchaseOrder"]) @aws_iam @aws_cognito_user_pools
+  onUpdatePurchaseOrder(filter: ModelSubscriptionPurchaseOrderFilterInput): PurchaseOrder @aws_subscribe(mutations: ["updatePurchaseOrder"]) @aws_iam @aws_cognito_user_pools
+  onDeletePurchaseOrder(filter: ModelSubscriptionPurchaseOrderFilterInput): PurchaseOrder @aws_subscribe(mutations: ["deletePurchaseOrder"]) @aws_iam @aws_cognito_user_pools
+  onCreateServiceExecution(filter: ModelSubscriptionServiceExecutionFilterInput): ServiceExecution @aws_subscribe(mutations: ["createServiceExecution"]) @aws_iam @aws_cognito_user_pools
+  onUpdateServiceExecution(filter: ModelSubscriptionServiceExecutionFilterInput): ServiceExecution @aws_subscribe(mutations: ["updateServiceExecution"]) @aws_iam @aws_cognito_user_pools
+  onDeleteServiceExecution(filter: ModelSubscriptionServiceExecutionFilterInput): ServiceExecution @aws_subscribe(mutations: ["deleteServiceExecution"]) @aws_iam @aws_cognito_user_pools
+  onCreateCompany(filter: ModelSubscriptionCompanyFilterInput): Company @aws_subscribe(mutations: ["createCompany"]) @aws_iam @aws_cognito_user_pools
+  onUpdateCompany(filter: ModelSubscriptionCompanyFilterInput): Company @aws_subscribe(mutations: ["updateCompany"]) @aws_iam @aws_cognito_user_pools
+  onDeleteCompany(filter: ModelSubscriptionCompanyFilterInput): Company @aws_subscribe(mutations: ["deleteCompany"]) @aws_iam @aws_cognito_user_pools
+  onCreateInvoice(filter: ModelSubscriptionInvoiceFilterInput): Invoice @aws_subscribe(mutations: ["createInvoice"]) @aws_iam @aws_cognito_user_pools
+  onUpdateInvoice(filter: ModelSubscriptionInvoiceFilterInput): Invoice @aws_subscribe(mutations: ["updateInvoice"]) @aws_iam @aws_cognito_user_pools
+  onDeleteInvoice(filter: ModelSubscriptionInvoiceFilterInput): Invoice @aws_subscribe(mutations: ["deleteInvoice"]) @aws_iam @aws_cognito_user_pools
+  onCreateSupplier(filter: ModelSubscriptionSupplierFilterInput): Supplier @aws_subscribe(mutations: ["createSupplier"]) @aws_iam @aws_cognito_user_pools
+  onUpdateSupplier(filter: ModelSubscriptionSupplierFilterInput): Supplier @aws_subscribe(mutations: ["updateSupplier"]) @aws_iam @aws_cognito_user_pools
+  onDeleteSupplier(filter: ModelSubscriptionSupplierFilterInput): Supplier @aws_subscribe(mutations: ["deleteSupplier"]) @aws_iam @aws_cognito_user_pools
+  onCreateApprovalRequest(filter: ModelSubscriptionApprovalRequestFilterInput): ApprovalRequest @aws_subscribe(mutations: ["createApprovalRequest"]) @aws_iam @aws_cognito_user_pools
+  onUpdateApprovalRequest(filter: ModelSubscriptionApprovalRequestFilterInput): ApprovalRequest @aws_subscribe(mutations: ["updateApprovalRequest"]) @aws_iam @aws_cognito_user_pools
+  onDeleteApprovalRequest(filter: ModelSubscriptionApprovalRequestFilterInput): ApprovalRequest @aws_subscribe(mutations: ["deleteApprovalRequest"]) @aws_iam @aws_cognito_user_pools
+  onCreateServiceApprovalRequest(filter: ModelSubscriptionServiceApprovalRequestFilterInput): ServiceApprovalRequest @aws_subscribe(mutations: ["createServiceApprovalRequest"]) @aws_iam @aws_cognito_user_pools
+  onUpdateServiceApprovalRequest(filter: ModelSubscriptionServiceApprovalRequestFilterInput): ServiceApprovalRequest @aws_subscribe(mutations: ["updateServiceApprovalRequest"]) @aws_iam @aws_cognito_user_pools
+  onDeleteServiceApprovalRequest(filter: ModelSubscriptionServiceApprovalRequestFilterInput): ServiceApprovalRequest @aws_subscribe(mutations: ["deleteServiceApprovalRequest"]) @aws_iam @aws_cognito_user_pools
+  onCreateQuotation(filter: ModelSubscriptionQuotationFilterInput): Quotation @aws_subscribe(mutations: ["createQuotation"]) @aws_iam @aws_cognito_user_pools
+  onUpdateQuotation(filter: ModelSubscriptionQuotationFilterInput): Quotation @aws_subscribe(mutations: ["updateQuotation"]) @aws_iam @aws_cognito_user_pools
+  onDeleteQuotation(filter: ModelSubscriptionQuotationFilterInput): Quotation @aws_subscribe(mutations: ["deleteQuotation"]) @aws_iam @aws_cognito_user_pools
+  onCreateActivityLog(filter: ModelSubscriptionActivityLogFilterInput): ActivityLog @aws_subscribe(mutations: ["createActivityLog"]) @aws_iam @aws_cognito_user_pools
+  onUpdateActivityLog(filter: ModelSubscriptionActivityLogFilterInput): ActivityLog @aws_subscribe(mutations: ["updateActivityLog"]) @aws_iam @aws_cognito_user_pools
+  onDeleteActivityLog(filter: ModelSubscriptionActivityLogFilterInput): ActivityLog @aws_subscribe(mutations: ["deleteActivityLog"]) @aws_iam @aws_cognito_user_pools
+  onCreateWorkLog(filter: ModelSubscriptionWorkLogFilterInput): WorkLog @aws_subscribe(mutations: ["createWorkLog"]) @aws_iam @aws_cognito_user_pools
+  onUpdateWorkLog(filter: ModelSubscriptionWorkLogFilterInput): WorkLog @aws_subscribe(mutations: ["updateWorkLog"]) @aws_iam @aws_cognito_user_pools
+  onDeleteWorkLog(filter: ModelSubscriptionWorkLogFilterInput): WorkLog @aws_subscribe(mutations: ["deleteWorkLog"]) @aws_iam @aws_cognito_user_pools
+  onCreateNotification(filter: ModelSubscriptionNotificationFilterInput): Notification @aws_subscribe(mutations: ["createNotification"]) @aws_iam @aws_cognito_user_pools
+  onUpdateNotification(filter: ModelSubscriptionNotificationFilterInput): Notification @aws_subscribe(mutations: ["updateNotification"]) @aws_iam @aws_cognito_user_pools
+  onDeleteNotification(filter: ModelSubscriptionNotificationFilterInput): Notification @aws_subscribe(mutations: ["deleteNotification"]) @aws_iam @aws_cognito_user_pools
+}
+
+type ModelRoleConnection @aws_iam @aws_cognito_user_pools {
+  items: [Role]!
+  nextToken: String
+}
+
+input ModelRoleStatusInput {
+  eq: RoleStatus
+  ne: RoleStatus
+}
+
+input ModelRoleFilterInput {
+  id: ModelIDInput
+  name: ModelStringInput
+  description: ModelStringInput
+  departmentId: ModelIDInput
+  status: ModelRoleStatusInput
+  createdAt: ModelStringInput
+  updatedAt: ModelStringInput
+  and: [ModelRoleFilterInput]
+  or: [ModelRoleFilterInput]
+  not: ModelRoleFilterInput
+}
+
+input ModelRoleConditionInput {
+  name: ModelStringInput
+  description: ModelStringInput
+  departmentId: ModelIDInput
+  status: ModelRoleStatusInput
+  createdAt: ModelStringInput
+  updatedAt: ModelStringInput
+  and: [ModelRoleConditionInput]
+  or: [ModelRoleConditionInput]
+  not: ModelRoleConditionInput
+}
+
+input CreateRoleInput {
+  id: ID
+  name: String!
+  description: String
+  departmentId: ID
+  status: RoleStatus
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
+}
+
+input UpdateRoleInput {
+  id: ID!
+  name: String
+  description: String
+  departmentId: ID
+  status: RoleStatus
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
+}
+
+input DeleteRoleInput {
+  id: ID!
+}
+
+input ModelSubscriptionRoleFilterInput {
+  id: ModelSubscriptionIDInput
+  name: ModelSubscriptionStringInput
+  description: ModelSubscriptionStringInput
+  departmentId: ModelSubscriptionIDInput
+  status: ModelSubscriptionStringInput
+  createdAt: ModelSubscriptionStringInput
+  updatedAt: ModelSubscriptionStringInput
+  and: [ModelSubscriptionRoleFilterInput]
+  or: [ModelSubscriptionRoleFilterInput]
+}
+
+type ModelUserConnection @aws_iam @aws_cognito_user_pools {
+  items: [User]!
+  nextToken: String
+}
+
+input ModelUserStatusInput {
+  eq: UserStatus
+  ne: UserStatus
+}
+
+input ModelUserFilterInput {
+  id: ModelIDInput
+  firstName: ModelStringInput
+  lastName: ModelStringInput
+  email: ModelStringInput
+  employeeId: ModelStringInput
+  departmentId: ModelIDInput
+  roleId: ModelIDInput
+  lineManager: ModelStringInput
+  phone: ModelStringInput
+  status: ModelUserStatusInput
+  createdAt: ModelStringInput
+  updatedAt: ModelStringInput
+  and: [ModelUserFilterInput]
+  or: [ModelUserFilterInput]
+  not: ModelUserFilterInput
+}
+
+input ModelUserConditionInput {
+  firstName: ModelStringInput
+  lastName: ModelStringInput
+  email: ModelStringInput
+  employeeId: ModelStringInput
+  departmentId: ModelIDInput
+  roleId: ModelIDInput
+  lineManager: ModelStringInput
+  phone: ModelStringInput
+  status: ModelUserStatusInput
+  createdAt: ModelStringInput
+  updatedAt: ModelStringInput
+  and: [ModelUserConditionInput]
+  or: [ModelUserConditionInput]
+  not: ModelUserConditionInput
+}
+
+input CreateUserInput {
+  id: ID
+  firstName: String!
+  lastName: String!
+  email: AWSEmail!
+  employeeId: String
+  departmentId: ID
+  roleId: ID
+  lineManager: String
+  phone: String
+  status: UserStatus
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
+}
+
+input UpdateUserInput {
+  id: ID!
+  firstName: String
+  lastName: String
+  email: AWSEmail
+  employeeId: String
+  departmentId: ID
+  roleId: ID
+  lineManager: String
+  phone: String
+  status: UserStatus
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
+}
+
+input DeleteUserInput {
+  id: ID!
+}
+
+input ModelSubscriptionUserFilterInput {
+  id: ModelSubscriptionIDInput
+  firstName: ModelSubscriptionStringInput
+  lastName: ModelSubscriptionStringInput
+  email: ModelSubscriptionStringInput
+  employeeId: ModelSubscriptionStringInput
+  departmentId: ModelSubscriptionIDInput
+  roleId: ModelSubscriptionIDInput
+  lineManager: ModelSubscriptionStringInput
+  phone: ModelSubscriptionStringInput
+  status: ModelSubscriptionStringInput
+  createdAt: ModelSubscriptionStringInput
+  updatedAt: ModelSubscriptionStringInput
+  and: [ModelSubscriptionUserFilterInput]
+  or: [ModelSubscriptionUserFilterInput]
+}
+
+type ModelPermissionConnection @aws_iam @aws_cognito_user_pools {
+  items: [Permission]!
+  nextToken: String
+}
+
+input ModelPermissionFilterInput {
+  id: ModelIDInput
+  roleId: ModelIDInput
+  moduleName: ModelStringInput
+  canRead: ModelBooleanInput
+  canCreate: ModelBooleanInput
+  canUpdate: ModelBooleanInput
+  canDelete: ModelBooleanInput
+  createdAt: ModelStringInput
+  updatedAt: ModelStringInput
+  and: [ModelPermissionFilterInput]
+  or: [ModelPermissionFilterInput]
+  not: ModelPermissionFilterInput
+}
+
+input ModelPermissionConditionInput {
+  roleId: ModelIDInput
+  moduleName: ModelStringInput
+  canRead: ModelBooleanInput
+  canCreate: ModelBooleanInput
+  canUpdate: ModelBooleanInput
+  canDelete: ModelBooleanInput
+  createdAt: ModelStringInput
+  updatedAt: ModelStringInput
+  and: [ModelPermissionConditionInput]
+  or: [ModelPermissionConditionInput]
+  not: ModelPermissionConditionInput
+}
+
+input CreatePermissionInput {
+  id: ID
+  roleId: ID!
+  moduleName: String!
+  canRead: Boolean!
+  canCreate: Boolean!
+  canUpdate: Boolean!
+  canDelete: Boolean!
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
+}
+
+input UpdatePermissionInput {
+  id: ID!
+  roleId: ID
+  moduleName: String
+  canRead: Boolean
+  canCreate: Boolean
+  canUpdate: Boolean
+  canDelete: Boolean
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
+}
+
+input DeletePermissionInput {
+  id: ID!
+}
+
+input ModelSubscriptionPermissionFilterInput {
+  id: ModelSubscriptionIDInput
+  roleId: ModelSubscriptionIDInput
+  moduleName: ModelSubscriptionStringInput
+  canRead: ModelSubscriptionBooleanInput
+  canCreate: ModelSubscriptionBooleanInput
+  canUpdate: ModelSubscriptionBooleanInput
+  canDelete: ModelSubscriptionBooleanInput
+  createdAt: ModelSubscriptionStringInput
+  updatedAt: ModelSubscriptionStringInput
+  and: [ModelSubscriptionPermissionFilterInput]
+  or: [ModelSubscriptionPermissionFilterInput]
+}
+
+type ModelCustomerConnection @aws_iam @aws_cognito_user_pools {
+  items: [Customer]!
+  nextToken: String
+}
+
+input ModelCustomerStatusInput {
+  eq: CustomerStatus
+  ne: CustomerStatus
+}
+
+input ModelCustomerFilterInput {
+  id: ModelIDInput
+  name: ModelStringInput
+  email: ModelStringInput
+  mobile: ModelStringInput
+  address: ModelStringInput
+  status: ModelCustomerStatusInput
+  createdAt: ModelStringInput
+  updatedAt: ModelStringInput
+  and: [ModelCustomerFilterInput]
+  or: [ModelCustomerFilterInput]
+  not: ModelCustomerFilterInput
+}
+
+input ModelCustomerConditionInput {
+  name: ModelStringInput
+  email: ModelStringInput
+  mobile: ModelStringInput
+  address: ModelStringInput
+  status: ModelCustomerStatusInput
+  createdAt: ModelStringInput
+  updatedAt: ModelStringInput
+  and: [ModelCustomerConditionInput]
+  or: [ModelCustomerConditionInput]
+  not: ModelCustomerConditionInput
+}
+
+input CreateCustomerInput {
+  id: ID
+  name: String!
+  email: AWSEmail
+  mobile: String
+  address: String
+  status: CustomerStatus
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
+}
+
+input UpdateCustomerInput {
+  id: ID!
+  name: String
+  email: AWSEmail
+  mobile: String
+  address: String
+  status: CustomerStatus
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
+}
+
+input DeleteCustomerInput {
+  id: ID!
+}
+
+input ModelSubscriptionCustomerFilterInput {
+  id: ModelSubscriptionIDInput
+  name: ModelSubscriptionStringInput
+  email: ModelSubscriptionStringInput
+  mobile: ModelSubscriptionStringInput
+  address: ModelSubscriptionStringInput
+  status: ModelSubscriptionStringInput
+  createdAt: ModelSubscriptionStringInput
+  updatedAt: ModelSubscriptionStringInput
+  and: [ModelSubscriptionCustomerFilterInput]
+  or: [ModelSubscriptionCustomerFilterInput]
+}
+
+type ModelContactConnection @aws_iam @aws_cognito_user_pools {
+  items: [Contact]!
+  nextToken: String
+}
+
+input ModelContactFilterInput {
+  id: ModelIDInput
+  firstName: ModelStringInput
+  lastName: ModelStringInput
+  email: ModelStringInput
+  phone: ModelStringInput
+  customerId: ModelIDInput
+  createdAt: ModelStringInput
+  updatedAt: ModelStringInput
+  and: [ModelContactFilterInput]
+  or: [ModelContactFilterInput]
+  not: ModelContactFilterInput
+}
+
+input ModelContactConditionInput {
+  firstName: ModelStringInput
+  lastName: ModelStringInput
+  email: ModelStringInput
+  phone: ModelStringInput
+  customerId: ModelIDInput
+  createdAt: ModelStringInput
+  updatedAt: ModelStringInput
+  and: [ModelContactConditionInput]
+  or: [ModelContactConditionInput]
+  not: ModelContactConditionInput
+}
+
+input CreateContactInput {
+  id: ID
+  firstName: String!
+  lastName: String!
+  email: AWSEmail!
+  phone: String
+  customerId: ID!
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
+}
+
+input UpdateContactInput {
+  id: ID!
+  firstName: String
+  lastName: String
+  email: AWSEmail
+  phone: String
+  customerId: ID
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
+}
+
+input DeleteContactInput {
+  id: ID!
+}
+
+input ModelSubscriptionContactFilterInput {
+  id: ModelSubscriptionIDInput
+  firstName: ModelSubscriptionStringInput
+  lastName: ModelSubscriptionStringInput
+  email: ModelSubscriptionStringInput
+  phone: ModelSubscriptionStringInput
+  customerId: ModelSubscriptionIDInput
+  createdAt: ModelSubscriptionStringInput
+  updatedAt: ModelSubscriptionStringInput
+  and: [ModelSubscriptionContactFilterInput]
+  or: [ModelSubscriptionContactFilterInput]
+}
+
+type ModelVehicleConnection @aws_iam @aws_cognito_user_pools {
+  items: [Vehicle]!
+  nextToken: String
+}
+
+input ModelVehicleStatusInput {
+  eq: VehicleStatus
+  ne: VehicleStatus
+}
+
+input ModelVehicleFilterInput {
+  id: ModelIDInput
+  make: ModelStringInput
+  model: ModelStringInput
+  year: ModelStringInput
+  color: ModelStringInput
+  plateNumber: ModelStringInput
+  vin: ModelStringInput
+  vehicleType: ModelStringInput
+  customerId: ModelIDInput
+  status: ModelVehicleStatusInput
+  createdAt: ModelStringInput
+  updatedAt: ModelStringInput
+  and: [ModelVehicleFilterInput]
+  or: [ModelVehicleFilterInput]
+  not: ModelVehicleFilterInput
+}
+
+input ModelVehicleConditionInput {
+  make: ModelStringInput
+  model: ModelStringInput
+  year: ModelStringInput
+  color: ModelStringInput
+  plateNumber: ModelStringInput
+  vin: ModelStringInput
+  vehicleType: ModelStringInput
+  customerId: ModelIDInput
+  status: ModelVehicleStatusInput
+  createdAt: ModelStringInput
+  updatedAt: ModelStringInput
+  and: [ModelVehicleConditionInput]
+  or: [ModelVehicleConditionInput]
+  not: ModelVehicleConditionInput
+}
+
+input CreateVehicleInput {
+  id: ID
+  make: String!
+  model: String!
+  year: String!
+  color: String
+  plateNumber: String
+  vin: String
+  vehicleType: String
+  customerId: ID!
+  status: VehicleStatus
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
+}
+
+input UpdateVehicleInput {
+  id: ID!
+  make: String
+  model: String
+  year: String
+  color: String
+  plateNumber: String
+  vin: String
+  vehicleType: String
+  customerId: ID
+  status: VehicleStatus
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
+}
+
+input DeleteVehicleInput {
+  id: ID!
+}
+
+input ModelSubscriptionVehicleFilterInput {
+  id: ModelSubscriptionIDInput
+  make: ModelSubscriptionStringInput
+  model: ModelSubscriptionStringInput
+  year: ModelSubscriptionStringInput
+  color: ModelSubscriptionStringInput
+  plateNumber: ModelSubscriptionStringInput
+  vin: ModelSubscriptionStringInput
+  vehicleType: ModelSubscriptionStringInput
+  customerId: ModelSubscriptionIDInput
+  status: ModelSubscriptionStringInput
+  createdAt: ModelSubscriptionStringInput
+  updatedAt: ModelSubscriptionStringInput
+  and: [ModelSubscriptionVehicleFilterInput]
+  or: [ModelSubscriptionVehicleFilterInput]
+}
+
+type ModelJobOrderConnection @aws_iam @aws_cognito_user_pools {
+  items: [JobOrder]!
+  nextToken: String
+}
+
+input ModelJobOrderFilterInput {
+  id: ModelIDInput
+  orderNumber: ModelStringInput
+  customerId: ModelIDInput
+  vehicleId: ModelIDInput
+  workStatus: ModelStringInput
+  paymentStatus: ModelStringInput
+  totalAmount: ModelFloatInput
+  paidAmount: ModelFloatInput
+  createdDate: ModelStringInput
+  completionDate: ModelStringInput
+  createdByUserId: ModelIDInput
+  assignedToUserId: ModelIDInput
+  createdAt: ModelStringInput
+  updatedAt: ModelStringInput
+  and: [ModelJobOrderFilterInput]
+  or: [ModelJobOrderFilterInput]
+  not: ModelJobOrderFilterInput
+}
+
+input ModelJobOrderConditionInput {
+  orderNumber: ModelStringInput
+  customerId: ModelIDInput
+  vehicleId: ModelIDInput
+  workStatus: ModelStringInput
+  paymentStatus: ModelStringInput
+  totalAmount: ModelFloatInput
+  paidAmount: ModelFloatInput
+  createdDate: ModelStringInput
+  completionDate: ModelStringInput
+  createdByUserId: ModelIDInput
+  assignedToUserId: ModelIDInput
+  createdAt: ModelStringInput
+  updatedAt: ModelStringInput
+  and: [ModelJobOrderConditionInput]
+  or: [ModelJobOrderConditionInput]
+  not: ModelJobOrderConditionInput
+}
+
+input CreateJobOrderInput {
+  id: ID
+  orderNumber: String!
+  customerId: ID!
+  vehicleId: ID!
+  workStatus: String
+  paymentStatus: String
+  totalAmount: Float
+  paidAmount: Float
+  createdDate: AWSDateTime
+  completionDate: AWSDateTime
+  createdByUserId: ID
+  assignedToUserId: ID
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
+}
+
+input UpdateJobOrderInput {
+  id: ID!
+  orderNumber: String
+  customerId: ID
+  vehicleId: ID
+  workStatus: String
+  paymentStatus: String
+  totalAmount: Float
+  paidAmount: Float
+  createdDate: AWSDateTime
+  completionDate: AWSDateTime
+  createdByUserId: ID
+  assignedToUserId: ID
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
+}
+
+input DeleteJobOrderInput {
+  id: ID!
+}
+
+input ModelSubscriptionJobOrderFilterInput {
+  id: ModelSubscriptionIDInput
+  orderNumber: ModelSubscriptionStringInput
+  customerId: ModelSubscriptionIDInput
+  vehicleId: ModelSubscriptionIDInput
+  workStatus: ModelSubscriptionStringInput
+  paymentStatus: ModelSubscriptionStringInput
+  totalAmount: ModelSubscriptionFloatInput
+  paidAmount: ModelSubscriptionFloatInput
+  createdDate: ModelSubscriptionStringInput
+  completionDate: ModelSubscriptionStringInput
+  createdByUserId: ModelSubscriptionIDInput
+  assignedToUserId: ModelSubscriptionIDInput
+  createdAt: ModelSubscriptionStringInput
+  updatedAt: ModelSubscriptionStringInput
+  and: [ModelSubscriptionJobOrderFilterInput]
+  or: [ModelSubscriptionJobOrderFilterInput]
+}
+
+type ModelServiceRequestConnection @aws_iam @aws_cognito_user_pools {
+  items: [ServiceRequest]!
+  nextToken: String
+}
+
+input ModelServiceRequestStatusInput {
+  eq: ServiceRequestStatus
+  ne: ServiceRequestStatus
+}
+
+input ModelServiceRequestFilterInput {
+  id: ModelIDInput
+  jobOrderId: ModelIDInput
+  serviceName: ModelStringInput
+  status: ModelServiceRequestStatusInput
+  startTime: ModelStringInput
+  endTime: ModelStringInput
+  duration: ModelStringInput
+  assignedTechnician: ModelStringInput
+  notes: ModelStringInput
+  createdAt: ModelStringInput
+  updatedAt: ModelStringInput
+  and: [ModelServiceRequestFilterInput]
+  or: [ModelServiceRequestFilterInput]
+  not: ModelServiceRequestFilterInput
+}
+
+input ModelServiceRequestConditionInput {
+  jobOrderId: ModelIDInput
+  serviceName: ModelStringInput
+  status: ModelServiceRequestStatusInput
+  startTime: ModelStringInput
+  endTime: ModelStringInput
+  duration: ModelStringInput
+  assignedTechnician: ModelStringInput
+  notes: ModelStringInput
+  createdAt: ModelStringInput
+  updatedAt: ModelStringInput
+  and: [ModelServiceRequestConditionInput]
+  or: [ModelServiceRequestConditionInput]
+  not: ModelServiceRequestConditionInput
+}
+
+input CreateServiceRequestInput {
+  id: ID
+  jobOrderId: ID!
+  serviceName: String!
+  status: ServiceRequestStatus
+  startTime: AWSDateTime
+  endTime: AWSDateTime
+  duration: String
+  assignedTechnician: String
+  notes: String
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
+}
+
+input UpdateServiceRequestInput {
+  id: ID!
+  jobOrderId: ID
+  serviceName: String
+  status: ServiceRequestStatus
+  startTime: AWSDateTime
+  endTime: AWSDateTime
+  duration: String
+  assignedTechnician: String
+  notes: String
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
+}
+
+input DeleteServiceRequestInput {
+  id: ID!
+}
+
+input ModelSubscriptionServiceRequestFilterInput {
+  id: ModelSubscriptionIDInput
+  jobOrderId: ModelSubscriptionIDInput
+  serviceName: ModelSubscriptionStringInput
+  status: ModelSubscriptionStringInput
+  startTime: ModelSubscriptionStringInput
+  endTime: ModelSubscriptionStringInput
+  duration: ModelSubscriptionStringInput
+  assignedTechnician: ModelSubscriptionStringInput
+  notes: ModelSubscriptionStringInput
+  createdAt: ModelSubscriptionStringInput
+  updatedAt: ModelSubscriptionStringInput
+  and: [ModelSubscriptionServiceRequestFilterInput]
+  or: [ModelSubscriptionServiceRequestFilterInput]
+}
+
+type ModelAdditionalServiceRequestConnection @aws_iam @aws_cognito_user_pools {
+  items: [AdditionalServiceRequest]!
+  nextToken: String
+}
+
+input ModelAdditionalServiceRequestStatusInput {
+  eq: AdditionalServiceRequestStatus
+  ne: AdditionalServiceRequestStatus
+}
+
+input ModelAdditionalServiceRequestFilterInput {
+  id: ModelIDInput
+  jobOrderId: ModelIDInput
+  serviceName: ModelStringInput
+  description: ModelStringInput
+  estimatedCost: ModelFloatInput
+  status: ModelAdditionalServiceRequestStatusInput
+  requestedBy: ModelStringInput
+  createdAt: ModelStringInput
+  updatedAt: ModelStringInput
+  and: [ModelAdditionalServiceRequestFilterInput]
+  or: [ModelAdditionalServiceRequestFilterInput]
+  not: ModelAdditionalServiceRequestFilterInput
+}
+
+input ModelAdditionalServiceRequestConditionInput {
+  jobOrderId: ModelIDInput
+  serviceName: ModelStringInput
+  description: ModelStringInput
+  estimatedCost: ModelFloatInput
+  status: ModelAdditionalServiceRequestStatusInput
+  requestedBy: ModelStringInput
+  createdAt: ModelStringInput
+  updatedAt: ModelStringInput
+  and: [ModelAdditionalServiceRequestConditionInput]
+  or: [ModelAdditionalServiceRequestConditionInput]
+  not: ModelAdditionalServiceRequestConditionInput
+}
+
+input CreateAdditionalServiceRequestInput {
+  id: ID
+  jobOrderId: ID!
+  serviceName: String!
+  description: String
+  estimatedCost: Float
+  status: AdditionalServiceRequestStatus
+  requestedBy: String
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
+}
+
+input UpdateAdditionalServiceRequestInput {
+  id: ID!
+  jobOrderId: ID
+  serviceName: String
+  description: String
+  estimatedCost: Float
+  status: AdditionalServiceRequestStatus
+  requestedBy: String
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
+}
+
+input DeleteAdditionalServiceRequestInput {
+  id: ID!
+}
+
+input ModelSubscriptionAdditionalServiceRequestFilterInput {
+  id: ModelSubscriptionIDInput
+  jobOrderId: ModelSubscriptionIDInput
+  serviceName: ModelSubscriptionStringInput
+  description: ModelSubscriptionStringInput
+  estimatedCost: ModelSubscriptionFloatInput
+  status: ModelSubscriptionStringInput
+  requestedBy: ModelSubscriptionStringInput
+  createdAt: ModelSubscriptionStringInput
+  updatedAt: ModelSubscriptionStringInput
+  and: [ModelSubscriptionAdditionalServiceRequestFilterInput]
+  or: [ModelSubscriptionAdditionalServiceRequestFilterInput]
+}
+
+type ModelPaymentConnection @aws_iam @aws_cognito_user_pools {
+  items: [Payment]!
+  nextToken: String
+}
+
+input ModelPaymentPaymentStatusInput {
+  eq: PaymentPaymentStatus
+  ne: PaymentPaymentStatus
+}
+
+input ModelPaymentFilterInput {
+  id: ModelIDInput
+  jobOrderId: ModelIDInput
+  amount: ModelFloatInput
+  paymentMethod: ModelStringInput
+  paymentStatus: ModelPaymentPaymentStatusInput
+  paymentDate: ModelStringInput
+  referenceNumber: ModelStringInput
+  notes: ModelStringInput
+  createdAt: ModelStringInput
+  updatedAt: ModelStringInput
+  and: [ModelPaymentFilterInput]
+  or: [ModelPaymentFilterInput]
+  not: ModelPaymentFilterInput
+}
+
+input ModelPaymentConditionInput {
+  jobOrderId: ModelIDInput
+  amount: ModelFloatInput
+  paymentMethod: ModelStringInput
+  paymentStatus: ModelPaymentPaymentStatusInput
+  paymentDate: ModelStringInput
+  referenceNumber: ModelStringInput
+  notes: ModelStringInput
+  createdAt: ModelStringInput
+  updatedAt: ModelStringInput
+  and: [ModelPaymentConditionInput]
+  or: [ModelPaymentConditionInput]
+  not: ModelPaymentConditionInput
+}
+
+input CreatePaymentInput {
+  id: ID
+  jobOrderId: ID!
+  amount: Float!
+  paymentMethod: String
+  paymentStatus: PaymentPaymentStatus
+  paymentDate: AWSDateTime
+  referenceNumber: String
+  notes: String
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
+}
+
+input UpdatePaymentInput {
+  id: ID!
+  jobOrderId: ID
+  amount: Float
+  paymentMethod: String
+  paymentStatus: PaymentPaymentStatus
+  paymentDate: AWSDateTime
+  referenceNumber: String
+  notes: String
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
+}
+
+input DeletePaymentInput {
+  id: ID!
+}
+
+input ModelSubscriptionPaymentFilterInput {
+  id: ModelSubscriptionIDInput
+  jobOrderId: ModelSubscriptionIDInput
+  amount: ModelSubscriptionFloatInput
+  paymentMethod: ModelSubscriptionStringInput
+  paymentStatus: ModelSubscriptionStringInput
+  paymentDate: ModelSubscriptionStringInput
+  referenceNumber: ModelSubscriptionStringInput
+  notes: ModelSubscriptionStringInput
+  createdAt: ModelSubscriptionStringInput
+  updatedAt: ModelSubscriptionStringInput
+  and: [ModelSubscriptionPaymentFilterInput]
+  or: [ModelSubscriptionPaymentFilterInput]
+}
+
+type ModelExitPermitConnection @aws_iam @aws_cognito_user_pools {
+  items: [ExitPermit]!
+  nextToken: String
+}
+
+input ModelExitPermitFilterInput {
+  id: ModelIDInput
+  jobOrderId: ModelIDInput
+  permitNumber: ModelStringInput
+  status: ModelStringInput
+  createdDate: ModelStringInput
+  collectedDate: ModelStringInput
+  nextServiceDate: ModelStringInput
+  createdByUserId: ModelIDInput
+  collectedByUserId: ModelIDInput
+  createdAt: ModelStringInput
+  updatedAt: ModelStringInput
+  and: [ModelExitPermitFilterInput]
+  or: [ModelExitPermitFilterInput]
+  not: ModelExitPermitFilterInput
+}
+
+input ModelExitPermitConditionInput {
+  jobOrderId: ModelIDInput
+  permitNumber: ModelStringInput
+  status: ModelStringInput
+  createdDate: ModelStringInput
+  collectedDate: ModelStringInput
+  nextServiceDate: ModelStringInput
+  createdByUserId: ModelIDInput
+  collectedByUserId: ModelIDInput
+  createdAt: ModelStringInput
+  updatedAt: ModelStringInput
+  and: [ModelExitPermitConditionInput]
+  or: [ModelExitPermitConditionInput]
+  not: ModelExitPermitConditionInput
+}
+
+input CreateExitPermitInput {
+  id: ID
+  jobOrderId: ID!
+  permitNumber: String
+  status: String
+  createdDate: AWSDateTime
+  collectedDate: AWSDateTime
+  nextServiceDate: AWSDateTime
+  createdByUserId: ID
+  collectedByUserId: ID
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
+}
+
+input UpdateExitPermitInput {
+  id: ID!
+  jobOrderId: ID
+  permitNumber: String
+  status: String
+  createdDate: AWSDateTime
+  collectedDate: AWSDateTime
+  nextServiceDate: AWSDateTime
+  createdByUserId: ID
+  collectedByUserId: ID
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
+}
+
+input DeleteExitPermitInput {
+  id: ID!
+}
+
+input ModelSubscriptionExitPermitFilterInput {
+  id: ModelSubscriptionIDInput
+  jobOrderId: ModelSubscriptionIDInput
+  permitNumber: ModelSubscriptionStringInput
+  status: ModelSubscriptionStringInput
+  createdDate: ModelSubscriptionStringInput
+  collectedDate: ModelSubscriptionStringInput
+  nextServiceDate: ModelSubscriptionStringInput
+  createdByUserId: ModelSubscriptionIDInput
+  collectedByUserId: ModelSubscriptionIDInput
+  createdAt: ModelSubscriptionStringInput
+  updatedAt: ModelSubscriptionStringInput
+  and: [ModelSubscriptionExitPermitFilterInput]
+  or: [ModelSubscriptionExitPermitFilterInput]
+}
+
+type ModelInspectionConnection @aws_iam @aws_cognito_user_pools {
+  items: [Inspection]!
+  nextToken: String
+}
+
+input ModelInspectionFilterInput {
+  id: ModelIDInput
+  jobOrderId: ModelIDInput
+  vehicleId: ModelIDInput
+  inspectionType: ModelStringInput
+  status: ModelStringInput
+  inspectorId: ModelIDInput
+  findings: ModelStringInput
+  checklist: ModelStringInput
+  createdAt: ModelStringInput
+  updatedAt: ModelStringInput
+  and: [ModelInspectionFilterInput]
+  or: [ModelInspectionFilterInput]
+  not: ModelInspectionFilterInput
+}
+
+input ModelInspectionConditionInput {
+  jobOrderId: ModelIDInput
+  vehicleId: ModelIDInput
+  inspectionType: ModelStringInput
+  status: ModelStringInput
+  inspectorId: ModelIDInput
+  findings: ModelStringInput
+  checklist: ModelStringInput
+  createdAt: ModelStringInput
+  updatedAt: ModelStringInput
+  and: [ModelInspectionConditionInput]
+  or: [ModelInspectionConditionInput]
+  not: ModelInspectionConditionInput
+}
+
+input CreateInspectionInput {
+  id: ID
+  jobOrderId: ID
+  vehicleId: ID
+  inspectionType: String!
+  status: String
+  inspectorId: ID
+  findings: String
+  checklist: AWSJSON
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
+}
+
+input UpdateInspectionInput {
+  id: ID!
+  jobOrderId: ID
+  vehicleId: ID
+  inspectionType: String
+  status: String
+  inspectorId: ID
+  findings: String
+  checklist: AWSJSON
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
+}
+
+input DeleteInspectionInput {
+  id: ID!
+}
+
+input ModelSubscriptionInspectionFilterInput {
+  id: ModelSubscriptionIDInput
+  jobOrderId: ModelSubscriptionIDInput
+  vehicleId: ModelSubscriptionIDInput
+  inspectionType: ModelSubscriptionStringInput
+  status: ModelSubscriptionStringInput
+  inspectorId: ModelSubscriptionIDInput
+  findings: ModelSubscriptionStringInput
+  checklist: ModelSubscriptionStringInput
+  createdAt: ModelSubscriptionStringInput
+  updatedAt: ModelSubscriptionStringInput
+  and: [ModelSubscriptionInspectionFilterInput]
+  or: [ModelSubscriptionInspectionFilterInput]
+}
+
+type ModelQualityCheckConnection @aws_iam @aws_cognito_user_pools {
+  items: [QualityCheck]!
+  nextToken: String
+}
+
+input ModelQualityCheckFilterInput {
+  id: ModelIDInput
+  jobOrderId: ModelIDInput
+  status: ModelStringInput
+  inspectorId: ModelIDInput
+  checklist: ModelStringInput
+  issues: ModelStringInput
+  approvalStatus: ModelStringInput
+  createdAt: ModelStringInput
+  updatedAt: ModelStringInput
+  and: [ModelQualityCheckFilterInput]
+  or: [ModelQualityCheckFilterInput]
+  not: ModelQualityCheckFilterInput
+}
+
+input ModelQualityCheckConditionInput {
+  jobOrderId: ModelIDInput
+  status: ModelStringInput
+  inspectorId: ModelIDInput
+  checklist: ModelStringInput
+  issues: ModelStringInput
+  approvalStatus: ModelStringInput
+  createdAt: ModelStringInput
+  updatedAt: ModelStringInput
+  and: [ModelQualityCheckConditionInput]
+  or: [ModelQualityCheckConditionInput]
+  not: ModelQualityCheckConditionInput
+}
+
+input CreateQualityCheckInput {
+  id: ID
+  jobOrderId: ID!
+  status: String
+  inspectorId: ID
+  checklist: AWSJSON
+  issues: String
+  approvalStatus: String
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
+}
+
+input UpdateQualityCheckInput {
+  id: ID!
+  jobOrderId: ID
+  status: String
+  inspectorId: ID
+  checklist: AWSJSON
+  issues: String
+  approvalStatus: String
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
+}
+
+input DeleteQualityCheckInput {
+  id: ID!
+}
+
+input ModelSubscriptionQualityCheckFilterInput {
+  id: ModelSubscriptionIDInput
+  jobOrderId: ModelSubscriptionIDInput
+  status: ModelSubscriptionStringInput
+  inspectorId: ModelSubscriptionIDInput
+  checklist: ModelSubscriptionStringInput
+  issues: ModelSubscriptionStringInput
+  approvalStatus: ModelSubscriptionStringInput
+  createdAt: ModelSubscriptionStringInput
+  updatedAt: ModelSubscriptionStringInput
+  and: [ModelSubscriptionQualityCheckFilterInput]
+  or: [ModelSubscriptionQualityCheckFilterInput]
+}
+
+type ModelSalesLeadConnection @aws_iam @aws_cognito_user_pools {
+  items: [SalesLead]!
+  nextToken: String
+}
+
+input ModelSalesLeadStageInput {
+  eq: SalesLeadStage
+  ne: SalesLeadStage
+}
+
+input ModelSalesLeadFilterInput {
+  id: ModelIDInput
+  dealName: ModelStringInput
+  amount: ModelFloatInput
+  stage: ModelSalesLeadStageInput
+  customerId: ModelIDInput
+  ownerId: ModelIDInput
+  probability: ModelFloatInput
+  expectedCloseDate: ModelStringInput
+  notes: ModelStringInput
+  createdAt: ModelStringInput
+  updatedAt: ModelStringInput
+  and: [ModelSalesLeadFilterInput]
+  or: [ModelSalesLeadFilterInput]
+  not: ModelSalesLeadFilterInput
+}
+
+input ModelSalesLeadConditionInput {
+  dealName: ModelStringInput
+  amount: ModelFloatInput
+  stage: ModelSalesLeadStageInput
+  customerId: ModelIDInput
+  ownerId: ModelIDInput
+  probability: ModelFloatInput
+  expectedCloseDate: ModelStringInput
+  notes: ModelStringInput
+  createdAt: ModelStringInput
+  updatedAt: ModelStringInput
+  and: [ModelSalesLeadConditionInput]
+  or: [ModelSalesLeadConditionInput]
+  not: ModelSalesLeadConditionInput
+}
+
+input CreateSalesLeadInput {
+  id: ID
+  dealName: String!
+  amount: Float
+  stage: SalesLeadStage
+  customerId: ID
+  ownerId: ID
+  probability: Float
+  expectedCloseDate: AWSDateTime
+  notes: String
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
+}
+
+input UpdateSalesLeadInput {
+  id: ID!
+  dealName: String
+  amount: Float
+  stage: SalesLeadStage
+  customerId: ID
+  ownerId: ID
+  probability: Float
+  expectedCloseDate: AWSDateTime
+  notes: String
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
+}
+
+input DeleteSalesLeadInput {
+  id: ID!
+}
+
+input ModelSubscriptionSalesLeadFilterInput {
+  id: ModelSubscriptionIDInput
+  dealName: ModelSubscriptionStringInput
+  amount: ModelSubscriptionFloatInput
+  stage: ModelSubscriptionStringInput
+  customerId: ModelSubscriptionIDInput
+  ownerId: ModelSubscriptionIDInput
+  probability: ModelSubscriptionFloatInput
+  expectedCloseDate: ModelSubscriptionStringInput
+  notes: ModelSubscriptionStringInput
+  createdAt: ModelSubscriptionStringInput
+  updatedAt: ModelSubscriptionStringInput
+  and: [ModelSubscriptionSalesLeadFilterInput]
+  or: [ModelSubscriptionSalesLeadFilterInput]
+}
+
+type ModelSalesApprovalConnection @aws_iam @aws_cognito_user_pools {
+  items: [SalesApproval]!
+  nextToken: String
+}
+
+input ModelSalesApprovalStatusInput {
+  eq: SalesApprovalStatus
+  ne: SalesApprovalStatus
+}
+
+input ModelSalesApprovalFilterInput {
+  id: ModelIDInput
+  leadId: ModelIDInput
+  approverUserId: ModelIDInput
+  status: ModelSalesApprovalStatusInput
+  comments: ModelStringInput
+  createdAt: ModelStringInput
+  updatedAt: ModelStringInput
+  and: [ModelSalesApprovalFilterInput]
+  or: [ModelSalesApprovalFilterInput]
+  not: ModelSalesApprovalFilterInput
+}
+
+input ModelSalesApprovalConditionInput {
+  leadId: ModelIDInput
+  approverUserId: ModelIDInput
+  status: ModelSalesApprovalStatusInput
+  comments: ModelStringInput
+  createdAt: ModelStringInput
+  updatedAt: ModelStringInput
+  and: [ModelSalesApprovalConditionInput]
+  or: [ModelSalesApprovalConditionInput]
+  not: ModelSalesApprovalConditionInput
+}
+
+input CreateSalesApprovalInput {
+  id: ID
+  leadId: ID!
+  approverUserId: ID!
+  status: SalesApprovalStatus
+  comments: String
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
+}
+
+input UpdateSalesApprovalInput {
+  id: ID!
+  leadId: ID
+  approverUserId: ID
+  status: SalesApprovalStatus
+  comments: String
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
+}
+
+input DeleteSalesApprovalInput {
+  id: ID!
+}
+
+input ModelSubscriptionSalesApprovalFilterInput {
+  id: ModelSubscriptionIDInput
+  leadId: ModelSubscriptionIDInput
+  approverUserId: ModelSubscriptionIDInput
+  status: ModelSubscriptionStringInput
+  comments: ModelSubscriptionStringInput
+  createdAt: ModelSubscriptionStringInput
+  updatedAt: ModelSubscriptionStringInput
+  and: [ModelSubscriptionSalesApprovalFilterInput]
+  or: [ModelSubscriptionSalesApprovalFilterInput]
+}
+
+type ModelProductConnection @aws_iam @aws_cognito_user_pools {
+  items: [Product]!
+  nextToken: String
+}
+
+input ModelProductStatusInput {
+  eq: ProductStatus
+  ne: ProductStatus
+}
+
+input ModelProductFilterInput {
+  id: ModelIDInput
+  name: ModelStringInput
+  description: ModelStringInput
+  suvPrice: ModelFloatInput
+  sedanPrice: ModelFloatInput
+  otherPrice: ModelFloatInput
+  category: ModelStringInput
+  status: ModelProductStatusInput
+  createdAt: ModelStringInput
+  updatedAt: ModelStringInput
+  and: [ModelProductFilterInput]
+  or: [ModelProductFilterInput]
+  not: ModelProductFilterInput
+}
+
+input ModelProductConditionInput {
+  name: ModelStringInput
+  description: ModelStringInput
+  suvPrice: ModelFloatInput
+  sedanPrice: ModelFloatInput
+  otherPrice: ModelFloatInput
+  category: ModelStringInput
+  status: ModelProductStatusInput
+  createdAt: ModelStringInput
+  updatedAt: ModelStringInput
+  and: [ModelProductConditionInput]
+  or: [ModelProductConditionInput]
+  not: ModelProductConditionInput
+}
+
+input CreateProductInput {
+  id: ID
+  name: String!
+  description: String
+  suvPrice: Float
+  sedanPrice: Float
+  otherPrice: Float
+  category: String
+  status: ProductStatus
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
+}
+
+input UpdateProductInput {
+  id: ID!
+  name: String
+  description: String
+  suvPrice: Float
+  sedanPrice: Float
+  otherPrice: Float
+  category: String
+  status: ProductStatus
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
+}
+
+input DeleteProductInput {
+  id: ID!
+}
+
+input ModelSubscriptionProductFilterInput {
+  id: ModelSubscriptionIDInput
+  name: ModelSubscriptionStringInput
+  description: ModelSubscriptionStringInput
+  suvPrice: ModelSubscriptionFloatInput
+  sedanPrice: ModelSubscriptionFloatInput
+  otherPrice: ModelSubscriptionFloatInput
+  category: ModelSubscriptionStringInput
+  status: ModelSubscriptionStringInput
+  createdAt: ModelSubscriptionStringInput
+  updatedAt: ModelSubscriptionStringInput
+  and: [ModelSubscriptionProductFilterInput]
+  or: [ModelSubscriptionProductFilterInput]
+}
+
+type ModelPurchaseOrderConnection @aws_iam @aws_cognito_user_pools {
+  items: [PurchaseOrder]!
+  nextToken: String
+}
+
+input ModelPurchaseOrderStatusInput {
+  eq: PurchaseOrderStatus
+  ne: PurchaseOrderStatus
+}
+
+input ModelPurchaseOrderFilterInput {
+  id: ModelIDInput
+  orderNumber: ModelStringInput
+  supplierId: ModelIDInput
+  supplierName: ModelStringInput
+  status: ModelPurchaseOrderStatusInput
+  totalAmount: ModelFloatInput
+  createdDate: ModelStringInput
+  deliveryDate: ModelStringInput
+  items: ModelStringInput
+  notes: ModelStringInput
+  createdByUserId: ModelIDInput
+  approverUserId: ModelIDInput
+  createdAt: ModelStringInput
+  updatedAt: ModelStringInput
+  and: [ModelPurchaseOrderFilterInput]
+  or: [ModelPurchaseOrderFilterInput]
+  not: ModelPurchaseOrderFilterInput
+}
+
+input ModelPurchaseOrderConditionInput {
+  orderNumber: ModelStringInput
+  supplierId: ModelIDInput
+  supplierName: ModelStringInput
+  status: ModelPurchaseOrderStatusInput
+  totalAmount: ModelFloatInput
+  createdDate: ModelStringInput
+  deliveryDate: ModelStringInput
+  items: ModelStringInput
+  notes: ModelStringInput
+  createdByUserId: ModelIDInput
+  approverUserId: ModelIDInput
+  createdAt: ModelStringInput
+  updatedAt: ModelStringInput
+  and: [ModelPurchaseOrderConditionInput]
+  or: [ModelPurchaseOrderConditionInput]
+  not: ModelPurchaseOrderConditionInput
+}
+
+input CreatePurchaseOrderInput {
+  id: ID
+  orderNumber: String!
+  supplierId: ID
+  supplierName: String!
+  status: PurchaseOrderStatus
+  totalAmount: Float
+  createdDate: AWSDateTime
+  deliveryDate: AWSDateTime
+  items: AWSJSON
+  notes: String
+  createdByUserId: ID
+  approverUserId: ID
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
+}
+
+input UpdatePurchaseOrderInput {
+  id: ID!
+  orderNumber: String
+  supplierId: ID
+  supplierName: String
+  status: PurchaseOrderStatus
+  totalAmount: Float
+  createdDate: AWSDateTime
+  deliveryDate: AWSDateTime
+  items: AWSJSON
+  notes: String
+  createdByUserId: ID
+  approverUserId: ID
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
+}
+
+input DeletePurchaseOrderInput {
+  id: ID!
+}
+
+input ModelSubscriptionPurchaseOrderFilterInput {
+  id: ModelSubscriptionIDInput
+  orderNumber: ModelSubscriptionStringInput
+  supplierId: ModelSubscriptionIDInput
+  supplierName: ModelSubscriptionStringInput
+  status: ModelSubscriptionStringInput
+  totalAmount: ModelSubscriptionFloatInput
+  createdDate: ModelSubscriptionStringInput
+  deliveryDate: ModelSubscriptionStringInput
+  items: ModelSubscriptionStringInput
+  notes: ModelSubscriptionStringInput
+  createdByUserId: ModelSubscriptionIDInput
+  approverUserId: ModelSubscriptionIDInput
+  createdAt: ModelSubscriptionStringInput
+  updatedAt: ModelSubscriptionStringInput
+  and: [ModelSubscriptionPurchaseOrderFilterInput]
+  or: [ModelSubscriptionPurchaseOrderFilterInput]
+}
+
+type ModelServiceExecutionConnection @aws_iam @aws_cognito_user_pools {
+  items: [ServiceExecution]!
+  nextToken: String
+}
+
+input ModelServiceExecutionFilterInput {
+  id: ModelIDInput
+  jobOrderId: ModelIDInput
+  serviceType: ModelStringInput
+  status: ModelStringInput
+  executorId: ModelIDInput
+  startTime: ModelStringInput
+  endTime: ModelStringInput
+  notes: ModelStringInput
+  createdAt: ModelStringInput
+  updatedAt: ModelStringInput
+  and: [ModelServiceExecutionFilterInput]
+  or: [ModelServiceExecutionFilterInput]
+  not: ModelServiceExecutionFilterInput
+}
+
+input ModelServiceExecutionConditionInput {
+  jobOrderId: ModelIDInput
+  serviceType: ModelStringInput
+  status: ModelStringInput
+  executorId: ModelIDInput
+  startTime: ModelStringInput
+  endTime: ModelStringInput
+  notes: ModelStringInput
+  createdAt: ModelStringInput
+  updatedAt: ModelStringInput
+  and: [ModelServiceExecutionConditionInput]
+  or: [ModelServiceExecutionConditionInput]
+  not: ModelServiceExecutionConditionInput
+}
+
+input CreateServiceExecutionInput {
+  id: ID
+  jobOrderId: ID
+  serviceType: String!
+  status: String
+  executorId: ID
+  startTime: AWSDateTime
+  endTime: AWSDateTime
+  notes: String
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
+}
+
+input UpdateServiceExecutionInput {
+  id: ID!
+  jobOrderId: ID
+  serviceType: String
+  status: String
+  executorId: ID
+  startTime: AWSDateTime
+  endTime: AWSDateTime
+  notes: String
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
+}
+
+input DeleteServiceExecutionInput {
+  id: ID!
+}
+
+input ModelSubscriptionServiceExecutionFilterInput {
+  id: ModelSubscriptionIDInput
+  jobOrderId: ModelSubscriptionIDInput
+  serviceType: ModelSubscriptionStringInput
+  status: ModelSubscriptionStringInput
+  executorId: ModelSubscriptionIDInput
+  startTime: ModelSubscriptionStringInput
+  endTime: ModelSubscriptionStringInput
+  notes: ModelSubscriptionStringInput
+  createdAt: ModelSubscriptionStringInput
+  updatedAt: ModelSubscriptionStringInput
+  and: [ModelSubscriptionServiceExecutionFilterInput]
+  or: [ModelSubscriptionServiceExecutionFilterInput]
+}
+
+type ModelCompanyConnection @aws_iam @aws_cognito_user_pools {
+  items: [Company]!
+  nextToken: String
+}
+
+input ModelCompanyStatusInput {
+  eq: CompanyStatus
+  ne: CompanyStatus
+}
+
+input ModelCompanyFilterInput {
+  id: ModelIDInput
+  name: ModelStringInput
+  industry: ModelStringInput
+  email: ModelStringInput
+  phone: ModelStringInput
+  address: ModelStringInput
+  status: ModelCompanyStatusInput
+  createdAt: ModelStringInput
+  updatedAt: ModelStringInput
+  and: [ModelCompanyFilterInput]
+  or: [ModelCompanyFilterInput]
+  not: ModelCompanyFilterInput
+}
+
+input ModelCompanyConditionInput {
+  name: ModelStringInput
+  industry: ModelStringInput
+  email: ModelStringInput
+  phone: ModelStringInput
+  address: ModelStringInput
+  status: ModelCompanyStatusInput
+  createdAt: ModelStringInput
+  updatedAt: ModelStringInput
+  and: [ModelCompanyConditionInput]
+  or: [ModelCompanyConditionInput]
+  not: ModelCompanyConditionInput
+}
+
+input CreateCompanyInput {
+  id: ID
+  name: String!
+  industry: String
+  email: AWSEmail
+  phone: String
+  address: String
+  status: CompanyStatus
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
+}
+
+input UpdateCompanyInput {
+  id: ID!
+  name: String
+  industry: String
+  email: AWSEmail
+  phone: String
+  address: String
+  status: CompanyStatus
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
+}
+
+input DeleteCompanyInput {
+  id: ID!
+}
+
+input ModelSubscriptionCompanyFilterInput {
+  id: ModelSubscriptionIDInput
+  name: ModelSubscriptionStringInput
+  industry: ModelSubscriptionStringInput
+  email: ModelSubscriptionStringInput
+  phone: ModelSubscriptionStringInput
+  address: ModelSubscriptionStringInput
+  status: ModelSubscriptionStringInput
+  createdAt: ModelSubscriptionStringInput
+  updatedAt: ModelSubscriptionStringInput
+  and: [ModelSubscriptionCompanyFilterInput]
+  or: [ModelSubscriptionCompanyFilterInput]
+}
+
+type ModelInvoiceConnection @aws_iam @aws_cognito_user_pools {
+  items: [Invoice]!
+  nextToken: String
+}
+
+input ModelInvoiceStatusInput {
+  eq: InvoiceStatus
+  ne: InvoiceStatus
+}
+
+input ModelInvoiceFilterInput {
+  id: ModelIDInput
+  invoiceNumber: ModelStringInput
+  jobOrderId: ModelIDInput
+  customerId: ModelIDInput
+  invoiceDate: ModelStringInput
+  dueDate: ModelStringInput
+  subtotal: ModelFloatInput
+  taxAmount: ModelFloatInput
+  totalAmount: ModelFloatInput
+  paidAmount: ModelFloatInput
+  status: ModelInvoiceStatusInput
+  notes: ModelStringInput
+  createdByUserId: ModelIDInput
+  createdAt: ModelStringInput
+  updatedAt: ModelStringInput
+  and: [ModelInvoiceFilterInput]
+  or: [ModelInvoiceFilterInput]
+  not: ModelInvoiceFilterInput
+}
+
+input ModelInvoiceConditionInput {
+  invoiceNumber: ModelStringInput
+  jobOrderId: ModelIDInput
+  customerId: ModelIDInput
+  invoiceDate: ModelStringInput
+  dueDate: ModelStringInput
+  subtotal: ModelFloatInput
+  taxAmount: ModelFloatInput
+  totalAmount: ModelFloatInput
+  paidAmount: ModelFloatInput
+  status: ModelInvoiceStatusInput
+  notes: ModelStringInput
+  createdByUserId: ModelIDInput
+  createdAt: ModelStringInput
+  updatedAt: ModelStringInput
+  and: [ModelInvoiceConditionInput]
+  or: [ModelInvoiceConditionInput]
+  not: ModelInvoiceConditionInput
+}
+
+input CreateInvoiceInput {
+  id: ID
+  invoiceNumber: String!
+  jobOrderId: ID!
+  customerId: ID!
+  invoiceDate: AWSDateTime!
+  dueDate: AWSDateTime
+  subtotal: Float!
+  taxAmount: Float
+  totalAmount: Float!
+  paidAmount: Float
+  status: InvoiceStatus
+  notes: String
+  createdByUserId: ID
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
+}
+
+input UpdateInvoiceInput {
+  id: ID!
+  invoiceNumber: String
+  jobOrderId: ID
+  customerId: ID
+  invoiceDate: AWSDateTime
+  dueDate: AWSDateTime
+  subtotal: Float
+  taxAmount: Float
+  totalAmount: Float
+  paidAmount: Float
+  status: InvoiceStatus
+  notes: String
+  createdByUserId: ID
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
+}
+
+input DeleteInvoiceInput {
+  id: ID!
+}
+
+input ModelSubscriptionInvoiceFilterInput {
+  id: ModelSubscriptionIDInput
+  invoiceNumber: ModelSubscriptionStringInput
+  jobOrderId: ModelSubscriptionIDInput
+  customerId: ModelSubscriptionIDInput
+  invoiceDate: ModelSubscriptionStringInput
+  dueDate: ModelSubscriptionStringInput
+  subtotal: ModelSubscriptionFloatInput
+  taxAmount: ModelSubscriptionFloatInput
+  totalAmount: ModelSubscriptionFloatInput
+  paidAmount: ModelSubscriptionFloatInput
+  status: ModelSubscriptionStringInput
+  notes: ModelSubscriptionStringInput
+  createdByUserId: ModelSubscriptionIDInput
+  createdAt: ModelSubscriptionStringInput
+  updatedAt: ModelSubscriptionStringInput
+  and: [ModelSubscriptionInvoiceFilterInput]
+  or: [ModelSubscriptionInvoiceFilterInput]
+}
+
+type ModelSupplierConnection @aws_iam @aws_cognito_user_pools {
+  items: [Supplier]!
+  nextToken: String
+}
+
+input ModelSupplierStatusInput {
+  eq: SupplierStatus
+  ne: SupplierStatus
+}
+
+input ModelSupplierFilterInput {
+  id: ModelIDInput
+  name: ModelStringInput
+  email: ModelStringInput
+  phone: ModelStringInput
+  address: ModelStringInput
+  city: ModelStringInput
+  country: ModelStringInput
+  zipCode: ModelStringInput
+  contactPersonName: ModelStringInput
+  paymentTerms: ModelStringInput
+  taxId: ModelStringInput
+  status: ModelSupplierStatusInput
+  rating: ModelFloatInput
+  notes: ModelStringInput
+  createdAt: ModelStringInput
+  updatedAt: ModelStringInput
+  and: [ModelSupplierFilterInput]
+  or: [ModelSupplierFilterInput]
+  not: ModelSupplierFilterInput
+}
+
+input ModelSupplierConditionInput {
+  name: ModelStringInput
+  email: ModelStringInput
+  phone: ModelStringInput
+  address: ModelStringInput
+  city: ModelStringInput
+  country: ModelStringInput
+  zipCode: ModelStringInput
+  contactPersonName: ModelStringInput
+  paymentTerms: ModelStringInput
+  taxId: ModelStringInput
+  status: ModelSupplierStatusInput
+  rating: ModelFloatInput
+  notes: ModelStringInput
+  createdAt: ModelStringInput
+  updatedAt: ModelStringInput
+  and: [ModelSupplierConditionInput]
+  or: [ModelSupplierConditionInput]
+  not: ModelSupplierConditionInput
+}
+
+input CreateSupplierInput {
+  id: ID
+  name: String!
+  email: AWSEmail
+  phone: String
+  address: String
+  city: String
+  country: String
+  zipCode: String
+  contactPersonName: String
+  paymentTerms: String
+  taxId: String
+  status: SupplierStatus
+  rating: Float
+  notes: String
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
+}
+
+input UpdateSupplierInput {
+  id: ID!
+  name: String
+  email: AWSEmail
+  phone: String
+  address: String
+  city: String
+  country: String
+  zipCode: String
+  contactPersonName: String
+  paymentTerms: String
+  taxId: String
+  status: SupplierStatus
+  rating: Float
+  notes: String
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
+}
+
+input DeleteSupplierInput {
+  id: ID!
+}
+
+input ModelSubscriptionSupplierFilterInput {
+  id: ModelSubscriptionIDInput
+  name: ModelSubscriptionStringInput
+  email: ModelSubscriptionStringInput
+  phone: ModelSubscriptionStringInput
+  address: ModelSubscriptionStringInput
+  city: ModelSubscriptionStringInput
+  country: ModelSubscriptionStringInput
+  zipCode: ModelSubscriptionStringInput
+  contactPersonName: ModelSubscriptionStringInput
+  paymentTerms: ModelSubscriptionStringInput
+  taxId: ModelSubscriptionStringInput
+  status: ModelSubscriptionStringInput
+  rating: ModelSubscriptionFloatInput
+  notes: ModelSubscriptionStringInput
+  createdAt: ModelSubscriptionStringInput
+  updatedAt: ModelSubscriptionStringInput
+  and: [ModelSubscriptionSupplierFilterInput]
+  or: [ModelSubscriptionSupplierFilterInput]
+}
+
+type ModelApprovalRequestConnection @aws_iam @aws_cognito_user_pools {
+  items: [ApprovalRequest]!
+  nextToken: String
+}
+
+input ModelApprovalRequestTypeInput {
+  eq: ApprovalRequestType
+  ne: ApprovalRequestType
+}
+
+input ModelApprovalRequestStatusInput {
+  eq: ApprovalRequestStatus
+  ne: ApprovalRequestStatus
+}
+
+input ModelApprovalRequestPriorityInput {
+  eq: ApprovalRequestPriority
+  ne: ApprovalRequestPriority
+}
+
+input ModelApprovalRequestFilterInput {
+  id: ModelIDInput
+  title: ModelStringInput
+  type: ModelApprovalRequestTypeInput
+  entityId: ModelIDInput
+  entityType: ModelStringInput
+  requestedByUserId: ModelIDInput
+  approverUserId: ModelIDInput
+  status: ModelApprovalRequestStatusInput
+  priority: ModelApprovalRequestPriorityInput
+  description: ModelStringInput
+  approvalNotes: ModelStringInput
+  requestDate: ModelStringInput
+  responseDate: ModelStringInput
+  dueDate: ModelStringInput
+  createdAt: ModelStringInput
+  updatedAt: ModelStringInput
+  and: [ModelApprovalRequestFilterInput]
+  or: [ModelApprovalRequestFilterInput]
+  not: ModelApprovalRequestFilterInput
+}
+
+input ModelApprovalRequestConditionInput {
+  title: ModelStringInput
+  type: ModelApprovalRequestTypeInput
+  entityId: ModelIDInput
+  entityType: ModelStringInput
+  requestedByUserId: ModelIDInput
+  approverUserId: ModelIDInput
+  status: ModelApprovalRequestStatusInput
+  priority: ModelApprovalRequestPriorityInput
+  description: ModelStringInput
+  approvalNotes: ModelStringInput
+  requestDate: ModelStringInput
+  responseDate: ModelStringInput
+  dueDate: ModelStringInput
+  createdAt: ModelStringInput
+  updatedAt: ModelStringInput
+  and: [ModelApprovalRequestConditionInput]
+  or: [ModelApprovalRequestConditionInput]
+  not: ModelApprovalRequestConditionInput
+}
+
+input CreateApprovalRequestInput {
+  id: ID
+  title: String!
+  type: ApprovalRequestType
+  entityId: ID!
+  entityType: String!
+  requestedByUserId: ID!
+  approverUserId: ID!
+  status: ApprovalRequestStatus
+  priority: ApprovalRequestPriority
+  description: String
+  approvalNotes: String
+  requestDate: AWSDateTime!
+  responseDate: AWSDateTime
+  dueDate: AWSDateTime
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
+}
+
+input UpdateApprovalRequestInput {
+  id: ID!
+  title: String
+  type: ApprovalRequestType
+  entityId: ID
+  entityType: String
+  requestedByUserId: ID
+  approverUserId: ID
+  status: ApprovalRequestStatus
+  priority: ApprovalRequestPriority
+  description: String
+  approvalNotes: String
+  requestDate: AWSDateTime
+  responseDate: AWSDateTime
+  dueDate: AWSDateTime
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
+}
+
+input DeleteApprovalRequestInput {
+  id: ID!
+}
+
+input ModelSubscriptionApprovalRequestFilterInput {
+  id: ModelSubscriptionIDInput
+  title: ModelSubscriptionStringInput
+  type: ModelSubscriptionStringInput
+  entityId: ModelSubscriptionIDInput
+  entityType: ModelSubscriptionStringInput
+  requestedByUserId: ModelSubscriptionIDInput
+  approverUserId: ModelSubscriptionIDInput
+  status: ModelSubscriptionStringInput
+  priority: ModelSubscriptionStringInput
+  description: ModelSubscriptionStringInput
+  approvalNotes: ModelSubscriptionStringInput
+  requestDate: ModelSubscriptionStringInput
+  responseDate: ModelSubscriptionStringInput
+  dueDate: ModelSubscriptionStringInput
+  createdAt: ModelSubscriptionStringInput
+  updatedAt: ModelSubscriptionStringInput
+  and: [ModelSubscriptionApprovalRequestFilterInput]
+  or: [ModelSubscriptionApprovalRequestFilterInput]
+}
+
+type ModelServiceApprovalRequestConnection @aws_iam @aws_cognito_user_pools {
+  items: [ServiceApprovalRequest]!
+  nextToken: String
+}
+
+input ModelServiceApprovalRequestFilterInput {
+  id: ModelIDInput
+  jobOrderId: ModelIDInput
+  serviceRequestId: ModelIDInput
+  description: ModelStringInput
+  estimatedCost: ModelFloatInput
+  status: ModelStringInput
+  requestedByUserId: ModelIDInput
+  approverUserId: ModelIDInput
+  rejectionReason: ModelStringInput
+  requestDate: ModelStringInput
+  approvalDate: ModelStringInput
+  createdAt: ModelStringInput
+  updatedAt: ModelStringInput
+  and: [ModelServiceApprovalRequestFilterInput]
+  or: [ModelServiceApprovalRequestFilterInput]
+  not: ModelServiceApprovalRequestFilterInput
+}
+
+input ModelServiceApprovalRequestConditionInput {
+  jobOrderId: ModelIDInput
+  serviceRequestId: ModelIDInput
+  description: ModelStringInput
+  estimatedCost: ModelFloatInput
+  status: ModelStringInput
+  requestedByUserId: ModelIDInput
+  approverUserId: ModelIDInput
+  rejectionReason: ModelStringInput
+  requestDate: ModelStringInput
+  approvalDate: ModelStringInput
+  createdAt: ModelStringInput
+  updatedAt: ModelStringInput
+  and: [ModelServiceApprovalRequestConditionInput]
+  or: [ModelServiceApprovalRequestConditionInput]
+  not: ModelServiceApprovalRequestConditionInput
+}
+
+input CreateServiceApprovalRequestInput {
+  id: ID
+  jobOrderId: ID!
+  serviceRequestId: ID
+  description: String!
+  estimatedCost: Float
+  status: String
+  requestedByUserId: ID!
+  approverUserId: ID!
+  rejectionReason: String
+  requestDate: AWSDateTime!
+  approvalDate: AWSDateTime
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
+}
+
+input UpdateServiceApprovalRequestInput {
+  id: ID!
+  jobOrderId: ID
+  serviceRequestId: ID
+  description: String
+  estimatedCost: Float
+  status: String
+  requestedByUserId: ID
+  approverUserId: ID
+  rejectionReason: String
+  requestDate: AWSDateTime
+  approvalDate: AWSDateTime
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
+}
+
+input DeleteServiceApprovalRequestInput {
+  id: ID!
+}
+
+input ModelSubscriptionServiceApprovalRequestFilterInput {
+  id: ModelSubscriptionIDInput
+  jobOrderId: ModelSubscriptionIDInput
+  serviceRequestId: ModelSubscriptionIDInput
+  description: ModelSubscriptionStringInput
+  estimatedCost: ModelSubscriptionFloatInput
+  status: ModelSubscriptionStringInput
+  requestedByUserId: ModelSubscriptionIDInput
+  approverUserId: ModelSubscriptionIDInput
+  rejectionReason: ModelSubscriptionStringInput
+  requestDate: ModelSubscriptionStringInput
+  approvalDate: ModelSubscriptionStringInput
+  createdAt: ModelSubscriptionStringInput
+  updatedAt: ModelSubscriptionStringInput
+  and: [ModelSubscriptionServiceApprovalRequestFilterInput]
+  or: [ModelSubscriptionServiceApprovalRequestFilterInput]
+}
+
+type ModelQuotationConnection @aws_iam @aws_cognito_user_pools {
+  items: [Quotation]!
+  nextToken: String
+}
+
+input ModelQuotationStatusInput {
+  eq: QuotationStatus
+  ne: QuotationStatus
+}
+
+input ModelQuotationFilterInput {
+  id: ModelIDInput
+  quotationNumber: ModelStringInput
+  jobOrderId: ModelIDInput
+  customerId: ModelIDInput
+  description: ModelStringInput
+  items: ModelStringInput
+  subtotal: ModelFloatInput
+  taxAmount: ModelFloatInput
+  totalAmount: ModelFloatInput
+  validUntil: ModelStringInput
+  status: ModelQuotationStatusInput
+  createdByUserId: ModelIDInput
+  createdAt: ModelStringInput
+  updatedAt: ModelStringInput
+  and: [ModelQuotationFilterInput]
+  or: [ModelQuotationFilterInput]
+  not: ModelQuotationFilterInput
+}
+
+input ModelQuotationConditionInput {
+  quotationNumber: ModelStringInput
+  jobOrderId: ModelIDInput
+  customerId: ModelIDInput
+  description: ModelStringInput
+  items: ModelStringInput
+  subtotal: ModelFloatInput
+  taxAmount: ModelFloatInput
+  totalAmount: ModelFloatInput
+  validUntil: ModelStringInput
+  status: ModelQuotationStatusInput
+  createdByUserId: ModelIDInput
+  createdAt: ModelStringInput
+  updatedAt: ModelStringInput
+  and: [ModelQuotationConditionInput]
+  or: [ModelQuotationConditionInput]
+  not: ModelQuotationConditionInput
+}
+
+input CreateQuotationInput {
+  id: ID
+  quotationNumber: String!
+  jobOrderId: ID
+  customerId: ID!
+  description: String
+  items: AWSJSON
+  subtotal: Float!
+  taxAmount: Float
+  totalAmount: Float!
+  validUntil: AWSDateTime
+  status: QuotationStatus
+  createdByUserId: ID
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
+}
+
+input UpdateQuotationInput {
+  id: ID!
+  quotationNumber: String
+  jobOrderId: ID
+  customerId: ID
+  description: String
+  items: AWSJSON
+  subtotal: Float
+  taxAmount: Float
+  totalAmount: Float
+  validUntil: AWSDateTime
+  status: QuotationStatus
+  createdByUserId: ID
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
+}
+
+input DeleteQuotationInput {
+  id: ID!
+}
+
+input ModelSubscriptionQuotationFilterInput {
+  id: ModelSubscriptionIDInput
+  quotationNumber: ModelSubscriptionStringInput
+  jobOrderId: ModelSubscriptionIDInput
+  customerId: ModelSubscriptionIDInput
+  description: ModelSubscriptionStringInput
+  items: ModelSubscriptionStringInput
+  subtotal: ModelSubscriptionFloatInput
+  taxAmount: ModelSubscriptionFloatInput
+  totalAmount: ModelSubscriptionFloatInput
+  validUntil: ModelSubscriptionStringInput
+  status: ModelSubscriptionStringInput
+  createdByUserId: ModelSubscriptionIDInput
+  createdAt: ModelSubscriptionStringInput
+  updatedAt: ModelSubscriptionStringInput
+  and: [ModelSubscriptionQuotationFilterInput]
+  or: [ModelSubscriptionQuotationFilterInput]
+}
+
+type ModelActivityLogConnection @aws_iam @aws_cognito_user_pools {
+  items: [ActivityLog]!
+  nextToken: String
+}
+
+input ModelActivityLogStatusInput {
+  eq: ActivityLogStatus
+  ne: ActivityLogStatus
+}
+
+input ModelActivityLogFilterInput {
+  id: ModelIDInput
+  userId: ModelIDInput
+  action: ModelStringInput
+  entityType: ModelStringInput
+  entityId: ModelIDInput
+  changes: ModelStringInput
+  ipAddress: ModelStringInput
+  userAgent: ModelStringInput
+  status: ModelActivityLogStatusInput
+  notes: ModelStringInput
+  createdAt: ModelStringInput
+  updatedAt: ModelStringInput
+  and: [ModelActivityLogFilterInput]
+  or: [ModelActivityLogFilterInput]
+  not: ModelActivityLogFilterInput
+}
+
+input ModelActivityLogConditionInput {
+  userId: ModelIDInput
+  action: ModelStringInput
+  entityType: ModelStringInput
+  entityId: ModelIDInput
+  changes: ModelStringInput
+  ipAddress: ModelStringInput
+  userAgent: ModelStringInput
+  status: ModelActivityLogStatusInput
+  notes: ModelStringInput
+  createdAt: ModelStringInput
+  and: [ModelActivityLogConditionInput]
+  or: [ModelActivityLogConditionInput]
+  not: ModelActivityLogConditionInput
+  updatedAt: ModelStringInput
+}
+
+input CreateActivityLogInput {
+  id: ID
+  userId: ID!
+  action: String!
+  entityType: String!
+  entityId: ID!
+  changes: AWSJSON
+  ipAddress: String
+  userAgent: String
+  status: ActivityLogStatus
+  notes: String
+  createdAt: AWSDateTime
+}
+
+input UpdateActivityLogInput {
+  id: ID!
+  userId: ID
+  action: String
+  entityType: String
+  entityId: ID
+  changes: AWSJSON
+  ipAddress: String
+  userAgent: String
+  status: ActivityLogStatus
+  notes: String
+  createdAt: AWSDateTime
+}
+
+input DeleteActivityLogInput {
+  id: ID!
+}
+
+input ModelSubscriptionActivityLogFilterInput {
+  id: ModelSubscriptionIDInput
+  userId: ModelSubscriptionIDInput
+  action: ModelSubscriptionStringInput
+  entityType: ModelSubscriptionStringInput
+  entityId: ModelSubscriptionIDInput
+  changes: ModelSubscriptionStringInput
+  ipAddress: ModelSubscriptionStringInput
+  userAgent: ModelSubscriptionStringInput
+  status: ModelSubscriptionStringInput
+  notes: ModelSubscriptionStringInput
+  createdAt: ModelSubscriptionStringInput
+  updatedAt: ModelSubscriptionStringInput
+  and: [ModelSubscriptionActivityLogFilterInput]
+  or: [ModelSubscriptionActivityLogFilterInput]
+}
+
+type ModelWorkLogConnection @aws_iam @aws_cognito_user_pools {
+  items: [WorkLog]!
+  nextToken: String
+}
+
+input ModelWorkLogFilterInput {
+  id: ModelIDInput
+  jobOrderId: ModelIDInput
+  technicianId: ModelIDInput
+  serviceType: ModelStringInput
+  startTime: ModelStringInput
+  endTime: ModelStringInput
+  duration: ModelFloatInput
+  description: ModelStringInput
+  status: ModelStringInput
+  notes: ModelStringInput
+  createdAt: ModelStringInput
+  updatedAt: ModelStringInput
+  and: [ModelWorkLogFilterInput]
+  or: [ModelWorkLogFilterInput]
+  not: ModelWorkLogFilterInput
+}
+
+input ModelWorkLogConditionInput {
+  jobOrderId: ModelIDInput
+  technicianId: ModelIDInput
+  serviceType: ModelStringInput
+  startTime: ModelStringInput
+  endTime: ModelStringInput
+  duration: ModelFloatInput
+  description: ModelStringInput
+  status: ModelStringInput
+  notes: ModelStringInput
+  createdAt: ModelStringInput
+  updatedAt: ModelStringInput
+  and: [ModelWorkLogConditionInput]
+  or: [ModelWorkLogConditionInput]
+  not: ModelWorkLogConditionInput
+}
+
+input CreateWorkLogInput {
+  id: ID
+  jobOrderId: ID!
+  technicianId: ID!
+  serviceType: String!
+  startTime: AWSDateTime!
+  endTime: AWSDateTime
+  duration: Float
+  description: String
+  status: String
+  notes: String
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
+}
+
+input UpdateWorkLogInput {
+  id: ID!
+  jobOrderId: ID
+  technicianId: ID
+  serviceType: String
+  startTime: AWSDateTime
+  endTime: AWSDateTime
+  duration: Float
+  description: String
+  status: String
+  notes: String
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
+}
+
+input DeleteWorkLogInput {
+  id: ID!
+}
+
+input ModelSubscriptionWorkLogFilterInput {
+  id: ModelSubscriptionIDInput
+  jobOrderId: ModelSubscriptionIDInput
+  technicianId: ModelSubscriptionIDInput
+  serviceType: ModelSubscriptionStringInput
+  startTime: ModelSubscriptionStringInput
+  endTime: ModelSubscriptionStringInput
+  duration: ModelSubscriptionFloatInput
+  description: ModelSubscriptionStringInput
+  status: ModelSubscriptionStringInput
+  notes: ModelSubscriptionStringInput
+  createdAt: ModelSubscriptionStringInput
+  updatedAt: ModelSubscriptionStringInput
+  and: [ModelSubscriptionWorkLogFilterInput]
+  or: [ModelSubscriptionWorkLogFilterInput]
+}
+
+type ModelNotificationConnection @aws_iam @aws_cognito_user_pools {
+  items: [Notification]!
+  nextToken: String
+}
+
+input ModelNotificationTypeInput {
+  eq: NotificationType
+  ne: NotificationType
+}
+
+input ModelNotificationPriorityInput {
+  eq: NotificationPriority
+  ne: NotificationPriority
+}
+
+input ModelNotificationFilterInput {
+  id: ModelIDInput
+  userId: ModelIDInput
+  type: ModelNotificationTypeInput
+  title: ModelStringInput
+  message: ModelStringInput
+  entityType: ModelStringInput
+  entityId: ModelIDInput
+  isRead: ModelBooleanInput
+  readAt: ModelStringInput
+  actionUrl: ModelStringInput
+  priority: ModelNotificationPriorityInput
+  expiresAt: ModelStringInput
+  createdAt: ModelStringInput
+  updatedAt: ModelStringInput
+  and: [ModelNotificationFilterInput]
+  or: [ModelNotificationFilterInput]
+  not: ModelNotificationFilterInput
+}
+
+input ModelNotificationConditionInput {
+  userId: ModelIDInput
+  type: ModelNotificationTypeInput
+  title: ModelStringInput
+  message: ModelStringInput
+  entityType: ModelStringInput
+  entityId: ModelIDInput
+  isRead: ModelBooleanInput
+  readAt: ModelStringInput
+  actionUrl: ModelStringInput
+  priority: ModelNotificationPriorityInput
+  expiresAt: ModelStringInput
+  createdAt: ModelStringInput
+  updatedAt: ModelStringInput
+  and: [ModelNotificationConditionInput]
+  or: [ModelNotificationConditionInput]
+  not: ModelNotificationConditionInput
+}
+
+input CreateNotificationInput {
+  id: ID
+  userId: ID!
+  type: NotificationType
+  title: String!
+  message: String!
+  entityType: String
+  entityId: ID
+  isRead: Boolean
+  readAt: AWSDateTime
+  actionUrl: String
+  priority: NotificationPriority
+  expiresAt: AWSDateTime
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
+}
+
+input UpdateNotificationInput {
+  id: ID!
+  userId: ID
+  type: NotificationType
+  title: String
+  message: String
+  entityType: String
+  entityId: ID
+  isRead: Boolean
+  readAt: AWSDateTime
+  actionUrl: String
+  priority: NotificationPriority
+  expiresAt: AWSDateTime
+  createdAt: AWSDateTime
+  updatedAt: AWSDateTime
+}
+
+input DeleteNotificationInput {
+  id: ID!
+}
+
+input ModelSubscriptionNotificationFilterInput {
+  id: ModelSubscriptionIDInput
+  userId: ModelSubscriptionIDInput
+  type: ModelSubscriptionStringInput
+  title: ModelSubscriptionStringInput
+  message: ModelSubscriptionStringInput
+  entityType: ModelSubscriptionStringInput
+  entityId: ModelSubscriptionIDInput
+  isRead: ModelSubscriptionBooleanInput
+  readAt: ModelSubscriptionStringInput
+  actionUrl: ModelSubscriptionStringInput
+  priority: ModelSubscriptionStringInput
+  expiresAt: ModelSubscriptionStringInput
+  createdAt: ModelSubscriptionStringInput
+  updatedAt: ModelSubscriptionStringInput
+  and: [ModelSubscriptionNotificationFilterInput]
+  or: [ModelSubscriptionNotificationFilterInput]
+}

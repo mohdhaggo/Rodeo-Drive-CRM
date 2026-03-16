@@ -3,20 +3,15 @@ import type { ChangeEvent, Dispatch, SetStateAction } from 'react'
 import { createPortal } from 'react-dom'
 import './SystemUserManagement.css'
 import PermissionGate from './PermissionGate'
-import { authService } from './authService'
-import { 
-  getAllUsersIncludingInactive, 
-  addUser as addUserToService,
-  updateUser as updateUserInService,
-  deleteUser as deleteUserFromService,
-  initializeUsers
-} from './userService.ts'
+import { authService, type CognitoDirectoryUser } from './authService'
+import { departmentService, roleService, userService } from './amplifyService'
 
 type UserStatus = 'active' | 'inactive'
 type DashboardAccess = 'allowed' | 'blocked'
 
 interface SystemUser {
   id: string
+  username: string
   employeeId: string
   name: string
   email: string
@@ -34,6 +29,147 @@ interface SystemUser {
   [key: string]: unknown
 }
 
+interface StoredUserProfile {
+  id: string
+  firstName?: string | null
+  lastName?: string | null
+  email?: string | null
+  employeeId?: string | null
+  departmentId?: string | null
+  roleId?: string | null
+  lineManager?: string | null
+  phone?: string | null
+}
+
+interface StoredDepartment {
+  id: string
+  name?: string | null
+}
+
+interface StoredRole {
+  id: string
+  name?: string | null
+  departmentId?: string | null
+}
+
+const normalizeEmail = (value: string | null | undefined) => String(value || '').trim().toLowerCase()
+
+const normalizeTextKey = (value: string | null | undefined) => String(value || '').trim().toLowerCase()
+
+const buildProfileDisplayName = (profile: StoredUserProfile): string => {
+  const firstName = String(profile.firstName || '').trim()
+  const lastName = String(profile.lastName || '').trim()
+  return `${firstName} ${lastName}`.trim()
+}
+
+const mergeCognitoAndProfileUsers = (
+  cognitoUsers: CognitoDirectoryUser[],
+  storedUsers: StoredUserProfile[],
+  storedDepartments: StoredDepartment[],
+  storedRoles: StoredRole[],
+): SystemUser[] => {
+  const profilesByEmail = new Map<string, StoredUserProfile>()
+  storedUsers.forEach((profile) => {
+    const key = normalizeEmail(profile.email)
+    if (key && !profilesByEmail.has(key)) {
+      profilesByEmail.set(key, profile)
+    }
+  })
+
+  const departmentNamesById = new Map<string, string>()
+  storedDepartments.forEach((department) => {
+    const name = String(department.name || '').trim()
+    if (department.id && name) {
+      departmentNamesById.set(department.id, name)
+    }
+  })
+
+  const roleById = new Map<string, { name: string; departmentId: string }>()
+  storedRoles.forEach((role) => {
+    const name = String(role.name || '').trim()
+    if (role.id && name) {
+      roleById.set(role.id, {
+        name,
+        departmentId: String(role.departmentId || ''),
+      })
+    }
+  })
+
+  return cognitoUsers.map((cognitoUser) => {
+    const merged = mapCognitoUserToSystemUser(cognitoUser)
+    const profile = profilesByEmail.get(normalizeEmail(cognitoUser.email))
+    if (!profile) {
+      return merged
+    }
+
+    const profileName = buildProfileDisplayName(profile)
+    const departmentFromProfile = profile.departmentId
+      ? (departmentNamesById.get(profile.departmentId) || '')
+      : ''
+    const roleFromProfile = profile.roleId ? roleById.get(profile.roleId)?.name || '' : ''
+
+    return {
+      ...merged,
+      employeeId: String(profile.employeeId || '').trim() || merged.employeeId,
+      name: profileName || merged.name,
+      mobile: merged.mobile || String(profile.phone || '').trim(),
+      department: departmentFromProfile || merged.department,
+      role: roleFromProfile || merged.role,
+      lineManager: String(profile.lineManager || '').trim() || merged.lineManager || '',
+    }
+  })
+}
+
+const resolveDepartmentAndRoleIds = (
+  departmentName: string,
+  roleName: string,
+  storedDepartments: StoredDepartment[],
+  storedRoles: StoredRole[],
+): { departmentId?: string; roleId?: string } => {
+  const normalizedDepartment = normalizeTextKey(departmentName)
+  const normalizedRole = normalizeTextKey(roleName)
+
+  const departmentMatch = storedDepartments.find(
+    (department) => normalizeTextKey(department.name) === normalizedDepartment,
+  )
+
+  const roleCandidates = storedRoles.filter(
+    (role) => normalizeTextKey(role.name) === normalizedRole,
+  )
+
+  const roleMatch = departmentMatch?.id
+    ? roleCandidates.find(
+      (role) => String(role.departmentId || '') === departmentMatch.id,
+    )
+    : roleCandidates[0]
+
+  return {
+    departmentId: departmentMatch?.id,
+    roleId: roleMatch?.id,
+  }
+}
+
+const mapCognitoUserToSystemUser = (user: CognitoDirectoryUser): SystemUser => {
+  return {
+    id: user.id || user.username || user.email,
+    username: user.username,
+    employeeId: user.employeeId || user.username || 'N/A',
+    name: user.name || user.email,
+    email: user.email,
+    mobile: user.mobile || '',
+    department: user.department || '',
+    role: user.role || '',
+    lineManager: user.lineManager || '',
+    status: user.status === 'inactive' ? 'inactive' : 'active',
+    dashboardAccess: user.dashboardAccess === 'blocked' ? 'blocked' : 'allowed',
+    createdDate: user.createdDate || '',
+    tempPassword: null,
+    mustChangePassword: Boolean(user.mustChangePassword),
+    password: null,
+    description: user.cognitoStatus || '',
+  }
+}
+
 interface UserFormState {
   employeeId: string
   name: string
@@ -44,36 +180,79 @@ interface UserFormState {
   lineManager: string
 }
 
-const departmentData = [
-  { id: 1, name: 'IT', roles: ['Administrator', 'IT helpdesk'] },
-  {
-    id: 2,
-    name: 'Sales',
-    roles: [
-      'Sales Manager',
-      'Sales Agent',
-      'Receiptioant',
-      'Seinor receiptant',
-      'Cashir',
-    ],
-  },
-  { id: 3, name: 'Management', roles: ['General manger', 'CEO', 'Director'] },
-  {
-    id: 4,
-    name: 'Operation',
-    roles: [
-      'Operation Manager',
-      'Supervisor',
-      'Techinician',
-      'professional Techinician',
-      'Seinor Techinician',
-      'Quality Inspector',
-      'Service Inspector',
-      'Inspection Supoervsior',
-      'Qulaity Supervior',
-    ],
-  },
-]
+interface DepartmentRoleRecord {
+  name: string
+  roles: Array<{
+    name: string
+  }>
+}
+
+const ROLE_STORAGE_KEY = 'department_roles'
+const DEPARTMENT_ROLES_UPDATED_EVENT = 'department-roles-updated'
+
+const sortText = (left: string, right: string) => left.localeCompare(right)
+
+const asDepartmentRoleRecord = (entry: unknown): DepartmentRoleRecord | null => {
+  if (!entry || typeof entry !== 'object') {
+    return null
+  }
+
+  const record = entry as {
+    name?: unknown
+    roles?: unknown
+  }
+
+  const name = typeof record.name === 'string' ? record.name.trim() : ''
+  if (!name) {
+    return null
+  }
+
+  const rawRoles = Array.isArray(record.roles) ? record.roles : []
+  const roles = rawRoles
+    .map((roleEntry) => {
+      if (typeof roleEntry === 'string') {
+        const roleName = roleEntry.trim()
+        return roleName ? { name: roleName } : null
+      }
+
+      if (!roleEntry || typeof roleEntry !== 'object') {
+        return null
+      }
+
+      const roleName =
+        typeof (roleEntry as { name?: unknown }).name === 'string'
+          ? ((roleEntry as { name: string }).name || '').trim()
+          : ''
+
+      return roleName ? { name: roleName } : null
+    })
+    .filter((role): role is { name: string } => Boolean(role))
+
+  return {
+    name,
+    roles,
+  }
+}
+
+const loadDepartmentRoleRecords = (): DepartmentRoleRecord[] => {
+  const stored = localStorage.getItem(ROLE_STORAGE_KEY)
+  if (!stored) {
+    return []
+  }
+
+  try {
+    const parsed = JSON.parse(stored) as unknown
+    if (!Array.isArray(parsed)) {
+      return []
+    }
+
+    return parsed
+      .map(asDepartmentRoleRecord)
+      .filter((record): record is DepartmentRoleRecord => Boolean(record))
+  } catch {
+    return []
+  }
+}
 
 const emptyForm: UserFormState = {
   employeeId: '',
@@ -207,18 +386,11 @@ interface AlertOptions {
 }
 
 export default function SystemUserManagement() {
-  // Initialize users from the centralized service
-  useEffect(() => {
-    initializeUsers()
-    loadUsers()
-  }, [])
-
-  const loadUsers = () => {
-    const usersFromService = getAllUsersIncludingInactive() as SystemUser[]
-    setUsers(usersFromService)
-  }
-
   const [users, setUsers] = useState<SystemUser[]>([])
+  const [departmentRoleRecords, setDepartmentRoleRecords] = useState<DepartmentRoleRecord[]>(
+    () => loadDepartmentRoleRecords()
+  )
+  const [loadingUsers, setLoadingUsers] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
   const [currentPage, setCurrentPage] = useState(1)
   const [pageSize, setPageSize] = useState(10)
@@ -227,6 +399,8 @@ export default function SystemUserManagement() {
   const [showEditUserModal, setShowEditUserModal] = useState(false)
   const [showAlert, setShowAlert] = useState(false)
   const [userToDelete, setUserToDelete] = useState<SystemUser | null>(null)
+  const [editingUserId, setEditingUserId] = useState<string | null>(null)
+  const [savingEditUser, setSavingEditUser] = useState(false)
   const [alertOptions, setAlertOptions] = useState<AlertOptions>({
     title: '',
     message: '',
@@ -237,6 +411,165 @@ export default function SystemUserManagement() {
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null)
   const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0 })
 
+  const upsertSystemUserProfile = async (input: {
+    email: string
+    previousEmail?: string
+    fullName: string
+    employeeId: string
+    department: string
+    role: string
+    lineManager: string
+    phone: string
+  }) => {
+    const [storedUsersRaw, storedDepartmentsRaw, storedRolesRaw] = await Promise.all([
+      userService.getAll(),
+      departmentService.getAll(),
+      roleService.getAll(),
+    ])
+
+    const storedUsers = (storedUsersRaw || []) as StoredUserProfile[]
+    const storedDepartments = (storedDepartmentsRaw || []) as StoredDepartment[]
+    const storedRoles = (storedRolesRaw || []) as StoredRole[]
+
+    const ensureDepartmentAndRoleIds = async (): Promise<{ departmentId?: string; roleId?: string }> => {
+      let { departmentId, roleId } = resolveDepartmentAndRoleIds(
+        input.department,
+        input.role,
+        storedDepartments,
+        storedRoles,
+      )
+
+      const trimmedDepartmentName = input.department.trim()
+      const trimmedRoleName = input.role.trim()
+
+      if (!departmentId && trimmedDepartmentName) {
+        const createdDepartment = await departmentService.create({
+          name: trimmedDepartmentName,
+          status: 'active',
+        }) as StoredDepartment | null
+
+        if (createdDepartment?.id) {
+          storedDepartments.push(createdDepartment)
+          departmentId = createdDepartment.id
+        }
+      }
+
+      if (!roleId && trimmedRoleName) {
+        const createdRole = await roleService.create({
+          name: trimmedRoleName,
+          departmentId: departmentId || undefined,
+          status: 'active',
+        }) as StoredRole | null
+
+        if (createdRole?.id) {
+          storedRoles.push(createdRole)
+          roleId = createdRole.id
+        }
+      }
+
+      return { departmentId, roleId }
+    }
+
+    const { firstName, lastName } = parseName(input.fullName)
+    const { departmentId, roleId } = await ensureDepartmentAndRoleIds()
+
+    const normalizedTargetEmail = normalizeEmail(input.email)
+    const normalizedPreviousEmail = normalizeEmail(input.previousEmail)
+
+    const existingProfile = storedUsers.find((profile) => {
+      const profileEmail = normalizeEmail(profile.email)
+      if (!profileEmail) {
+        return false
+      }
+
+      return (
+        profileEmail === normalizedTargetEmail ||
+        (Boolean(normalizedPreviousEmail) && profileEmail === normalizedPreviousEmail)
+      )
+    })
+
+    const payload = {
+      firstName,
+      lastName,
+      email: input.email,
+      employeeId: input.employeeId.trim() || undefined,
+      departmentId: departmentId || undefined,
+      roleId: roleId || undefined,
+      lineManager: input.lineManager.trim() || undefined,
+      phone: input.phone,
+      status: 'active' as const,
+    }
+
+    if (existingProfile?.id) {
+      await userService.update(existingProfile.id, payload)
+      return
+    }
+
+    await userService.create(payload)
+  }
+
+  const loadUsers = async () => {
+    setLoadingUsers(true)
+    try {
+      const cognitoUsers = await authService.listCognitoUsers()
+      const [storedUsersRaw, storedDepartmentsRaw, storedRolesRaw] = await Promise.all([
+        userService.getAll().catch((error) => {
+          console.warn('Failed to load stored user profiles:', error)
+          return []
+        }),
+        departmentService.getAll().catch((error) => {
+          console.warn('Failed to load departments:', error)
+          return []
+        }),
+        roleService.getAll().catch((error) => {
+          console.warn('Failed to load roles:', error)
+          return []
+        }),
+      ])
+
+      const mappedUsers = mergeCognitoAndProfileUsers(
+        cognitoUsers,
+        (storedUsersRaw || []) as StoredUserProfile[],
+        (storedDepartmentsRaw || []) as StoredDepartment[],
+        (storedRolesRaw || []) as StoredRole[],
+      )
+      setUsers(mappedUsers)
+    } catch (error) {
+      console.error('Failed to load Cognito users:', error)
+      showAlertMessage({
+        title: 'Error',
+        message: `Failed to load Cognito users: ${getErrorMessage(error)}`,
+        type: 'error',
+      })
+    } finally {
+      setLoadingUsers(false)
+    }
+  }
+
+  useEffect(() => {
+    loadUsers()
+  }, [])
+
+  useEffect(() => {
+    const refreshDepartmentRoleRecords = () => {
+      setDepartmentRoleRecords(loadDepartmentRoleRecords())
+    }
+
+    const handleStorage = (event: StorageEvent) => {
+      if (!event.key || event.key === ROLE_STORAGE_KEY) {
+        refreshDepartmentRoleRecords()
+      }
+    }
+
+    window.addEventListener('storage', handleStorage)
+    window.addEventListener(DEPARTMENT_ROLES_UPDATED_EVENT, refreshDepartmentRoleRecords as EventListener)
+
+    return () => {
+      window.removeEventListener('storage', handleStorage)
+      window.removeEventListener(DEPARTMENT_ROLES_UPDATED_EVENT, refreshDepartmentRoleRecords as EventListener)
+    }
+  }, [])
+
   // Refs for focus management
   const employeeIdRef = useRef<HTMLInputElement>(null)
 
@@ -246,19 +579,57 @@ export default function SystemUserManagement() {
   )
 
   const departments = useMemo(() => {
-    const fromUsers = new Set(users.map((user: SystemUser) => user.department))
-    return Array.from(fromUsers).sort()
+    const fromDepartmentRoles = departmentRoleRecords
+      .map((department) => department.name)
+      .filter((departmentName) => Boolean(departmentName && departmentName.trim()))
+
+    if (fromDepartmentRoles.length > 0) {
+      return Array.from(new Set(fromDepartmentRoles)).sort(sortText)
+    }
+
+    const fromUsers = users
+      .map((user: SystemUser) => user.department)
+      .filter((departmentName) => Boolean(departmentName && departmentName.trim()))
+
+    return Array.from(new Set(fromUsers)).sort(sortText)
+  }, [departmentRoleRecords, users])
+
+  const fallbackRoles = useMemo(() => {
+    const fromUsers = users
+      .map((user: SystemUser) => user.role)
+      .filter((roleName) => Boolean(roleName && roleName.trim()))
+
+    return Array.from(new Set(fromUsers)).sort(sortText)
   }, [users])
 
-  const roles = useMemo(() => {
-    const fromUsers = new Set(users.map((user: SystemUser) => user.role))
-    return Array.from(fromUsers).sort()
-  }, [users])
+  const allRolesFromDepartmentDatabase = useMemo(() => {
+    const allRoles = departmentRoleRecords.flatMap((department) =>
+      department.roles
+        .map((role) => role.name)
+        .filter((roleName) => Boolean(roleName && roleName.trim()))
+    )
+
+    return Array.from(new Set(allRoles)).sort(sortText)
+  }, [departmentRoleRecords])
 
   const lineManagers = useMemo(() => {
-    const names = users.map((user: SystemUser) => user.name).sort()
-    return ['not available', ...new Set(names)]
+    const names = users
+      .map((user: SystemUser) => user.name)
+      .filter((name) => Boolean(name && name.trim()))
+
+    return Array.from(new Set(names)).sort(sortText)
   }, [users])
+
+  const editLineManagers = useMemo(() => {
+    const set = new Set(lineManagers)
+    const selectedLineManager = editFormState.lineManager.trim()
+
+    if (selectedLineManager) {
+      set.add(selectedLineManager)
+    }
+
+    return Array.from(set).sort(sortText)
+  }, [lineManagers, editFormState.lineManager])
 
   const filteredUsers = useMemo(() => {
     if (!searchQuery.trim()) return users
@@ -360,6 +731,7 @@ export default function SystemUserManagement() {
     setShowAddUserModal(false)
     setShowEditUserModal(false)
     setUserToDelete(null)
+    setEditingUserId(null)
     document.body.style.overflow = 'auto'
   }
 
@@ -399,6 +771,7 @@ export default function SystemUserManagement() {
   }
 
   const openEditUserModal = (user: SystemUser) => {
+    setEditingUserId(user.id)
     setEditFormState({
       employeeId: user.employeeId || '',
       name: user.name,
@@ -408,7 +781,6 @@ export default function SystemUserManagement() {
       role: user.role,
       lineManager: user.lineManager || '',
     })
-    setDetailsUserId(user.id)
     openModal(setShowEditUserModal)
   }
 
@@ -423,18 +795,21 @@ export default function SystemUserManagement() {
       return
     }
 
-    // Check if Employee ID already exists
-    const existingUser = users.find((u: SystemUser) => u.employeeId === employeeId.trim())
+    const normalizedEmail = email.trim().toLowerCase()
+
+    // Check if email already exists in Cognito listing
+    const existingUser = users.find(
+      (u: SystemUser) => u.email.trim().toLowerCase() === normalizedEmail
+    )
     if (existingUser) {
       showAlertMessage({
         title: 'Error',
-        message: 'Employee ID already exists! Please use a unique Employee ID.',
+        message: 'A Cognito account with this email already exists.',
         type: 'error',
       })
       return
     }
 
-    const normalizedEmail = email.trim().toLowerCase()
     const normalizedMobile = normalizePhoneForCognito(mobile)
     if (!normalizedMobile) {
       showAlertMessage({
@@ -448,156 +823,200 @@ export default function SystemUserManagement() {
     const temporaryPassword = generateTemporaryPassword()
     const fullName = name.trim()
 
-    const newUser = {
-      id: String(users.length + 1),
-      employeeId: employeeId.trim(),
-      name,
-      email: normalizedEmail,
-      mobile: normalizedMobile,
-      department,
-      role,
-      lineManager: formState.lineManager || 'not available',
-      status: 'active',
-      dashboardAccess: 'allowed',
-      createdDate: new Date().toISOString().slice(0, 10),
-      tempPassword: temporaryPassword,
-      mustChangePassword: true,
-      password: temporaryPassword,
-      description: '',
-    }
+    try {
+      const inviteResult = await authService.sendUserInvitation({
+        email: normalizedEmail,
+        fullName,
+        phoneNumber: normalizedMobile,
+        temporaryPassword,
+      })
 
-    // Add user to centralized service
-    const result = addUserToService(newUser)
-    if (result.success) {
-      loadUsers()
-      closeAllModals()
-
-      try {
-        const inviteResult = await authService.sendUserInvitation({
-          email: normalizedEmail,
-          fullName,
-          phoneNumber: normalizedMobile,
-          temporaryPassword,
-        })
-
-        if (!inviteResult.success) {
-          if (inviteResult.userAlreadyExists) {
-            showAlertMessage({
-              title: 'Warning',
-              message: `User created successfully, but Cognito already has an account for ${normalizedEmail}. ${inviteResult.message}`,
-              type: 'warning',
+      if (!inviteResult.success) {
+        if (inviteResult.userAlreadyExists) {
+          let profileSyncError = ''
+          try {
+            await upsertSystemUserProfile({
+              email: normalizedEmail,
+              fullName,
+              employeeId,
+              department,
+              role,
+              lineManager: formState.lineManager,
+              phone: normalizedMobile,
             })
-            return
+          } catch (profileError) {
+            profileSyncError = getErrorMessage(profileError)
           }
 
           showAlertMessage({
-            title: 'Error',
-            message: `User was created, but Cognito invitation failed: ${inviteResult.message}`,
-            type: 'error',
+            title: profileSyncError ? 'Warning' : 'Info',
+            message: profileSyncError
+              ? `Cognito already has an account for ${normalizedEmail}. ${inviteResult.message} Profile sync failed: ${profileSyncError}`
+              : `Cognito already has an account for ${normalizedEmail}. ${inviteResult.message} Profile was synced in system storage.`,
+            type: profileSyncError ? 'warning' : 'info',
           })
+          await loadUsers()
+          closeAllModals()
           return
         }
 
-        const invitationMessage = inviteResult.invitationResent
-          ? `User created successfully. Existing Cognito invitation was resent to ${normalizedEmail}. Share this temporary password securely: ${temporaryPassword}`
-          : `User created successfully. Cognito sent an invitation email to ${normalizedEmail}. Share this temporary password securely: ${temporaryPassword}`
-
-        showAlertMessage({
-          title: 'Success',
-          message: invitationMessage,
-          type: 'success',
-        })
-      } catch (cognitoError) {
         showAlertMessage({
           title: 'Error',
-          message: `User was created, but Cognito invitation request failed: ${getErrorMessage(cognitoError)}`,
+          message: `Cognito invitation failed: ${inviteResult.message}`,
           type: 'error',
         })
+        return
       }
-    } else {
+
+      let profileSyncError = ''
+      try {
+        await upsertSystemUserProfile({
+          email: normalizedEmail,
+          fullName,
+          employeeId,
+          department,
+          role,
+          lineManager: formState.lineManager,
+          phone: normalizedMobile,
+        })
+      } catch (profileError) {
+        profileSyncError = getErrorMessage(profileError)
+      }
+
+      await loadUsers()
+      closeAllModals()
+
+      const invitationMessage = inviteResult.invitationResent
+        ? `Existing Cognito invitation was resent to ${normalizedEmail}. Share this temporary password securely: ${temporaryPassword}`
+        : `Cognito invitation email was sent to ${normalizedEmail}. Share this temporary password securely: ${temporaryPassword}`
+
+      showAlertMessage({
+        title: profileSyncError ? 'Warning' : 'Success',
+        message: profileSyncError
+          ? `${invitationMessage} Profile sync failed: ${profileSyncError}`
+          : `${invitationMessage} User profile was also saved in system storage.`,
+        type: profileSyncError ? 'warning' : 'success',
+      })
+    } catch (cognitoError) {
       showAlertMessage({
         title: 'Error',
-        message: 'Failed to create user',
+        message: `Cognito invitation request failed: ${getErrorMessage(cognitoError)}`,
         type: 'error',
       })
     }
   }
 
-  const saveEditUser = () => {
-    if (!detailsUserId) {
+  const saveEditUser = async () => {
+    if (savingEditUser) {
+      return
+    }
+
+    const editingUser = users.find((user: SystemUser) => user.id === editingUserId)
+    if (!editingUser) {
       showAlertMessage({
         title: 'Error',
-        message: 'No user selected for editing.',
+        message: 'The selected Cognito user could not be found. Refresh the list and try again.',
         type: 'error',
       })
       return
     }
 
-    const { name, email, mobile, department, role } = editFormState
-    if (!name || !email || !mobile || !department || !role) {
+    const fullName = editFormState.name.trim()
+    const normalizedEmail = editFormState.email.trim().toLowerCase()
+    const department = editFormState.department.trim()
+    const role = editFormState.role.trim()
+    const lineManager = editFormState.lineManager.trim()
+    const normalizedMobile = normalizePhoneForCognito(editFormState.mobile)
+
+    if (!fullName || !normalizedEmail || !department || !role || !normalizedMobile) {
       showAlertMessage({
         title: 'Error',
-        message: 'Please fill in all required fields!',
+        message: 'Please complete all required fields. Mobile must be in international format, e.g. +971501234567.',
         type: 'error',
       })
       return
     }
 
-    const updates = {
-      name,
-      email,
-      mobile,
-      department,
-      role,
-      lineManager: editFormState.lineManager || 'not available',
+    const duplicateUser = users.find(
+      (user: SystemUser) =>
+        user.id !== editingUser.id && user.email.trim().toLowerCase() === normalizedEmail
+    )
+
+    if (duplicateUser) {
+      showAlertMessage({
+        title: 'Error',
+        message: `A Cognito account with email ${normalizedEmail} already exists.`,
+        type: 'error',
+      })
+      return
     }
 
-    const result = updateUserInService(detailsUserId, updates)
-    if (result.success) {
-      loadUsers()
+    setSavingEditUser(true)
+
+    try {
+      const result = await authService.updateCognitoUser({
+        username: editingUser.username,
+        fullName,
+        email: normalizedEmail,
+        phoneNumber: normalizedMobile,
+        department,
+        role,
+        lineManager,
+      })
+
+      let profileSyncError = ''
+      try {
+        await upsertSystemUserProfile({
+          email: normalizedEmail,
+          previousEmail: editingUser.email,
+          fullName,
+          employeeId: editFormState.employeeId,
+          department,
+          role,
+          lineManager,
+          phone: normalizedMobile,
+        })
+      } catch (profileError) {
+        profileSyncError = getErrorMessage(profileError)
+      }
+
+      await loadUsers()
       closeAllModals()
       showAlertMessage({
-        title: 'Success',
-        message: 'User updated successfully!',
-        type: 'success',
+        title: profileSyncError ? 'Warning' : 'Success',
+        message: profileSyncError
+          ? `${result.message} Cognito was updated, but profile sync failed: ${profileSyncError}`
+          : `${result.message} User profile was also updated in system storage.`,
+        type: profileSyncError ? 'warning' : 'success',
       })
-    } else {
+    } catch (error) {
       showAlertMessage({
         title: 'Error',
-        message: 'Failed to update user',
+        message: `Failed to update Cognito user: ${getErrorMessage(error)}`,
         type: 'error',
       })
+    } finally {
+      setSavingEditUser(false)
     }
   }
 
   const confirmDeleteUser = () => {
     if (!userToDelete) return
-    
-    const result = deleteUserFromService(userToDelete.id)
-    if (result.success) {
-      loadUsers()
-      if (detailsUserId === userToDelete.id) {
-        setDetailsUserId(null)
-      }
-      closeAllModals()
-      showAlertMessage({
-        title: 'Success',
-        message: `User ${userToDelete.name} deleted successfully!`,
-        type: 'success',
-      })
-    } else {
-      showAlertMessage({
-        title: 'Error',
-        message: 'Failed to delete user',
-        type: 'error',
-      })
-    }
+
+    closeAllModals()
+    showAlertMessage({
+      title: 'Info',
+      message:
+        `Delete user is disabled in this screen for Cognito-sourced users. Remove ${userToDelete.email} through Cognito-backed admin APIs.`,
+      type: 'info',
+    })
   }
 
   const openDeleteModal = (user: SystemUser) => {
+    setUserToDelete(user)
     showAlertMessage({
       title: 'Confirm Delete',
-      message: `Are you sure you want to delete "${user.name}"? This action cannot be undone.`,
+      message: `Delete is currently disabled in this screen for Cognito users. Continue to view guidance for ${user.email}?`,
       type: 'warning',
       buttons: [
         {
@@ -606,13 +1025,12 @@ export default function SystemUserManagement() {
           action: closeAlert,
         },
         {
-          text: 'Delete',
-          class: 'alert-btn-danger',
+          text: 'Continue',
+          class: 'alert-btn-primary',
           action: confirmDeleteUser,
         },
       ],
     })
-    setUserToDelete(user)
   }
 
   const openDetailsView = (userId: string) => {
@@ -753,63 +1171,58 @@ export default function SystemUserManagement() {
   const toggleUserStatus = (userId: string) => {
     const user = users.find((u: SystemUser) => u.id === userId)
     if (!user) return
-    
-    const nextStatus = user.status === 'active' ? 'inactive' : 'active'
-    const updates = {
-      status: nextStatus,
-      dashboardAccess: nextStatus === 'inactive' ? 'blocked' : user.dashboardAccess,
-    }
-    
-    const result = updateUserInService(userId, updates)
-    if (result.success) {
-      loadUsers()
-      showAlertMessage({
-        title: 'Success',
-        message: `User status changed to ${nextStatus}`,
-        type: 'success',
-      })
-    } else {
-      showAlertMessage({
-        title: 'Error',
-        message: 'Failed to update user status',
-        type: 'error',
-      })
-    }
+
+    showAlertMessage({
+      title: 'Info',
+      message:
+        `Status toggle is disabled in this screen for Cognito users (${user.email}). Use Cognito-backed admin APIs to enable or disable accounts.`,
+      type: 'info',
+    })
   }
 
   const toggleDashboardAccess = (userId: string) => {
     const user = users.find((u: SystemUser) => u.id === userId)
     if (!user || user.status !== 'active') return
-    
-    const updates = {
-      dashboardAccess: user.dashboardAccess === 'allowed' ? 'blocked' : 'allowed',
-    }
-    
-    const result = updateUserInService(userId, updates)
-    if (result.success) {
-      loadUsers()
-    } else {
-      showAlertMessage({
-        title: 'Error',
-        message: 'Failed to update dashboard access',
-        type: 'error',
-      })
-    }
+
+    showAlertMessage({
+      title: 'Info',
+      message:
+        `Dashboard access toggle is disabled in this screen for Cognito users (${user.email}). Manage access through role/permission configuration.`,
+      type: 'info',
+    })
   }
 
   const departmentRoles = useMemo(() => {
-    const entry = departmentData.find(
-      (dept) => dept.name === formState.department
+    const selectedDepartment = departmentRoleRecords.find(
+      (department) => department.name === formState.department
     )
-    return entry ? entry.roles : roles
-  }, [formState.department, roles])
+
+    if (selectedDepartment) {
+      return Array.from(new Set(selectedDepartment.roles.map((role) => role.name))).sort(sortText)
+    }
+
+    if (allRolesFromDepartmentDatabase.length > 0) {
+      return allRolesFromDepartmentDatabase
+    }
+
+    return fallbackRoles
+  }, [departmentRoleRecords, formState.department, allRolesFromDepartmentDatabase, fallbackRoles])
 
   const editDepartmentRoles = useMemo(() => {
-    const entry = departmentData.find(
-      (dept) => dept.name === editFormState.department
+    const selectedDepartment = departmentRoleRecords.find(
+      (department) => department.name === editFormState.department
     )
-    return entry ? entry.roles : roles
-  }, [editFormState.department, roles])
+
+    if (selectedDepartment) {
+      return Array.from(new Set(selectedDepartment.roles.map((role) => role.name))).sort(sortText)
+    }
+
+    if (allRolesFromDepartmentDatabase.length > 0) {
+      return allRolesFromDepartmentDatabase
+    }
+
+    return fallbackRoles
+  }, [departmentRoleRecords, editFormState.department, allRolesFromDepartmentDatabase, fallbackRoles])
 
   const stats = getStats()
 
@@ -861,6 +1274,7 @@ export default function SystemUserManagement() {
                 onChange={handleSearch}
               />
             </div>
+            {loadingUsers && <p className="page-description">Syncing users from Cognito...</p>}
           </div>
 
           <div className="list-header">
@@ -921,10 +1335,10 @@ export default function SystemUserManagement() {
                     <td>{user.email}</td>
                     <td>{user.mobile}</td>
                     <td>
-                      <span className="dept-badge">{user.department}</span>
+                      <span className="dept-badge">{user.department || 'Not set'}</span>
                     </td>
                     <td>
-                      <span className="role-badge">{user.role}</span>
+                      <span className="role-badge">{user.role || 'Not set'}</span>
                     </td>
                     <td>
                       <span className="line-manager-badge">
@@ -1121,13 +1535,13 @@ export default function SystemUserManagement() {
                 <div className="info-item">
                   <span className="info-label">Department</span>
                   <span className="info-value">
-                    <span className="dept-badge">{detailsUser.department}</span>
+                    <span className="dept-badge">{detailsUser.department || 'Not set'}</span>
                   </span>
                 </div>
                 <div className="info-item">
                   <span className="info-label">Role</span>
                   <span className="info-value">
-                    <span className="role-badge">{detailsUser.role}</span>
+                    <span className="role-badge">{detailsUser.role || 'Not set'}</span>
                   </span>
                 </div>
                 <div className="info-item">
@@ -1286,9 +1700,10 @@ export default function SystemUserManagement() {
                   id="role"
                   value={formState.role}
                   onChange={(e) => setFormState(prev => ({ ...prev, role: e.target.value }))}
+                  disabled={!formState.department}
                   required
                 >
-                  <option value="">Select Role</option>
+                  <option value="">{formState.department ? 'Select Role' : 'Select Department First'}</option>
                   {departmentRoles.map(role => (
                     <option key={role} value={role}>{role}</option>
                   ))}
@@ -1384,9 +1799,10 @@ export default function SystemUserManagement() {
                   id="editRole"
                   value={editFormState.role}
                   onChange={(e) => setEditFormState(prev => ({ ...prev, role: e.target.value }))}
+                  disabled={!editFormState.department}
                   required
                 >
-                  <option value="">Select Role</option>
+                  <option value="">{editFormState.department ? 'Select Role' : 'Select Department First'}</option>
                   {editDepartmentRoles.map(role => (
                     <option key={role} value={role}>{role}</option>
                   ))}
@@ -1401,14 +1817,16 @@ export default function SystemUserManagement() {
                   onChange={(e) => setEditFormState(prev => ({ ...prev, lineManager: e.target.value }))}
                 >
                   <option value="">Select Line Manager</option>
-                  {lineManagers.map(manager => (
+                  {editLineManagers.map(manager => (
                     <option key={manager} value={manager}>{manager}</option>
                   ))}
                 </select>
               </div>
 
               <div className="button-group">
-                <button type="submit" className="btn btn-primary">Save Changes</button>
+                <button type="submit" className="btn btn-primary" disabled={savingEditUser}>
+                  {savingEditUser ? 'Saving...' : 'Save Changes'}
+                </button>
                 <button type="button" className="btn btn-secondary" onClick={closeAllModals}>Cancel</button>
               </div>
             </form>
